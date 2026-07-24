@@ -162,10 +162,10 @@
   .px-reveal.is-visible{opacity:1; transform:translateY(0);}
 
   /* walking sprite anchored in scene */
-  .sprite-stage{position:relative; z-index:2; height:170px; width:100%; max-width:min(1100px,88vw); overflow:visible;}
-  .sprite-walker{position:absolute; bottom:0; left:8%; width:100px; height:130px; transition:left 0.3s linear;}
+  .sprite-stage{position:relative; z-index:2; height:230px; width:100%; max-width:min(1100px,88vw); overflow:visible;}
+  .sprite-walker{position:absolute; bottom:0; left:8%; width:140px; height:210px; transition:left 0.3s linear;}
   .sprite-walker img.walker-body{
-    position:absolute; bottom:0; left:50%; transform:translateX(-50%); height:112px; width:auto; max-width:none;
+    position:absolute; bottom:0; left:50%; transform:translateX(-50%); height:170px; width:auto; max-width:none;
     image-rendering:pixelated; image-rendering:crisp-edges;
   }
   .sprite-walker.mirrored{transform:scaleX(-1);}
@@ -219,12 +219,19 @@
   .tap-object.opened + .loot-reveal{display:block;}
 
   /* meeting scene */
-  .meet-stage{position:relative; z-index:2; height:170px; width:100%; max-width:min(1100px,88vw);}
+  .meet-stage{position:relative; z-index:2; height:230px; width:100%; max-width:min(1100px,88vw);}
   .meet-stage .sprite-walker{transition:left 1.6s steps(12);}
-  #spriteMeetPaty{left:2%;}
-  #spriteMeetAbhi{left:78%;}
-  .meet-stage.met #spriteMeetPaty{left:26%;}
-  .meet-stage.met #spriteMeetAbhi{left:54%;}
+  /* positioned by CENTER (not left edge) so the pair stays visually symmetric
+     around the stage midpoint regardless of each character's box width —
+     Pat'a is rendered smaller than Abhi here (see .walker-body override below)
+     so edge-anchored positioning would otherwise look off-center. */
+  #spriteMeetPaty, #spriteMeetAbhi{ transform:translateX(-50%); }
+  #spriteMeetAbhi{ transform:translateX(-50%) scaleX(-1); }
+  #spriteMeetPaty{left:-5%;}
+  #spriteMeetAbhi{left:105%;}
+  .meet-stage.met #spriteMeetPaty{left:40%;}
+  .meet-stage.met #spriteMeetAbhi{left:60%;}
+  #spriteMeetPaty .walker-body{height:153px;} /* ~90% of the standard 170px — Pat'a reads 10% smaller than Abhi in this scene */
   .meet-heart{
     position:absolute; top:0; left:50%; transform:translate(-50%,20px) scale(0);
     width:40px; height:36px; transition:transform 0.6s steps(5) 1.4s;
@@ -344,6 +351,8 @@
   @media (max-width:520px){.field-row{grid-template-columns:1fr;}}
   .rsvp-btn{margin-top:0.6rem; align-self:center; background:var(--olive-deep); color:var(--cream); border:none; padding:1rem 2.4rem; font-family:var(--pixel); font-size:0.6rem; letter-spacing:0.06em; cursor:pointer; border-radius:2px; transition:background 0.3s ease;}
   .rsvp-btn:hover{background:var(--gold); color:var(--ink);}
+  .rsvp-btn.declined{background:#6B7280;}
+  .rsvp-btn.declined:hover{background:#4B5563;}
   .rsvp-success{display:none; text-align:center; margin-top:1.4rem; font-style:italic; color:var(--olive-deep); font-size:1.05rem;}
   .rsvp-note{text-align:center; margin-top:1.6rem; font-size:0.9rem; opacity:0.6;}
   .guests-section-heading{font-family:var(--label); font-size:0.66rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--olive); margin-bottom:0.2rem;}
@@ -799,13 +808,17 @@
             </select>
           </div>
           <div class="field">
-            <label for="message" id="lblMessage">Message for the Couple</label>
-            <textarea id="message" name="note" rows="3"></textarea>
+            <label for="allergy" id="lblAllergy">Allergy / Dietary Notes</label>
+            <input type="text" id="allergy" name="allergy">
           </div>
           <div id="guestsSection">
             <p class="guests-section-heading" id="lblGuestsSection">Bringing anyone else?</p>
             <div id="guestsContainer"></div>
             <button type="button" class="add-guest-btn" id="addGuestBtn">+ Add Guest</button>
+          </div>
+          <div class="field">
+            <label for="message" id="lblMessage">Message for the Couple</label>
+            <textarea id="message" name="message" rows="3"></textarea>
           </div>
           <button type="submit" class="rsvp-btn" id="rsvpBtnText">&#9654; ACCEPT QUEST</button>
           <p class="rsvp-success" id="rsvpSuccess">Quest accepted! Thank you — we can't wait to celebrate with you.</p>
@@ -922,6 +935,7 @@
       var key = el.dataset.i18n;
       if(strs[key]){ el.innerHTML = strs[key]; }
     });
+    if(typeof updateAttendingUI === 'function'){ updateAttendingUI(); }
     document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.lang === lang); });
     document.getElementById('langCorner').innerHTML = strs.langCorner;
     document.getElementById('tapTag').textContent = (chosenSide === 'bride') ? strs.tapTagBride : strs.tapTag;
@@ -1043,16 +1057,16 @@
     document.getElementById('act1Loot').dataset.full = story.act1Loot;
     document.getElementById('act2Loot').dataset.full = story.act2Loot;
     document.getElementById('act3Dialog2').dataset.full = MEET_DIALOG[currentLang];
-    // walker sprite: groom carries a separate fedora overlay so the wind can steal it
+    // walker sprite: groom's body sprite already has his hat baked into the art;
+    // the decorative flying-hat overlay is only added to the DOM at the exact
+    // moment the wind takes it (see the scroll handler), never before — otherwise
+    // it renders as a second hat sitting on top of the one already in his sprite.
     var walker = document.getElementById('act1Sprite');
     clearInterval(act1WalkTimer);
+    walker.innerHTML = '<img class="walker-body" alt="">';
     if(side === 'groom'){
-      walker.innerHTML =
-        '<img class="walker-body" alt="">'
-        + '<div class="walker-hat"><img class="hat-icon" src="' + ABHI_SPRITES.hat + '" alt=""></div>';
       act1WalkTimer = startSpriteLoop(walker.querySelector('.walker-body'), ABHI_SPRITES.walk, 160);
     } else {
-      walker.innerHTML = '<img class="walker-body" alt="">';
       act1WalkTimer = startSpriteLoop(walker.querySelector('.walker-body'), PATY_SPRITES.walk, 160);
     }
     walker.classList.remove('hat-flying');
@@ -1263,13 +1277,15 @@
           if(progress > 0.4 && !hatFlown){
             hatFlown = true;
             spawnWind();
-            sprite.classList.add('hat-flying');
             sndLost();
             showAchievement('\uD83D\uDCA8', UI[currentLang].achLostFedora);
-            // the fedora blows off the character's head, not just the decorative prop
+            // swap the body sprite to hatless AND spawn the flying-hat overlay in the
+            // same instant, so there is never a frame with two hats or zero hats
             clearInterval(act1WalkTimer);
             var bodyImg = sprite.querySelector('.walker-body');
             if(bodyImg){ act1WalkTimer = startSpriteLoop(bodyImg, ABHI_NOHAT_SPRITES.walk, 160); }
+            sprite.insertAdjacentHTML('beforeend', '<div class="walker-hat"><img class="hat-icon" src="' + ABHI_SPRITES.hat + '" alt=""></div>');
+            sprite.classList.add('hat-flying');
           }
         } else if(chosenSide === 'bride'){
           if(progress > 0.3 && !hatArrived){
@@ -1308,7 +1324,7 @@
           '<option value="kids">' + strs.optMealKids + '</option>' +
         '</select></div>' +
       '<div class="field"><label data-i18n="lblGuestNote">' + strs.lblGuestNote + '</label>' +
-        '<input type="text" class="guest-note"></div>' +
+        '<input type="text" class="guest-allergy"></div>' +
       '<button type="button" class="guest-remove" data-i18n="removeGuestBtn">' + strs.removeGuestBtn + '</button>';
     wrap.querySelector('.guest-remove').addEventListener('click', function(){ wrap.remove(); });
     guestsContainer.appendChild(wrap);
@@ -1319,13 +1335,17 @@
     sndSelect();
   });
 
-  function updateGuestsVisibility(){
+  function updateAttendingUI(){
     var declined = document.getElementById('attending').value === 'decline';
+    var strs = UI[currentLang];
     document.getElementById('guestsSection').style.display = declined ? 'none' : '';
     if(declined){ guestsContainer.innerHTML = ''; }
+    var btn = document.getElementById('rsvpBtnText');
+    btn.innerHTML = declined ? strs.rsvpBtnTextDecline : strs.rsvpBtnTextAccept;
+    btn.classList.toggle('declined', declined);
   }
-  document.getElementById('attending').addEventListener('change', updateGuestsVisibility);
-  updateGuestsVisibility();
+  document.getElementById('attending').addEventListener('change', updateAttendingUI);
+  updateAttendingUI();
 
   document.getElementById('rsvpForm').addEventListener('submit', function(e){
     e.preventDefault();
@@ -1342,7 +1362,7 @@
         return {
           name: g.querySelector('.guest-name').value.trim(),
           meal: g.querySelector('.guest-meal').value,
-          note: g.querySelector('.guest-note').value.trim()
+          allergy: g.querySelector('.guest-allergy').value.trim()
         };
       }).filter(function(g){ return g.name; });
     }
@@ -1351,7 +1371,8 @@
       email: form.email.value,
       attending: form.attending.value,
       meal: form.meal.value,
-      note: form.note.value,
+      allergy: form.allergy.value,
+      message: form.message.value,
       guests: guestList
     };
     var btn = form.querySelector('.rsvp-btn');
@@ -1367,7 +1388,9 @@
       return res.json();
     }).then(function(json){
       if(json.result !== 'success') throw new Error('Script reported failure');
-      document.getElementById('rsvpSuccess').style.display = 'block';
+      var successEl = document.getElementById('rsvpSuccess');
+      successEl.innerHTML = (payload.attending === 'decline') ? UI[currentLang].rsvpSuccessDecline : UI[currentLang].rsvpSuccessAccept;
+      successEl.style.display = 'block';
       btn.style.display = 'none';
       sndQuestDone();
       showAchievement('\uD83C\uDFC6', UI[currentLang].achRsvpDone);
