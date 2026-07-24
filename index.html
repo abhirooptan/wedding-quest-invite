@@ -29,8 +29,9 @@
   /* ============ LANDING / SIDE SELECT ============ */
   .landing{
     position:fixed; inset:0; z-index:1000; background:var(--px-night);
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    display:flex; flex-direction:column; align-items:center; justify-content:safe center;
     padding:1.5rem; text-align:center; transition:opacity 0.8s ease, visibility 0.8s;
+    overflow-y:auto;
   }
   .landing.dismissed{opacity:0; visibility:hidden; pointer-events:none;}
   .landing-stars{position:absolute; inset:0; overflow:hidden; pointer-events:none;}
@@ -52,9 +53,9 @@
   }
   .side-card:hover, .side-card:focus-visible{transform:translateY(-6px); border-color:var(--px-gold); outline:none;}
   .side-card:active{transform:translateY(-2px);}
-  .side-card .sprite-box{width:112px; height:190px; margin:0 auto 1rem; position:relative; overflow:hidden;}
+  .side-card .sprite-box{width:96px; height:128px; margin:0 auto 1rem; position:relative;}
   .side-card .sprite-box img{
-    position:absolute; bottom:0; left:50%; transform:translateX(-50%); height:168px; width:auto; max-width:none;
+    position:absolute; bottom:0; left:50%; transform:translateX(-50%); height:132px; width:auto; max-width:none;
     image-rendering:pixelated; image-rendering:crisp-edges;
   }
   .side-card .sprite-box img{animation:idleBob 1.1s steps(2) infinite;}
@@ -99,9 +100,9 @@
   }
   .dialog{
     position:relative; z-index:2; background:rgba(12,12,24,0.92); border:4px solid var(--px-text);
-    box-shadow:0 0 0 4px rgba(12,12,24,0.92); max-width:520px; width:100%;
-    padding:1.1rem 1.2rem; font-family:var(--pixel); font-size:clamp(0.52rem,2.4vw,0.66rem);
-    line-height:2.2; color:var(--px-text);
+    box-shadow:0 0 0 4px rgba(12,12,24,0.92); max-width:620px; width:100%;
+    padding:1.2rem 1.35rem; font-family:var(--pixel); font-size:clamp(0.66rem,2.6vw,0.92rem);
+    line-height:2.1; color:var(--px-text);
   }
   .dialog .speaker{color:var(--px-gold); display:block; margin-bottom:0.5rem;}
   .dialog.paty-voice .speaker{color:var(--px-accent);}
@@ -820,6 +821,10 @@
   </footer>
 </div>
 
+<!-- Dialogue/copy for each language lives in its own file under locale/ -->
+<script src="locale/en.js"></script>
+<script src="locale/sk.js"></script>
+<script src="locale/cz.js"></script>
 <script>
   // ============ SOUND ENGINE (synthesized, no audio files) ============
   var soundOn = (localStorage.getItem('questSound') !== 'off');
@@ -842,7 +847,6 @@
     osc.connect(gain); gain.connect(ctx.destination);
     osc.start(t0); osc.stop(t0+dur+0.02);
   }
-  function sndTick(){ beep(720,0.04,'square',0.045); }
   function sndTap(){ beep(440,0.08,'square',0.11); beep(660,0.08,'square',0.08,0.045); }
   function sndSelect(){ beep(523,0.09,'square',0.12); beep(784,0.11,'square',0.1,0.06); }
   function sndBigMoment(){ [523,659,784,1046].forEach(function(f,i){ beep(f,0.16,'square',0.12,i*0.09); }); }
@@ -864,7 +868,7 @@
     opts = opts || {};
     var myToken = resetToken;
     var tokens = html.match(/<[^>]+>|&[a-zA-Z#0-9]+;|[\s\S]/g) || [];
-    var i = 0, acc = '', tickCount = 0;
+    var i = 0, acc = '';
     el.innerHTML = '';
     function step(){
       if(myToken !== resetToken){ return; }
@@ -876,10 +880,6 @@
       var tok = tokens[i];
       acc += tok;
       el.innerHTML = acc + '<span class="type-cursor">&#9646;</span>';
-      if(tok.length===1 && tok !== ' ' && tok !== '\n'){
-        tickCount++;
-        if(tickCount % 2 === 0){ sndTick(); }
-      }
       i++;
       setTimeout(step, opts.speed||20);
     }
@@ -897,244 +897,10 @@
     achTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2600);
   }
 
-  // ============ TRILINGUAL STORY CONTENT ============
-  var STORY = {
-    en: {
-      bride: {
-        sprite: 'sprite-paty',
-        act1Label: '~ PRAGUE — THE GOLDEN CITY ~',
-        act1Dialog1: '<span class="speaker">PAT\'A CROFT:</span>Born in Trnava, made in Prague. I know every castle, every garden, every secret stair of this golden city... but lately, even the best views feel like they\'re missing someone.',
-        act1Dialog2: '<span class="speaker">PAT\'A CROFT:</span>Strange. The city feels different tonight — like the eve of an adventure. And what\'s this doing here?',
-        act1Loot: '<span class="speaker">YOU FOUND:</span>A TRAVELER\'S FEDORA &#127913;<br><br><span class="speaker">PAT\'A CROFT:</span>Freshly lost — the wind must have carried it over the wall. The maker\'s mark says... LUCKNOW? Its owner is somewhere in my city. Tonight. I\'ll keep it safe.',
-        act2Dialog1: '<span class="speaker">NARRATOR:</span>That very night — while a certain traveler celebrated a friend\'s birthday somewhere in Prague — a mysterious scroll appeared on the old notice board...',
-        act2Dialog2: '<span class="speaker">PAT\'A CROFT:</span>A notice? Here? Nobody has used this board since the old kingdom...',
-        act2Loot: '<span class="speaker">THE SCROLL READS:</span>SOUGHT — a moustached adventurer from the golden domes of LUCKNOW. Grand stories. Kind eyes. Last seen at a birthday feast in this very city. IF FOUND: WRITE.<br><br><span class="speaker">PAT\'A CROFT:</span>...So I wrote.',
-        act2Dialog3: '<span class="speaker">NARRATOR:</span>His quest had already called him home across the sea. But letter followed letter — every single day, for nearly a YEAR — until two strangers knew each other by heart.<br><br><span class="speaker">PAT\'A CROFT:</span>NEW QUEST ACCEPTED: get him back to Prague.',
-        act3Dialog1: '<span class="speaker">NARRATOR:</span>SEPTEMBER 2023. Across the sea and half a continent, he returned to Prague — not for a birthday this time. For her.'
-      },
-      groom: {
-        sprite: 'sprite-abhi',
-        act1Label: '~ PRAGUE — A STRANGER IN A GOLDEN CITY ~',
-        act1Dialog1: '<span class="speaker">ABHI JONES:</span>From the golden domes of Lucknow, through the halls of Dublin... and tonight, Prague — for a friend\'s birthday quest. These castles are magnificent. Almost distractingly so.',
-        act1Dialog2: '<span class="speaker">ABHI JONES:</span>Blast — the wind! My lucky fedora, gone over the castle wall... Wait. Fresh torch marks on these old walls. Someone knows this city the way I know my temples... and left THIS behind.',
-        act1Loot: '<span class="speaker">YOU FOUND:</span>AN EXPLORER\'S TORCH &#128294;<br><br><span class="speaker">ABHI JONES:</span>Still warm. Whoever lights up this city like this... I\'d cross continents to meet them.',
-        act2Dialog1: '<span class="speaker">NARRATOR:</span>That very night — between birthday toasts — a mysterious scroll found its way into his satchel...',
-        act2Dialog2: '<span class="speaker">ABHI JONES:</span>Odd. This wasn\'t in my satchel an hour ago...',
-        act2Loot: '<span class="speaker">THE SCROLL READS:</span>SOUGHT — a fearless golden-haired explorer who knows every castle of this city. Smile like buried treasure. IF FOUND: WRITE.<br><br><span class="speaker">ABHI JONES:</span>...So I wrote.',
-        act2Dialog3: '<span class="speaker">NARRATOR:</span>Home called him back across the sea. But letter followed letter — every single day, for nearly a YEAR — until two strangers knew each other by heart.<br><br><span class="speaker">ABHI JONES:</span>NEW QUEST ACCEPTED: cross the seas. Return to Prague. Meet her. For real.',
-        act3Dialog1: '<span class="speaker">NARRATOR:</span>SEPTEMBER 2023. Across the sea and half a continent, he returned to Prague — not for a birthday this time. For her.'
-      }
-    },
-    sk: {
-      bride: {
-        sprite: 'sprite-paty',
-        act1Label: '~ PRAHA — ZLATÉ MESTO ~',
-        act1Dialog1: '<span class="speaker">PAT\'A CROFT:</span>Narodená v Trnave, stvorená v Prahe. Poznám každý hrad, každú záhradu, každé tajné schodisko tohto zlatého mesta... no v poslednom čase mi aj tie najkrajšie výhľady pripadajú, akoby im niekto chýbal.',
-        act1Dialog2: '<span class="speaker">PAT\'A CROFT:</span>Zvláštne. Mesto dnes večer pôsobí inak — akoby na prahu dobrodružstva. A čo tu robí toto?',
-        act1Loot: '<span class="speaker">NAŠLA SI:</span>PÚTNIKOV KLOBÚK &#127913;<br><br><span class="speaker">PAT\'A CROFT:</span>Čerstvo stratený — vietor ho musel preniesť cez múr. Značka výrobcu hovorí... LUCKNOW? Jeho majiteľ je niekde v mojom meste. Dnes večer. Odložím si ho v bezpečí.',
-        act2Dialog1: '<span class="speaker">ROZPRÁVAČ:</span>V tú istú noc — kým istý pútnik oslavoval narodeniny priateľa niekde v Prahe — sa na starej vývesnej tabuli objavil tajomný zvitok...',
-        act2Dialog2: '<span class="speaker">PAT\'A CROFT:</span>Oznam? Tu? Túto tabuľu nikto nepoužil od čias starého kráľovstva...',
-        act2Loot: '<span class="speaker">ZVITOK HOVORÍ:</span>HĽADÁ SA — fúzatý dobrodruh zo zlatých kupol Lucknow. Veľkolepé príbehy. Láskavé oči. Naposledy videný na narodeninovej oslave v tomto meste. AK NÁJDETE: PÍŠTE.<br><br><span class="speaker">PAT\'A CROFT:</span>...Tak som napísala.',
-        act2Dialog3: '<span class="speaker">ROZPRÁVAČ:</span>Jeho výprava ho už volala domov, cez more. No list za listom — každý jeden deň, takmer CELÝ ROK — kým sa dvaja cudzinci nepoznali naspamäť.<br><br><span class="speaker">PAT\'A CROFT:</span>NOVÁ VÝPRAVA PRIJATÁ: dostať ho späť do Prahy.',
-        act3Dialog1: '<span class="speaker">ROZPRÁVAČ:</span>SEPTEMBER 2023. Cez more a pol kontinentu sa vrátil do Prahy — tentokrát nie kvôli narodeninám. Kvôli nej.'
-      },
-      groom: {
-        sprite: 'sprite-abhi',
-        act1Label: '~ PRAHA — CUDZINEC V ZLATOM MESTE ~',
-        act1Dialog1: '<span class="speaker">ABHI JONES:</span>Zo zlatých kupol Lucknow, cez dublinské sály... a dnes večer Praha — kvôli narodeninovej výprave priateľa. Tieto hrady sú nádherné. Skoro až rozptyľujúco.',
-        act1Dialog2: '<span class="speaker">ABHI JONES:</span>Dopekla — ten vietor! Môj šťastný klobúk, preč cez hradný múr... Počkať. Čerstvé stopy fakle na týchto starých múroch. Niekto pozná toto mesto tak, ako ja poznám svoje chrámy... a nechal tu TOTO.',
-        act1Loot: '<span class="speaker">NAŠIEL SI:</span>BÁDATEĽOVU FAKĽU &#128294;<br><br><span class="speaker">ABHI JONES:</span>Ešte teplá. Kto takto rozžiari toto mesto... prešiel by som kvôli nej celé kontinenty.',
-        act2Dialog1: '<span class="speaker">ROZPRÁVAČ:</span>V tú istú noc — medzi prípitkami na oslave — sa mu do kapsy tajomne dostal zvitok...',
-        act2Dialog2: '<span class="speaker">ABHI JONES:</span>Zvláštne. Toto tu pred hodinou nebolo...',
-        act2Loot: '<span class="speaker">ZVITOK HOVORÍ:</span>HĽADÁ SA — nebojácna zlatovlasá bádateľka, ktorá pozná každý hrad tohto mesta. Úsmev ako ukrytý poklad. AK NÁJDETE: PÍŠTE.<br><br><span class="speaker">ABHI JONES:</span>...Tak som napísal.',
-        act2Dialog3: '<span class="speaker">ROZPRÁVAČ:</span>Domov ho volal cez more. No list za listom — každý jeden deň, takmer CELÝ ROK — kým sa dvaja cudzinci nepoznali naspamäť.<br><br><span class="speaker">ABHI JONES:</span>NOVÁ VÝPRAVA PRIJATÁ: preplaviť sa cez more. Vrátiť sa do Prahy. Stretnúť ju. Naozaj.',
-        act3Dialog1: '<span class="speaker">ROZPRÁVAČ:</span>SEPTEMBER 2023. Cez more a pol kontinentu sa vrátil do Prahy — tentokrát nie kvôli narodeninám. Kvôli nej.'
-      }
-    },
-    cz: {
-      bride: {
-        sprite: 'sprite-paty',
-        act1Label: '~ PRAHA — ZLATÉ MĚSTO ~',
-        act1Dialog1: '<span class="speaker">PAT\'A CROFT:</span>Narozená v Trnavě, zrozená v Praze. Znám každý hrad, každou zahradu, každé tajné schodiště tohoto zlatého města... poslední dobou mi ale i ty nejkrásnější výhledy připadají, jako by jim někdo chyběl.',
-        act1Dialog2: '<span class="speaker">PAT\'A CROFT:</span>Zvláštní. Město dnes večer působí jinak — jako by stálo na prahu dobrodružství. A co tu dělá tohle?',
-        act1Loot: '<span class="speaker">NAŠLA JSI:</span>CESTOVATELŮV KLOBOUK &#127913;<br><br><span class="speaker">PAT\'A CROFT:</span>Čerstvě ztracený — vítr ho musel přenést přes zeď. Značka výrobce říká... LUCKNOW? Jeho majitel je někde v mém městě. Dnes večer. Schovám si ho v bezpečí.',
-        act2Dialog1: '<span class="speaker">VYPRAVĚČ:</span>Té samé noci — zatímco jistý cestovatel slavil něčí narozeniny někde v Praze — se na staré vývěsce objevil tajemný svitek...',
-        act2Dialog2: '<span class="speaker">PAT\'A CROFT:</span>Oznámení? Tady? Tuhle nástěnku nikdo nepoužil od starého království...',
-        act2Loot: '<span class="speaker">SVITEK PRAVÍ:</span>HLEDÁ SE — knírkatý dobrodruh ze zlatých kupolí Lucknow. Velkolepé příběhy. Laskavé oči. Naposledy viděn na narozeninové oslavě v tomto městě. POKUD NAJDETE: PIŠTE.<br><br><span class="speaker">PAT\'A CROFT:</span>...Tak jsem napsala.',
-        act2Dialog3: '<span class="speaker">VYPRAVĚČ:</span>Jeho výprava ho už volala domů, přes moře. Ale dopis za dopisem — každý jeden den, téměř CELÝ ROK — dokud se dva cizinci neznali nazpaměť.<br><br><span class="speaker">PAT\'A CROFT:</span>NOVÝ ÚKOL PŘIJAT: dostat ho zpátky do Prahy.',
-        act3Dialog1: '<span class="speaker">VYPRAVĚČ:</span>ZÁŘÍ 2023. Přes moře a půl kontinentu se vrátil do Prahy — tentokrát ne kvůli narozeninám. Kvůli ní.'
-      },
-      groom: {
-        sprite: 'sprite-abhi',
-        act1Label: '~ PRAHA — CIZINEC VE ZLATÉM MĚSTĚ ~',
-        act1Dialog1: '<span class="speaker">ABHI JONES:</span>Ze zlatých kupolí Lucknow, přes dublinské sály... a dnes večer Praha — kvůli narozeninové výpravě přítele. Tyhle hrady jsou nádherné. Skoro až rozptylující.',
-        act1Dialog2: '<span class="speaker">ABHI JONES:</span>Sakra — ten vítr! Můj šťastný klobouk, pryč přes hradní zeď... Počkat. Čerstvé stopy pochodně na těchto starých zdech. Někdo zná tohle město tak, jak já znám své chrámy... a nechal tu TOHLE.',
-        act1Loot: '<span class="speaker">NAŠEL JSI:</span>BADATELOVU POCHODEŇ &#128294;<br><br><span class="speaker">ABHI JONES:</span>Ještě teplá. Kdo takhle rozzáří tohle město... přešel bych kvůli ní celé kontinenty.',
-        act2Dialog1: '<span class="speaker">VYPRAVĚČ:</span>Té samé noci — mezi přípitky na oslavě — se mu do brašny tajemně dostal svitek...',
-        act2Dialog2: '<span class="speaker">ABHI JONES:</span>Zvláštní. Tohle tu před hodinou nebylo...',
-        act2Loot: '<span class="speaker">SVITEK PRAVÍ:</span>HLEDÁ SE — nebojácná zlatovlasá badatelka, která zná každý hrad tohoto města. Úsměv jako skrytý poklad. POKUD NAJDETE: PIŠTE.<br><br><span class="speaker">ABHI JONES:</span>...Tak jsem napsal.',
-        act2Dialog3: '<span class="speaker">VYPRAVĚČ:</span>Domov ho volal přes moře. Ale dopis za dopisem — každý jeden den, téměř CELÝ ROK — dokud se dva cizinci neznali nazpaměť.<br><br><span class="speaker">ABHI JONES:</span>NOVÝ ÚKOL PŘIJAT: přeplout moře. Vrátit se do Prahy. Potkat ji. Doopravdy.',
-        act3Dialog1: '<span class="speaker">VYPRAVĚČ:</span>ZÁŘÍ 2023. Přes moře a půl kontinentu se vrátil do Prahy — tentokrát ne kvůli narozeninám. Kvůli ní.'
-      }
-    }
-  };
-
-  var MEET_DIALOG = {
-    en: '<span class="speaker">PAT\'A CROFT:</span>365 days of letters... and you\'re really here.<br><br><span class="speaker">ABHI JONES:</span>Best match of my life.<br><br><span class="speaker">PAT\'A CROFT:</span>Oh — and I believe this is yours. &#127913; Kept it safe for a year.<br><br><span class="speaker">ABHI JONES:</span>...You had my fedora ALL ALONG?',
-    sk: '<span class="speaker">PAT\'A CROFT:</span>365 dní listov... a ty si tu naozaj.<br><br><span class="speaker">ABHI JONES:</span>Najlepšia zhoda môjho života.<br><br><span class="speaker">PAT\'A CROFT:</span>Ach — a verím, že toto je tvoje. &#127913; Celý rok som ho opatrovala.<br><br><span class="speaker">ABHI JONES:</span>...Ty si celý ten čas mala môj klobúk?',
-    cz: '<span class="speaker">PAT\'A CROFT:</span>365 dní dopisů... a ty jsi tady doopravdy.<br><br><span class="speaker">ABHI JONES:</span>Nejlepší shoda mého života.<br><br><span class="speaker">PAT\'A CROFT:</span>Ach — a věřím, že tohle je tvoje. &#127913; Celý rok jsem ho opatrovala.<br><br><span class="speaker">ABHI JONES:</span>...Ty jsi celou tu dobu měla můj klobouk?'
-  };
-
-  // ============ UI STRINGS (static labels, headings, form fields) ============
-  var UI = {
-    en: {
-      landingTitle: 'THE QUEST FOR<br>THE OTHER HALF',
-      landingSub: "Two explorers. One match.<br>A true story. (Mostly.)<br><br>Patricia &amp; Abhiroop",
-      brideCardTitle: "BRIDE'S SIDE", brideCardDesc: "Play as PAT'A CROFT<br>Explorer of the Golden City",
-      groomCardTitle: "GROOM'S SIDE", groomCardDesc: "Play as ABHI JONES<br>Seeker of grand adventures",
-      pressHint: '&#9654; CHOOSE YOUR SIDE TO BEGIN &#9664;',
-      skipLinkLanding: 'Just here for the wedding details? Skip the adventure &rarr;',
-      skipCorner: '&#9654; SKIP TO WEDDING INFO',
-      tapTag: '[ TAP TO OPEN ]', tapTagBride: '[ TAP TO PICK UP ]',
-      act2Label: '~ THAT NIGHT ~', tapTagScroll: '[ TAP TO UNROLL THE SCROLL ]',
-      act3Label: '~ PRAGUE &middot; SEPTEMBER 2023 ~', tapTagMeet: '[ TAP TO FINALLY SAY HELLO ]',
-      montageTitle: '~ THE FIRST DATE: SHE SHOWED HIM HER CITY ~',
-      montageCastle: 'PRAGUE CASTLE', montageGardens: 'ROYAL GARDENS', montageTower: 'PET&Rcaron;&Iacute;N TOWER',
-      tapTagContinue: '[ &#9660; CONTINUE THE STORY &#9660; ]',
-      txFarewell: 'AND FROM THAT MOMENT ON...', txEyebrow: 'September 2023 &mdash; Present',
-      txHeading: 'Everything came into focus.',
-      txSub: 'The pixels of two separate lives quietly arranged themselves into one picture &mdash; and the real story began.',
-      expedEyebrow: 'And the trips never stopped', expedHeading: 'The Expeditions',
-      stampMalta: 'Malta', stampPoland: 'Poland', stampSlovakia: 'Slovakia', stampMallorca: 'Mallorca',
-      stampIndia: 'India', stampAdriatic: 'Adriatic Sea', stampSailing: '&#9973; sailing',
-      stampPortugal: 'Portugal', stampSpain: 'Spain', stampBelgium: 'Belgium', stampLondon: 'London',
-      expedNote: 'Ten countries, two passports, one shared map — every trip another chapter.',
-      propEyebrow: 'Santorini &middot; Skaros Rock', propHeading: 'The Sunset That Changed Everything',
-      propLine1: 'As the sun sank into the Aegean, one explorer got down on one knee — and the greatest treasure hunt of all came to an end.',
-      propScript: 'She said yes', propDate: '29 March 2026',
-      propLine2: 'New York celebrated with us that spring. And now... the final adventure is being planned.',
-      galEyebrow: 'The treasure was the memories', galHeading: 'Our Gallery', gTogether: 'Together',
-      galNote: 'Real photos coming here — from every place this quest has taken us',
-      detEyebrow: 'The final level', detHeading: 'The Wedding',
-      ceremonyTitle: 'Ceremony', ceremonyDesc: 'Venue scouting expedition<br>currently underway', ceremonyTime: 'Date &amp; place to be revealed',
-      receptionTitle: 'Celebration', receptionDesc: 'One legendary party<br>details coming soon', receptionTime: 'Watch this space',
-      detQuestLine: 'SIDE QUEST IN PROGRESS: THE GREAT VENUE HUNT',
-      rsvpEyebrow: 'Formal invitations to follow &mdash; but you can pledge your attendance now', rsvpHeading: 'Accept the Quest',
-      lblName: "Adventurer's Full Name", lblEmail: 'Email Address', lblAttending: 'Join the party?',
-      optAccept: "Quest accepted — I'll be there", optDecline: 'Regretfully declines',
-      lblGuests: 'Party Size', lblMeal: 'Choose Your Rations',
-      optMeal1: 'Awadhi Vegetarian Thali (Lucknow)', optMeal2: 'Slovak Roast &amp; Dumplings',
-      optMeal3: 'Seared Salmon', optMeal4: 'Vegan',
-      lblMessage: 'Message for the Couple', rsvpBtnText: '&#9654; ACCEPT QUEST',
-      rsvpSuccess: "Quest accepted! Thank you — we can't wait to celebrate with you.",
-      rsvpNote: 'Questions? Reach out at hello@patriciaandabhiroop.com',
-      footLine1: 'Lucknow to Dublin. Trnava to Prague. And now, one shared map.',
-      footLine2: 'Wedding details coming soon &mdash; the quest continues',
-      footCredit: 'PLAYER 1 &amp; PLAYER 2 &middot; CO-OP MODE: FOREVER<br>&#9829; THANKS FOR PLAYING &#9829;',
-      langCorner: '&#127760; EN &middot; CHANGE',
-      achFoundFedora: 'ITEM FOUND: FEDORA', achFoundTorch: 'ITEM FOUND: EXPLORER\'S TORCH',
-      achLostFedora: 'ITEM LOST: FEDORA!', achScrollFound: 'SOUGHT POSTER FOUND',
-      achQuestComplete: 'QUEST COMPLETE: THEY MET AT LAST', achRsvpDone: 'ACHIEVEMENT UNLOCKED: QUEST ACCEPTED'
-    },
-    sk: {
-      landingTitle: 'VÝPRAVA ZA<br>DRUHOU POLOVIČKOU',
-      landingSub: "Dvaja bádatelia. Jedna zhoda.<br>Skutočný príbeh. (Väčšinou.)<br><br>Patricia &amp; Abhiroop",
-      brideCardTitle: 'STRANA NEVESTY', brideCardDesc: "Hraj za PAT'U CROFT<br>Bádateľku zlatého mesta",
-      groomCardTitle: 'STRANA ŽENÍCHA', groomCardDesc: 'Hraj za ABHIHO JONESA<br>Hľadača veľkých dobrodružstiev',
-      pressHint: '&#9654; VYBER SI STRANU A ZAČNI &#9664;',
-      skipLinkLanding: 'Prišiel si len po info o svadbe? Preskočiť dobrodružstvo &rarr;',
-      skipCorner: '&#9654; PRESKOČIŤ NA INFO O SVADBE',
-      tapTag: '[ KLEPNI PRE OTVORENIE ]', tapTagBride: '[ KLEPNI A ZDVIHNI ]',
-      act2Label: '~ TEJ NOCI ~', tapTagScroll: '[ KLEPNI A ROZVIŇ ZVITOK ]',
-      act3Label: '~ PRAHA &middot; SEPTEMBER 2023 ~', tapTagMeet: '[ KLEPNI A KONEČNE POZDRAV ]',
-      montageTitle: '~ PRVÉ RANDE: UKÁZALA MU SVOJE MESTO ~',
-      montageCastle: 'PRAŽSKÝ HRAD', montageGardens: 'KRÁĽOVSKÉ ZÁHRADY', montageTower: 'PETŘÍNSKA VEŽA',
-      tapTagContinue: '[ &#9660; POKRAČOVAŤ V PRÍBEHU &#9660; ]',
-      txFarewell: 'A OD TEJ CHVÍLE...', txEyebrow: 'September 2023 &mdash; Súčasnosť',
-      txHeading: 'Všetko sa vyjasnilo.',
-      txSub: 'Pixely dvoch samostatných životov sa potichu poskladali do jedného obrazu &mdash; a začal sa skutočný príbeh.',
-      expedEyebrow: 'A výpravy nikdy neprestali', expedHeading: 'Výpravy',
-      stampMalta: 'Malta', stampPoland: 'Poľsko', stampSlovakia: 'Slovensko', stampMallorca: 'Mallorca',
-      stampIndia: 'India', stampAdriatic: 'Jadranské more', stampSailing: '&#9973; plavba',
-      stampPortugal: 'Portugalsko', stampSpain: 'Španielsko', stampBelgium: 'Belgicko', stampLondon: 'Londýn',
-      expedNote: 'Desať krajín, dva pasy, jedna spoločná mapa — každý výlet ďalšia kapitola.',
-      propEyebrow: 'Santorini &middot; Skaros Rock', propHeading: 'Západ slnka, ktorý zmenil všetko',
-      propLine1: 'Keď slnko zapadalo do Egejského mora, jeden bádateľ si kľakol na jedno koleno — a najväčšie hľadanie pokladu sa skončilo.',
-      propScript: 'Povedala áno', propDate: '29. marca 2026',
-      propLine2: 'New York s nami oslavoval tú jar. A teraz... plánuje sa posledné dobrodružstvo.',
-      galEyebrow: 'Pokladom boli spomienky', galHeading: 'Naša galéria', gTogether: 'Spolu',
-      galNote: 'Sem čoskoro pribudnú skutočné fotky — z každého miesta, kam nás táto výprava zaviedla',
-      detEyebrow: 'Posledná úroveň', detHeading: 'Svadba',
-      ceremonyTitle: 'Obrad', ceremonyDesc: 'Prieskum miesta konania<br>práve prebieha', ceremonyTime: 'Dátum a miesto budú čoskoro odhalené',
-      receptionTitle: 'Oslava', receptionDesc: 'Jedna legendárna párty<br>detaily čoskoro', receptionTime: 'Sledujte tento priestor',
-      detQuestLine: 'VEDĽAJŠIA VÝPRAVA PREBIEHA: VEĽKÉ HĽADANIE MIESTA',
-      rsvpEyebrow: 'Oficiálne pozvánky prídu neskôr &mdash; svoju účasť ale môžeš prisľúbiť už teraz', rsvpHeading: 'Prijmi výzvu',
-      lblName: 'Celé meno dobrodruha', lblEmail: 'E-mailová adresa', lblAttending: 'Pridáš sa k výprave?',
-      optAccept: 'Výzva prijatá — budem tam', optDecline: 'S ľútosťou odmieta',
-      lblGuests: 'Počet osôb', lblMeal: 'Vyber si zásoby',
-      optMeal1: 'Avadhské vegetariánske thali (Lucknow)', optMeal2: 'Slovenská pečienka a knedle',
-      optMeal3: 'Grilovaný losos', optMeal4: 'Vegánske',
-      lblMessage: 'Odkaz pre novomanželov', rsvpBtnText: '&#9654; PRIJAŤ VÝZVU',
-      rsvpSuccess: 'Výzva prijatá! Ďakujeme — nevieme sa dočkať, až to s vami oslávime.',
-      rsvpNote: 'Otázky? Napíšte na hello@patriciaandabhiroop.com',
-      footLine1: 'Z Lucknow do Dublinu. Z Trnavy do Prahy. A teraz jedna spoločná mapa.',
-      footLine2: 'Detaily svadby čoskoro &mdash; výprava pokračuje',
-      footCredit: 'HRÁČ 1 &amp; HRÁČ 2 &middot; SPOLOČNÝ REŽIM: NAVŽDY<br>&#9829; VĎAKA ZA HRANIE &#9829;',
-      langCorner: '&#127760; SK &middot; ZMENIŤ',
-      achFoundFedora: 'PREDMET NÁJDENÝ: KLOBÚK', achFoundTorch: 'PREDMET NÁJDENÝ: FAKĽA',
-      achLostFedora: 'PREDMET STRATENÝ: KLOBÚK!', achScrollFound: 'PLAGÁT NÁJDENÝ',
-      achQuestComplete: 'VÝPRAVA SPLNENÁ: KONEČNE SA STRETLI', achRsvpDone: 'ÚSPECH ODOMKNUTÝ: VÝZVA PRIJATÁ'
-    },
-    cz: {
-      landingTitle: 'VÝPRAVA ZA<br>DRUHOU POLOVIČKOU',
-      landingSub: "Dva badatelé. Jedna shoda.<br>Skutečný příběh. (Většinou.)<br><br>Patricia &amp; Abhiroop",
-      brideCardTitle: 'STRANA NEVĚSTY', brideCardDesc: "Hraj za PAT'U CROFT<br>Badatelku zlatého města",
-      groomCardTitle: 'STRANA ŽENICHA', groomCardDesc: 'Hraj za ABHIM JONESEM<br>Hledače velkých dobrodružství',
-      pressHint: '&#9654; VYBER SI STRANU A ZAČNI &#9664;',
-      skipLinkLanding: 'Přišel jsi jen kvůli info o svatbě? Přeskočit dobrodružství &rarr;',
-      skipCorner: '&#9654; PŘESKOČIT NA INFO O SVATBĚ',
-      tapTag: '[ KLEPNI PRO OTEVŘENÍ ]', tapTagBride: '[ KLEPNI A ZVEDNI ]',
-      act2Label: '~ TÉ NOCI ~', tapTagScroll: '[ KLEPNI A ROZVIŇ SVITEK ]',
-      act3Label: '~ PRAHA &middot; ZÁŘÍ 2023 ~', tapTagMeet: '[ KLEPNI A KONEČNĚ POZDRAV ]',
-      montageTitle: '~ PRVNÍ RANDE: UKÁZALA MU SVÉ MĚSTO ~',
-      montageCastle: 'PRAŽSKÝ HRAD', montageGardens: 'KRÁLOVSKÉ ZAHRADY', montageTower: 'PETŘÍNSKA VĚŽ',
-      tapTagContinue: '[ &#9660; POKRAČOVAT V PŘÍBĚHU &#9660; ]',
-      txFarewell: 'A OD TÉ CHVÍLE...', txEyebrow: 'Září 2023 &mdash; Současnost',
-      txHeading: 'Všechno se vyjasnilo.',
-      txSub: 'Pixely dvou samostatných životů se potichu poskládaly do jednoho obrazu &mdash; a začal skutečný příběh.',
-      expedEyebrow: 'A výpravy nikdy nepřestaly', expedHeading: 'Výpravy',
-      stampMalta: 'Malta', stampPoland: 'Polsko', stampSlovakia: 'Slovensko', stampMallorca: 'Mallorca',
-      stampIndia: 'Indie', stampAdriatic: 'Jaderské moře', stampSailing: '&#9973; plavba',
-      stampPortugal: 'Portugalsko', stampSpain: 'Španělsko', stampBelgium: 'Belgie', stampLondon: 'Londýn',
-      expedNote: 'Deset zemí, dva pasy, jedna společná mapa — každý výlet další kapitola.',
-      propEyebrow: 'Santorini &middot; Skaros Rock', propHeading: 'Západ slunce, který změnil všechno',
-      propLine1: 'Když slunce zapadalo do Egejského moře, jeden badatel poklekl na jedno koleno — a největší hledání pokladu skončilo.',
-      propScript: 'Řekla ano', propDate: '29. března 2026',
-      propLine2: 'New York s námi oslavil to jaro. A teď... se plánuje poslední dobrodružství.',
-      galEyebrow: 'Pokladem byly vzpomínky', galHeading: 'Naše galerie', gTogether: 'Společně',
-      galNote: 'Sem brzy přibudou skutečné fotky — z každého místa, kam nás tahle výprava zavedla',
-      detEyebrow: 'Poslední úroveň', detHeading: 'Svatba',
-      ceremonyTitle: 'Obřad', ceremonyDesc: 'Průzkum místa konání<br>právě probíhá', ceremonyTime: 'Datum a místo budou brzy odhaleny',
-      receptionTitle: 'Oslava', receptionDesc: 'Jedna legendární párty<br>detaily brzy', receptionTime: 'Sledujte tento prostor',
-      detQuestLine: 'VEDLEJŠÍ ÚKOL PROBÍHÁ: VELKÉ HLEDÁNÍ MÍSTA',
-      rsvpEyebrow: 'Oficiální pozvánky přijdou později &mdash; svou účast ale můžeš přislíbit už teď', rsvpHeading: 'Přijmi výzvu',
-      lblName: 'Celé jméno dobrodruha', lblEmail: 'E-mailová adresa', lblAttending: 'Přidáš se k výpravě?',
-      optAccept: 'Výzva přijata — budu tam', optDecline: 'S lítostí odmítá',
-      lblGuests: 'Počet osob', lblMeal: 'Vyber si zásoby',
-      optMeal1: 'Avadhské vegetariánské thali (Lucknow)', optMeal2: 'Slovenská pečeně a knedlíky',
-      optMeal3: 'Grilovaný losos', optMeal4: 'Veganské',
-      lblMessage: 'Vzkaz pro novomanžele', rsvpBtnText: '&#9654; PŘIJMOUT VÝZVU',
-      rsvpSuccess: 'Výzva přijata! Děkujeme — nemůžeme se dočkat, až to s vámi oslavíme.',
-      rsvpNote: 'Dotazy? Napište na hello@patriciaandabhiroop.com',
-      footLine1: 'Z Lucknow do Dublinu. Z Trnavy do Prahy. A teď jedna společná mapa.',
-      footLine2: 'Detaily svatby brzy &mdash; výprava pokračuje',
-      footCredit: 'HRÁČ 1 &amp; HRÁČ 2 &middot; SPOLEČNÝ REŽIM: NAVŽDY<br>&#9829; DÍKY ZA HRANÍ &#9829;',
-      langCorner: '&#127760; CZ &middot; ZMĚNIT',
-      achFoundFedora: 'PŘEDMĚT NALEZEN: KLOBOUK', achFoundTorch: 'PŘEDMĚT NALEZEN: POCHODEŇ',
-      achLostFedora: 'PŘEDMĚT ZTRACEN: KLOBOUK!', achScrollFound: 'PLAKÁT NALEZEN',
-      achQuestComplete: 'ÚKOL SPLNĚN: KONEČNĚ SE SETKALI', achRsvpDone: 'ÚSPĚCH ODEMČEN: VÝZVA PŘIJATA'
-    }
-  };
+  // ============ TRILINGUAL CONTENT (loaded from locale/en.js, locale/sk.js, locale/cz.js) ============
+  var STORY = { en: LOCALE_EN.story, sk: LOCALE_SK.story, cz: LOCALE_CZ.story };
+  var MEET_DIALOG = { en: LOCALE_EN.meetDialog, sk: LOCALE_SK.meetDialog, cz: LOCALE_CZ.meetDialog };
+  var UI = { en: LOCALE_EN.ui, sk: LOCALE_SK.ui, cz: LOCALE_CZ.ui };
 
   var currentLang = localStorage.getItem('questLang') || 'en';
 

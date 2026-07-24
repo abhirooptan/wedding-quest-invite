@@ -1,0 +1,83 @@
+// ============ SLOVAK LOCALIZATION / SLOVENSKÁ LOKALIZÁCIA ============
+// Edit dialogue/copy here. Structure must match en.js / cz.js exactly:
+//   ui         -> static labels, headings, form fields
+//   story      -> per-side (bride/groom) character dialogue for Act 1 & Act 2
+//   meetDialog -> the Act 3 reunion dialogue (shared by both sides)
+window.LOCALE_SK = {
+  ui: {
+    landingTitle: 'VÝPRAVA ZA<br>DRUHOU POLOVIČKOU',
+    landingSub: "Dvaja bádatelia. Jedna zhoda.<br>Skutočný príbeh. (Väčšinou.)<br><br>Patricia &amp; Abhiroop",
+    brideCardTitle: 'STRANA NEVESTY', brideCardDesc: "Hraj za PAT'U CROFT<br>Bádateľku zlatého mesta",
+    groomCardTitle: 'STRANA ŽENÍCHA', groomCardDesc: 'Hraj za ABHIHO JONESA<br>Hľadača veľkých dobrodružstiev',
+    pressHint: '&#9654; VYBER SI STRANU A ZAČNI &#9664;',
+    skipLinkLanding: 'Prišiel si len po info o svadbe? Preskočiť dobrodružstvo &rarr;',
+    skipCorner: '&#9654; PRESKOČIŤ NA INFO O SVADBE',
+    tapTag: '[ KLEPNI PRE OTVORENIE ]', tapTagBride: '[ KLEPNI A ZDVIHNI ]',
+    act2Label: '~ TEJ NOCI ~', tapTagScroll: '[ KLEPNI A ROZVIŇ ZVITOK ]',
+    act3Label: '~ PRAHA &middot; SEPTEMBER 2023 ~', tapTagMeet: '[ KLEPNI A KONEČNE POZDRAV ]',
+    montageTitle: '~ PRVÉ RANDE: UKÁZALA MU SVOJE MESTO ~',
+    montageCastle: 'PRAŽSKÝ HRAD', montageGardens: 'KRÁĽOVSKÉ ZÁHRADY', montageTower: 'PETŘÍNSKA VEŽA',
+    tapTagContinue: '[ &#9660; POKRAČOVAŤ V PRÍBEHU &#9660; ]',
+    txFarewell: 'A OD TEJ CHVÍLE...', txEyebrow: 'September 2023 &mdash; Súčasnosť',
+    txHeading: 'Všetko sa vyjasnilo.',
+    txSub: 'Pixely dvoch samostatných životov sa potichu poskladali do jedného obrazu &mdash; a začal sa skutočný príbeh.',
+    expedEyebrow: 'A výpravy nikdy neprestali', expedHeading: 'Výpravy',
+    stampMalta: 'Malta', stampPoland: 'Poľsko', stampSlovakia: 'Slovensko', stampMallorca: 'Mallorca',
+    stampIndia: 'India', stampAdriatic: 'Jadranské more', stampSailing: '&#9973; plavba',
+    stampPortugal: 'Portugalsko', stampSpain: 'Španielsko', stampBelgium: 'Belgicko', stampLondon: 'Londýn',
+    expedNote: 'Desať krajín, dva pasy, jedna spoločná mapa — každý výlet ďalšia kapitola.',
+    propEyebrow: 'Santorini &middot; Skaros Rock', propHeading: 'Západ slnka, ktorý zmenil všetko',
+    propLine1: 'Keď slnko zapadalo do Egejského mora, jeden bádateľ si kľakol na jedno koleno — a najväčšie hľadanie pokladu sa skončilo.',
+    propScript: 'Povedala áno', propDate: '29. marca 2026',
+    propLine2: 'New York s nami oslavoval tú jar. A teraz... plánuje sa posledné dobrodružstvo.',
+    galEyebrow: 'Pokladom boli spomienky', galHeading: 'Naša galéria', gTogether: 'Spolu',
+    galNote: 'Sem čoskoro pribudnú skutočné fotky — z každého miesta, kam nás táto výprava zaviedla',
+    detEyebrow: 'Posledná úroveň', detHeading: 'Svadba',
+    ceremonyTitle: 'Obrad', ceremonyDesc: 'Prieskum miesta konania<br>práve prebieha', ceremonyTime: 'Dátum a miesto budú čoskoro odhalené',
+    receptionTitle: 'Oslava', receptionDesc: 'Jedna legendárna párty<br>detaily čoskoro', receptionTime: 'Sledujte tento priestor',
+    detQuestLine: 'VEDĽAJŠIA VÝPRAVA PREBIEHA: VEĽKÉ HĽADANIE MIESTA',
+    rsvpEyebrow: 'Oficiálne pozvánky prídu neskôr &mdash; svoju účasť ale môžeš prisľúbiť už teraz', rsvpHeading: 'Prijmi výzvu',
+    lblName: 'Celé meno dobrodruha', lblEmail: 'E-mailová adresa', lblAttending: 'Pridáš sa k výprave?',
+    optAccept: 'Výzva prijatá — budem tam', optDecline: 'S ľútosťou odmieta',
+    lblGuests: 'Počet osôb', lblMeal: 'Vyber si zásoby',
+    optMeal1: 'Avadhské vegetariánske thali (Lucknow)', optMeal2: 'Slovenská pečienka a knedle',
+    optMeal3: 'Grilovaný losos', optMeal4: 'Vegánske',
+    lblMessage: 'Odkaz pre novomanželov', rsvpBtnText: '&#9654; PRIJAŤ VÝZVU',
+    rsvpSuccess: 'Výzva prijatá! Ďakujeme — nevieme sa dočkať, až to s vami oslávime.',
+    rsvpNote: 'Otázky? Napíšte na hello@patriciaandabhiroop.com',
+    footLine1: 'Z Lucknow do Dublinu. Z Trnavy do Prahy. A teraz jedna spoločná mapa.',
+    footLine2: 'Detaily svadby čoskoro &mdash; výprava pokračuje',
+    footCredit: 'HRÁČ 1 &amp; HRÁČ 2 &middot; SPOLOČNÝ REŽIM: NAVŽDY<br>&#9829; VĎAKA ZA HRANIE &#9829;',
+    langCorner: '&#127760; SK &middot; ZMENIŤ',
+    achFoundFedora: 'PREDMET NÁJDENÝ: KLOBÚK', achFoundTorch: 'PREDMET NÁJDENÝ: FAKĽA',
+    achLostFedora: 'PREDMET STRATENÝ: KLOBÚK!', achScrollFound: 'PLAGÁT NÁJDENÝ',
+    achQuestComplete: 'VÝPRAVA SPLNENÁ: KONEČNE SA STRETLI', achRsvpDone: 'ÚSPECH ODOMKNUTÝ: VÝZVA PRIJATÁ'
+  },
+  story: {
+    bride: {
+      sprite: 'sprite-paty',
+      act1Label: '~ PRAHA — ZLATÉ MESTO ~',
+      act1Dialog1: '<span class="speaker">PAT\'A CROFT:</span>Narodená v Trnave, stvorená v Prahe. Poznám každý hrad, každú záhradu, každé tajné schodisko tohto zlatého mesta... no v poslednom čase mi aj tie najkrajšie výhľady pripadajú, akoby im niekto chýbal.',
+      act1Dialog2: '<span class="speaker">PAT\'A CROFT:</span>Zvláštne. Mesto dnes večer pôsobí inak — akoby na prahu dobrodružstva. A čo tu robí toto?',
+      act1Loot: '<span class="speaker">NAŠLA SI:</span>PÚTNIKOV KLOBÚK &#127913;<br><br><span class="speaker">PAT\'A CROFT:</span>Čerstvo stratený — vietor ho musel preniesť cez múr. Značka výrobcu hovorí... LUCKNOW? Jeho majiteľ je niekde v mojom meste. Dnes večer. Odložím si ho v bezpečí.',
+      act2Dialog1: '<span class="speaker">ROZPRÁVAČ:</span>V tú istú noc — kým istý pútnik oslavoval narodeniny priateľa niekde v Prahe — sa na starej vývesnej tabuli objavil tajomný zvitok...',
+      act2Dialog2: '<span class="speaker">PAT\'A CROFT:</span>Oznam? Tu? Túto tabuľu nikto nepoužil od čias starého kráľovstva...',
+      act2Loot: '<span class="speaker">ZVITOK HOVORÍ:</span>HĽADÁ SA — fúzatý dobrodruh zo zlatých kupol Lucknow. Veľkolepé príbehy. Láskavé oči. Naposledy videný na narodeninovej oslave v tomto meste. AK NÁJDETE: PÍŠTE.<br><br><span class="speaker">PAT\'A CROFT:</span>...Tak som napísala.',
+      act2Dialog3: '<span class="speaker">ROZPRÁVAČ:</span>Jeho výprava ho už volala domov, cez more. No list za listom — každý jeden deň, takmer CELÝ ROK — kým sa dvaja cudzinci nepoznali naspamäť.<br><br><span class="speaker">PAT\'A CROFT:</span>NOVÁ VÝPRAVA PRIJATÁ: dostať ho späť do Prahy.',
+      act3Dialog1: '<span class="speaker">ROZPRÁVAČ:</span>SEPTEMBER 2023. Cez more a pol kontinentu sa vrátil do Prahy — tentokrát nie kvôli narodeninám. Kvôli nej.'
+    },
+    groom: {
+      sprite: 'sprite-abhi',
+      act1Label: '~ PRAHA — CUDZINEC V ZLATOM MESTE ~',
+      act1Dialog1: '<span class="speaker">ABHI JONES:</span>Zo zlatých kupol Lucknow, cez dublinské sály... a dnes večer Praha — kvôli narodeninovej výprave priateľa. Tieto hrady sú nádherné. Skoro až rozptyľujúco.',
+      act1Dialog2: '<span class="speaker">ABHI JONES:</span>Dopekla — ten vietor! Môj šťastný klobúk, preč cez hradný múr... Počkať. Čerstvé stopy fakle na týchto starých múroch. Niekto pozná toto mesto tak, ako ja poznám svoje chrámy... a nechal tu TOTO.',
+      act1Loot: '<span class="speaker">NAŠIEL SI:</span>BÁDATEĽOVU FAKĽU &#128294;<br><br><span class="speaker">ABHI JONES:</span>Ešte teplá. Kto takto rozžiari toto mesto... prešiel by som kvôli nej celé kontinenty.',
+      act2Dialog1: '<span class="speaker">ROZPRÁVAČ:</span>V tú istú noc — medzi prípitkami na oslave — sa mu do kapsy tajomne dostal zvitok...',
+      act2Dialog2: '<span class="speaker">ABHI JONES:</span>Zvláštne. Toto tu pred hodinou nebolo...',
+      act2Loot: '<span class="speaker">ZVITOK HOVORÍ:</span>HĽADÁ SA — nebojácna zlatovlasá bádateľka, ktorá pozná každý hrad tohto mesta. Úsmev ako ukrytý poklad. AK NÁJDETE: PÍŠTE.<br><br><span class="speaker">ABHI JONES:</span>...Tak som napísal.',
+      act2Dialog3: '<span class="speaker">ROZPRÁVAČ:</span>Domov ho volal cez more. No list za listom — každý jeden deň, takmer CELÝ ROK — kým sa dvaja cudzinci nepoznali naspamäť.<br><br><span class="speaker">ABHI JONES:</span>NOVÁ VÝPRAVA PRIJATÁ: preplaviť sa cez more. Vrátiť sa do Prahy. Stretnúť ju. Naozaj.',
+      act3Dialog1: '<span class="speaker">ROZPRÁVAČ:</span>SEPTEMBER 2023. Cez more a pol kontinentu sa vrátil do Prahy — tentokrát nie kvôli narodeninám. Kvôli nej.'
+    }
+  },
+  meetDialog: '<span class="speaker">PAT\'A CROFT:</span>365 dní listov... a ty si tu naozaj.<br><br><span class="speaker">ABHI JONES:</span>Najlepšia zhoda môjho života.<br><br><span class="speaker">PAT\'A CROFT:</span>Ach — a verím, že toto je tvoje. &#127913; Celý rok som ho opatrovala.<br><br><span class="speaker">ABHI JONES:</span>...Ty si celý ten čas mala môj klobúk?'
+};

@@ -1,0 +1,83 @@
+// ============ ENGLISH LOCALIZATION ============
+// Edit dialogue/copy here. Structure must match sk.js / cz.js exactly:
+//   ui         -> static labels, headings, form fields
+//   story      -> per-side (bride/groom) character dialogue for Act 1 & Act 2
+//   meetDialog -> the Act 3 reunion dialogue (shared by both sides)
+window.LOCALE_EN = {
+  ui: {
+    landingTitle: 'THE QUEST FOR<br>THE OTHER HALF',
+    landingSub: "Two explorers. One match.<br>A true story. (Mostly.)<br><br>Patricia &amp; Abhiroop",
+    brideCardTitle: "BRIDE'S SIDE", brideCardDesc: "Play as PAT'A CROFT<br>Explorer of the Golden City",
+    groomCardTitle: "GROOM'S SIDE", groomCardDesc: "Play as ABHI JONES<br>Seeker of grand adventures",
+    pressHint: '&#9654; CHOOSE YOUR SIDE TO BEGIN &#9664;',
+    skipLinkLanding: 'Just here for the wedding details? Skip the adventure &rarr;',
+    skipCorner: '&#9654; SKIP TO WEDDING INFO',
+    tapTag: '[ TAP TO OPEN ]', tapTagBride: '[ TAP TO PICK UP ]',
+    act2Label: '~ THAT NIGHT ~', tapTagScroll: '[ TAP TO UNROLL THE SCROLL ]',
+    act3Label: '~ PRAGUE &middot; SEPTEMBER 2023 ~', tapTagMeet: '[ TAP TO FINALLY SAY HELLO ]',
+    montageTitle: '~ THE FIRST DATE: SHE SHOWED HIM HER CITY ~',
+    montageCastle: 'PRAGUE CASTLE', montageGardens: 'ROYAL GARDENS', montageTower: 'PET&Rcaron;&Iacute;N TOWER',
+    tapTagContinue: '[ &#9660; CONTINUE THE STORY &#9660; ]',
+    txFarewell: 'AND FROM THAT MOMENT ON...', txEyebrow: 'September 2023 &mdash; Present',
+    txHeading: 'Everything came into focus.',
+    txSub: 'The pixels of two separate lives quietly arranged themselves into one picture &mdash; and the real story began.',
+    expedEyebrow: 'And the trips never stopped', expedHeading: 'The Expeditions',
+    stampMalta: 'Malta', stampPoland: 'Poland', stampSlovakia: 'Slovakia', stampMallorca: 'Mallorca',
+    stampIndia: 'India', stampAdriatic: 'Adriatic Sea', stampSailing: '&#9973; sailing',
+    stampPortugal: 'Portugal', stampSpain: 'Spain', stampBelgium: 'Belgium', stampLondon: 'London',
+    expedNote: 'Ten countries, two passports, one shared map — every trip another chapter.',
+    propEyebrow: 'Santorini &middot; Skaros Rock', propHeading: 'The Sunset That Changed Everything',
+    propLine1: 'As the sun sank into the Aegean, one explorer got down on one knee — and the greatest treasure hunt of all came to an end.',
+    propScript: 'She said yes', propDate: '29 March 2026',
+    propLine2: 'New York celebrated with us that spring. And now... the final adventure is being planned.',
+    galEyebrow: 'The treasure was the memories', galHeading: 'Our Gallery', gTogether: 'Together',
+    galNote: 'Real photos coming here — from every place this quest has taken us',
+    detEyebrow: 'The final level', detHeading: 'The Wedding',
+    ceremonyTitle: 'Ceremony', ceremonyDesc: 'Venue scouting expedition<br>currently underway', ceremonyTime: 'Date &amp; place to be revealed',
+    receptionTitle: 'Celebration', receptionDesc: 'One legendary party<br>details coming soon', receptionTime: 'Watch this space',
+    detQuestLine: 'SIDE QUEST IN PROGRESS: THE GREAT VENUE HUNT',
+    rsvpEyebrow: 'Formal invitations to follow &mdash; but you can pledge your attendance now', rsvpHeading: 'Accept the Quest',
+    lblName: "Adventurer's Full Name", lblEmail: 'Email Address', lblAttending: 'Join the party?',
+    optAccept: "Quest accepted — I'll be there", optDecline: 'Regretfully declines',
+    lblGuests: 'Party Size', lblMeal: 'Choose Your Rations',
+    optMeal1: 'Awadhi Vegetarian Thali (Lucknow)', optMeal2: 'Slovak Roast &amp; Dumplings',
+    optMeal3: 'Seared Salmon', optMeal4: 'Vegan',
+    lblMessage: 'Message for the Couple', rsvpBtnText: '&#9654; ACCEPT QUEST',
+    rsvpSuccess: "Quest accepted! Thank you — we can't wait to celebrate with you.",
+    rsvpNote: 'Questions? Reach out at hello@patriciaandabhiroop.com',
+    footLine1: 'Lucknow to Dublin. Trnava to Prague. And now, one shared map.',
+    footLine2: 'Wedding details coming soon &mdash; the quest continues',
+    footCredit: 'PLAYER 1 &amp; PLAYER 2 &middot; CO-OP MODE: FOREVER<br>&#9829; THANKS FOR PLAYING &#9829;',
+    langCorner: '&#127760; EN &middot; CHANGE',
+    achFoundFedora: 'ITEM FOUND: FEDORA', achFoundTorch: 'ITEM FOUND: EXPLORER\'S TORCH',
+    achLostFedora: 'ITEM LOST: FEDORA!', achScrollFound: 'SOUGHT POSTER FOUND',
+    achQuestComplete: 'QUEST COMPLETE: THEY MET AT LAST', achRsvpDone: 'ACHIEVEMENT UNLOCKED: QUEST ACCEPTED'
+  },
+  story: {
+    bride: {
+      sprite: 'sprite-paty',
+      act1Label: '~ PRAGUE — THE GOLDEN CITY ~',
+      act1Dialog1: '<span class="speaker">PAT\'A CROFT:</span>Born in Trnava, made in Prague. I know every castle, every garden, every secret stair of this golden city... but lately, even the best views feel like they\'re missing someone.',
+      act1Dialog2: '<span class="speaker">PAT\'A CROFT:</span>Strange. The city feels different tonight — like the eve of an adventure. And what\'s this doing here?',
+      act1Loot: '<span class="speaker">YOU FOUND:</span>A TRAVELER\'S FEDORA &#127913;<br><br><span class="speaker">PAT\'A CROFT:</span>Freshly lost — the wind must have carried it over the wall. The maker\'s mark says... LUCKNOW? Its owner is somewhere in my city. Tonight. I\'ll keep it safe.',
+      act2Dialog1: '<span class="speaker">NARRATOR:</span>That very night — while a certain traveler celebrated a friend\'s birthday somewhere in Prague — a mysterious scroll appeared on the old notice board...',
+      act2Dialog2: '<span class="speaker">PAT\'A CROFT:</span>A notice? Here? Nobody has used this board since the old kingdom...',
+      act2Loot: '<span class="speaker">THE SCROLL READS:</span>SOUGHT — a moustached adventurer from the golden domes of LUCKNOW. Grand stories. Kind eyes. Last seen at a birthday feast in this very city. IF FOUND: WRITE.<br><br><span class="speaker">PAT\'A CROFT:</span>...So I wrote.',
+      act2Dialog3: '<span class="speaker">NARRATOR:</span>His quest had already called him home across the sea. But letter followed letter — every single day, for nearly a YEAR — until two strangers knew each other by heart.<br><br><span class="speaker">PAT\'A CROFT:</span>NEW QUEST ACCEPTED: get him back to Prague.',
+      act3Dialog1: '<span class="speaker">NARRATOR:</span>SEPTEMBER 2023. Across the sea and half a continent, he returned to Prague — not for a birthday this time. For her.'
+    },
+    groom: {
+      sprite: 'sprite-abhi',
+      act1Label: '~ PRAGUE — A STRANGER IN A GOLDEN CITY ~',
+      act1Dialog1: '<span class="speaker">ABHI JONES:</span>From the golden domes of Lucknow, through the halls of Dublin... and tonight, Prague — for a friend\'s birthday quest. These castles are magnificent. Almost distractingly so.',
+      act1Dialog2: '<span class="speaker">ABHI JONES:</span>Blast — the wind! My lucky fedora, gone over the castle wall... Wait. Fresh torch marks on these old walls. Someone knows this city the way I know my temples... and left THIS behind.',
+      act1Loot: '<span class="speaker">YOU FOUND:</span>AN EXPLORER\'S TORCH &#128294;<br><br><span class="speaker">ABHI JONES:</span>Still warm. Whoever lights up this city like this... I\'d cross continents to meet them.',
+      act2Dialog1: '<span class="speaker">NARRATOR:</span>That very night — between birthday toasts — a mysterious scroll found its way into his satchel...',
+      act2Dialog2: '<span class="speaker">ABHI JONES:</span>Odd. This wasn\'t in my satchel an hour ago...',
+      act2Loot: '<span class="speaker">THE SCROLL READS:</span>SOUGHT — a fearless golden-haired explorer who knows every castle of this city. Smile like buried treasure. IF FOUND: WRITE.<br><br><span class="speaker">ABHI JONES:</span>...So I wrote.',
+      act2Dialog3: '<span class="speaker">NARRATOR:</span>Home called him back across the sea. But letter followed letter — every single day, for nearly a YEAR — until two strangers knew each other by heart.<br><br><span class="speaker">ABHI JONES:</span>NEW QUEST ACCEPTED: cross the seas. Return to Prague. Meet her. For real.',
+      act3Dialog1: '<span class="speaker">NARRATOR:</span>SEPTEMBER 2023. Across the sea and half a continent, he returned to Prague — not for a birthday this time. For her.'
+    }
+  },
+  meetDialog: '<span class="speaker">PAT\'A CROFT:</span>365 days of letters... and you\'re really here.<br><br><span class="speaker">ABHI JONES:</span>Best match of my life.<br><br><span class="speaker">PAT\'A CROFT:</span>Oh — and I believe this is yours. &#127913; Kept it safe for a year.<br><br><span class="speaker">ABHI JONES:</span>...You had my fedora ALL ALONG?'
+};
