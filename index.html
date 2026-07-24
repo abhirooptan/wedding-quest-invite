@@ -100,9 +100,9 @@
   }
   .dialog{
     position:relative; z-index:2; background:rgba(12,12,24,0.92); border:4px solid var(--px-text);
-    box-shadow:0 0 0 4px rgba(12,12,24,0.92); max-width:620px; width:100%;
-    padding:1.2rem 1.35rem; font-family:var(--pixel); font-size:clamp(0.66rem,2.6vw,0.92rem);
-    line-height:2.1; color:var(--px-text);
+    box-shadow:0 0 0 4px rgba(12,12,24,0.92); max-width:min(1100px,88vw); width:100%;
+    padding:1.5rem 1.8rem; font-family:var(--pixel); font-size:clamp(0.7rem,1.5vw + 0.5rem,1.18rem);
+    line-height:2.15; color:var(--px-text);
   }
   .dialog .speaker{color:var(--px-gold); display:block; margin-bottom:0.5rem;}
   .dialog.paty-voice .speaker{color:var(--px-accent);}
@@ -162,7 +162,7 @@
   .px-reveal.is-visible{opacity:1; transform:translateY(0);}
 
   /* walking sprite anchored in scene */
-  .sprite-stage{position:relative; z-index:2; height:170px; width:100%; max-width:520px; overflow:visible;}
+  .sprite-stage{position:relative; z-index:2; height:170px; width:100%; max-width:min(1100px,88vw); overflow:visible;}
   .sprite-walker{position:absolute; bottom:0; left:8%; width:100px; height:130px; transition:left 0.3s linear;}
   .sprite-walker img.walker-body{
     position:absolute; bottom:0; left:50%; transform:translateX(-50%); height:112px; width:auto; max-width:none;
@@ -219,7 +219,7 @@
   .tap-object.opened + .loot-reveal{display:block;}
 
   /* meeting scene */
-  .meet-stage{position:relative; z-index:2; height:170px; width:100%; max-width:560px;}
+  .meet-stage{position:relative; z-index:2; height:170px; width:100%; max-width:min(1100px,88vw);}
   .meet-stage .sprite-walker{transition:left 1.6s steps(12);}
   #spriteMeetPaty{left:2%;}
   #spriteMeetAbhi{left:78%;}
@@ -346,6 +346,14 @@
   .rsvp-btn:hover{background:var(--gold); color:var(--ink);}
   .rsvp-success{display:none; text-align:center; margin-top:1.4rem; font-style:italic; color:var(--olive-deep); font-size:1.05rem;}
   .rsvp-note{text-align:center; margin-top:1.6rem; font-size:0.9rem; opacity:0.6;}
+  .guests-section-heading{font-family:var(--label); font-size:0.66rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--olive); margin-bottom:0.2rem;}
+  #guestsContainer{display:flex; flex-direction:column; gap:1rem; margin-bottom:0.4rem;}
+  .guest-entry{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:1rem; align-items:end; padding-bottom:0.8rem; border-bottom:1px dashed rgba(44,47,34,0.2);}
+  @media (max-width:640px){.guest-entry{grid-template-columns:1fr;}}
+  .guest-remove{background:transparent; border:1px solid var(--olive-deep); color:var(--olive-deep); padding:0.6rem 0.9rem; border-radius:2px; cursor:pointer; font-family:var(--label); font-size:0.7rem; white-space:nowrap; height:fit-content;}
+  .guest-remove:hover{background:var(--olive-deep); color:var(--cream);}
+  .add-guest-btn{align-self:flex-start; background:transparent; border:1px dashed var(--gold); color:var(--olive-deep); padding:0.7rem 1.2rem; border-radius:2px; cursor:pointer; font-family:var(--label); font-size:0.8rem; letter-spacing:0.04em; margin-bottom:0.4rem;}
+  .add-guest-btn:hover{background:var(--gold-light);}
 
   /* footer */
   .footer{background:var(--olive-deepest); color:var(--cream); text-align:center; padding:5rem 1.5rem 3rem;}
@@ -622,7 +630,7 @@
     <div class="meet-stage" id="meetStage">
       <div class="meet-heart"><svg class="px" viewBox="0 0 40 36" width="100%" height="100%"><use href="#px-heart"/></svg></div>
       <div class="sprite-walker" id="spriteMeetPaty"><img class="walker-body" src="assets/paty/idle_1.png" alt="Pat'a Croft"></div>
-      <div class="sprite-walker mirrored" id="spriteMeetAbhi"><img class="walker-body" src="assets/abhi/idle_1.png" alt="Abhi Jones"></div>
+      <div class="sprite-walker mirrored" id="spriteMeetAbhi"><img class="walker-body" src="assets/abhi_nohat/idle_1.png" alt="Abhi Jones"></div>
     </div>
     <button class="tap-object" id="meetBtn" aria-label="Say hello">
       <span class="tap-tag" id="tapTagMeet" style="animation:blink 1.2s steps(2) infinite; display:block;">[ TAP TO FINALLY SAY HELLO ]</span>
@@ -775,31 +783,29 @@
             <label for="email" id="lblEmail">Email Address</label>
             <input type="email" id="email" name="email" required>
           </div>
-          <div class="field-row">
-            <div class="field">
-              <label for="attending" id="lblAttending">Join the party?</label>
-              <select id="attending" name="attending">
-                <option id="optAccept">Quest accepted — I'll be there</option>
-                <option id="optDecline">Regretfully declines</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="guests" id="lblGuests">Party Size</label>
-              <input type="number" id="guests" name="guests" min="1" max="4" value="1">
-            </div>
+          <div class="field">
+            <label for="attending" id="lblAttending">Join the party?</label>
+            <select id="attending" name="attending">
+              <option id="optAccept" value="accept">Quest accepted — I'll be there</option>
+              <option id="optDecline" value="decline">Regretfully declines</option>
+            </select>
           </div>
           <div class="field">
             <label for="meal" id="lblMeal">Choose Your Rations</label>
             <select id="meal" name="meal">
-              <option id="optMeal1">Awadhi Vegetarian Thali (Lucknow)</option>
-              <option id="optMeal2">Slovak Roast &amp; Dumplings</option>
-              <option id="optMeal3">Seared Salmon</option>
-              <option id="optMeal4">Vegan</option>
+              <option id="optMealVeg" value="veg">Vegetarian</option>
+              <option id="optMealNonVeg" value="nonveg">Non-Vegetarian</option>
+              <option id="optMealKids" value="kids">Kids Meal</option>
             </select>
           </div>
           <div class="field">
             <label for="message" id="lblMessage">Message for the Couple</label>
             <textarea id="message" name="note" rows="3"></textarea>
+          </div>
+          <div id="guestsSection">
+            <p class="guests-section-heading" id="lblGuestsSection">Bringing anyone else?</p>
+            <div id="guestsContainer"></div>
+            <button type="button" class="add-guest-btn" id="addGuestBtn">+ Add Guest</button>
           </div>
           <button type="submit" class="rsvp-btn" id="rsvpBtnText">&#9654; ACCEPT QUEST</button>
           <p class="rsvp-success" id="rsvpSuccess">Quest accepted! Thank you — we can't wait to celebrate with you.</p>
@@ -912,6 +918,10 @@
       var el = document.getElementById(key);
       if(el){ el.innerHTML = strs[key]; }
     });
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var key = el.dataset.i18n;
+      if(strs[key]){ el.innerHTML = strs[key]; }
+    });
     document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.lang === lang); });
     document.getElementById('langCorner').innerHTML = strs.langCorner;
     document.getElementById('tapTag').textContent = (chosenSide === 'bride') ? strs.tapTagBride : strs.tapTag;
@@ -997,6 +1007,8 @@
   var ABHI_SPRITES = { idle: ['assets/abhi/idle_1.png','assets/abhi/idle_2.png'],
                         walk: ['assets/abhi/walk_1.png','assets/abhi/walk_2.png','assets/abhi/walk_3.png','assets/abhi/walk_4.png'],
                         hat: 'assets/abhi/prop_hat.png' };
+  var ABHI_NOHAT_SPRITES = { idle: ['assets/abhi_nohat/idle_1.png','assets/abhi_nohat/idle_2.png'],
+                              walk: ['assets/abhi_nohat/walk_1.png','assets/abhi_nohat/walk_2.png','assets/abhi_nohat/walk_3.png','assets/abhi_nohat/walk_4.png'] };
   function startSpriteLoop(imgEl, frames, intervalMs){
     if(!imgEl || !frames.length){ return null; }
     var i = 0;
@@ -1049,6 +1061,9 @@
     var stageHat = document.getElementById('stageHat');
     stageHat.classList.remove('hat-arriving','hat-taken');
     document.getElementById('windGust').classList.remove('gust-play');
+    // Act 3 meet scene: Abhi is always hatless until Pat'a gives it back mid-reunion
+    var abhiMeetImg = document.querySelector('#spriteMeetAbhi .walker-body');
+    if(abhiMeetImg){ abhiMeetImg.src = ABHI_NOHAT_SPRITES.idle[0]; }
     // tap object: bride picks up the landed fedora, groom opens the chest
     document.getElementById('tapObjSvg').innerHTML = (side === 'bride') ? FEDORA_GROUND_SVG : CHEST_SVG;
     document.getElementById('tapTag').textContent = (side === 'bride') ? UI[currentLang].tapTagBride : UI[currentLang].tapTag;
@@ -1187,6 +1202,12 @@
       d.style.display = '';
       d.classList.add('is-visible');
       typewriteInto(d, d.dataset.full || '', {speed:18});
+      // she gives him back his fedora partway through this exchange
+      setTimeout(function(){
+        var abhiMeetImg = document.querySelector('#spriteMeetAbhi .walker-body');
+        if(abhiMeetImg){ abhiMeetImg.src = ABHI_SPRITES.idle[0]; }
+        sndTap();
+      }, 2000);
       setTimeout(function(){
         var t = document.getElementById('tourMontage');
         t.style.display = '';
@@ -1245,6 +1266,10 @@
             sprite.classList.add('hat-flying');
             sndLost();
             showAchievement('\uD83D\uDCA8', UI[currentLang].achLostFedora);
+            // the fedora blows off the character's head, not just the decorative prop
+            clearInterval(act1WalkTimer);
+            var bodyImg = sprite.querySelector('.walker-body');
+            if(bodyImg){ act1WalkTimer = startSpriteLoop(bodyImg, ABHI_NOHAT_SPRITES.walk, 160); }
           }
         } else if(chosenSide === 'bride'){
           if(progress > 0.3 && !hatArrived){
@@ -1266,6 +1291,42 @@
   // Google Apps Script Web App URL (bound to the RSVP Google Sheet):
   var RSVP_ENDPOINT = "https://script.google.com/macros/s/AKfycbxelhCErECIvfl3ZMbpDNGnIvo7q4BPG9DuPmwTHcpCmC5TRsBRhLxZPBoVQ7mK5peHYw/exec";
 
+  // ---- additional guests (name / meal / allergy only, no email or attending) ----
+  var guestsContainer = document.getElementById('guestsContainer');
+
+  function createGuestBlock(){
+    var strs = UI[currentLang];
+    var wrap = document.createElement('div');
+    wrap.className = 'guest-entry';
+    wrap.innerHTML =
+      '<div class="field"><label data-i18n="lblGuestName">' + strs.lblGuestName + '</label>' +
+        '<input type="text" class="guest-name"></div>' +
+      '<div class="field"><label data-i18n="lblGuestMeal">' + strs.lblGuestMeal + '</label>' +
+        '<select class="guest-meal">' +
+          '<option value="veg">' + strs.optMealVeg + '</option>' +
+          '<option value="nonveg">' + strs.optMealNonVeg + '</option>' +
+          '<option value="kids">' + strs.optMealKids + '</option>' +
+        '</select></div>' +
+      '<div class="field"><label data-i18n="lblGuestNote">' + strs.lblGuestNote + '</label>' +
+        '<input type="text" class="guest-note"></div>' +
+      '<button type="button" class="guest-remove" data-i18n="removeGuestBtn">' + strs.removeGuestBtn + '</button>';
+    wrap.querySelector('.guest-remove').addEventListener('click', function(){ wrap.remove(); });
+    guestsContainer.appendChild(wrap);
+  }
+
+  document.getElementById('addGuestBtn').addEventListener('click', function(){
+    createGuestBlock();
+    sndSelect();
+  });
+
+  function updateGuestsVisibility(){
+    var declined = document.getElementById('attending').value === 'decline';
+    document.getElementById('guestsSection').style.display = declined ? 'none' : '';
+    if(declined){ guestsContainer.innerHTML = ''; }
+  }
+  document.getElementById('attending').addEventListener('change', updateGuestsVisibility);
+  updateGuestsVisibility();
+
   document.getElementById('rsvpForm').addEventListener('submit', function(e){
     e.preventDefault();
     var form = this;
@@ -1275,13 +1336,23 @@
       form.querySelector('.rsvp-btn').style.display = 'none';
       return;
     }
+    var guestList = [];
+    if(form.attending.value !== 'decline'){
+      guestList = Array.prototype.slice.call(document.querySelectorAll('.guest-entry')).map(function(g){
+        return {
+          name: g.querySelector('.guest-name').value.trim(),
+          meal: g.querySelector('.guest-meal').value,
+          note: g.querySelector('.guest-note').value.trim()
+        };
+      }).filter(function(g){ return g.name; });
+    }
     var payload = {
       name: form.name.value,
       email: form.email.value,
       attending: form.attending.value,
-      guests: form.guests.value,
       meal: form.meal.value,
-      note: form.note.value
+      note: form.note.value,
+      guests: guestList
     };
     var btn = form.querySelector('.rsvp-btn');
     var originalBtnText = btn.textContent;
