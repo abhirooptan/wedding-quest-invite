@@ -770,6 +770,10 @@
             <label for="fullname" id="lblName">Adventurer's Full Name</label>
             <input type="text" id="fullname" name="name" required>
           </div>
+          <div class="field">
+            <label for="email" id="lblEmail">Email Address</label>
+            <input type="email" id="email" name="email" required>
+          </div>
           <div class="field-row">
             <div class="field">
               <label for="attending" id="lblAttending">Join the party?</label>
@@ -1016,7 +1020,7 @@
       receptionTitle: 'Celebration', receptionDesc: 'One legendary party<br>details coming soon', receptionTime: 'Watch this space',
       detQuestLine: 'SIDE QUEST IN PROGRESS: THE GREAT VENUE HUNT',
       rsvpEyebrow: 'Formal invitations to follow &mdash; but you can pledge your attendance now', rsvpHeading: 'Accept the Quest',
-      lblName: "Adventurer's Full Name", lblAttending: 'Join the party?',
+      lblName: "Adventurer's Full Name", lblEmail: 'Email Address', lblAttending: 'Join the party?',
       optAccept: "Quest accepted — I'll be there", optDecline: 'Regretfully declines',
       lblGuests: 'Party Size', lblMeal: 'Choose Your Rations',
       optMeal1: 'Awadhi Vegetarian Thali (Lucknow)', optMeal2: 'Slovak Roast &amp; Dumplings',
@@ -1065,7 +1069,7 @@
       receptionTitle: 'Oslava', receptionDesc: 'Jedna legendárna párty<br>detaily čoskoro', receptionTime: 'Sledujte tento priestor',
       detQuestLine: 'VEDĽAJŠIA VÝPRAVA PREBIEHA: VEĽKÉ HĽADANIE MIESTA',
       rsvpEyebrow: 'Oficiálne pozvánky prídu neskôr &mdash; svoju účasť ale môžeš prisľúbiť už teraz', rsvpHeading: 'Prijmi výzvu',
-      lblName: 'Celé meno dobrodruha', lblAttending: 'Pridáš sa k výprave?',
+      lblName: 'Celé meno dobrodruha', lblEmail: 'E-mailová adresa', lblAttending: 'Pridáš sa k výprave?',
       optAccept: 'Výzva prijatá — budem tam', optDecline: 'S ľútosťou odmieta',
       lblGuests: 'Počet osôb', lblMeal: 'Vyber si zásoby',
       optMeal1: 'Avadhské vegetariánske thali (Lucknow)', optMeal2: 'Slovenská pečienka a knedle',
@@ -1114,7 +1118,7 @@
       receptionTitle: 'Oslava', receptionDesc: 'Jedna legendární párty<br>detaily brzy', receptionTime: 'Sledujte tento prostor',
       detQuestLine: 'VEDLEJŠÍ ÚKOL PROBÍHÁ: VELKÉ HLEDÁNÍ MÍSTA',
       rsvpEyebrow: 'Oficiální pozvánky přijdou později &mdash; svou účast ale můžeš přislíbit už teď', rsvpHeading: 'Přijmi výzvu',
-      lblName: 'Celé jméno dobrodruha', lblAttending: 'Přidáš se k výpravě?',
+      lblName: 'Celé jméno dobrodruha', lblEmail: 'E-mailová adresa', lblAttending: 'Přidáš se k výpravě?',
       optAccept: 'Výzva přijata — budu tam', optDecline: 'S lítostí odmítá',
       lblGuests: 'Počet osob', lblMeal: 'Vyber si zásoby',
       optMeal1: 'Avadhské vegetariánské thali (Lucknow)', optMeal2: 'Slovenská pečeně a knedlíky',
@@ -1380,7 +1384,10 @@
     document.getElementById('meetBtn').style.display = '';
     document.getElementById('act1Loot').innerHTML = '';
     document.getElementById('act2Loot').innerHTML = '';
-    document.querySelectorAll('.px-reveal').forEach(function(el){ el.classList.remove('is-visible'); el.innerHTML=''; });
+    document.querySelectorAll('.px-reveal').forEach(function(el){
+      el.classList.remove('is-visible');
+      if(!el.classList.contains('tap-object')){ el.innerHTML=''; }
+    });
     document.querySelectorAll('.elegant-world .reveal').forEach(function(el){ el.classList.remove('is-visible'); });
   }
 
@@ -1504,6 +1511,7 @@
     }
     var payload = {
       name: form.name.value,
+      email: form.email.value,
       attending: form.attending.value,
       guests: form.guests.value,
       meal: form.meal.value,
