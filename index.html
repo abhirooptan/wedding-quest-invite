@@ -206,17 +206,34 @@
 
   /* tap interactions */
   .tap-object{
-    position:relative; z-index:2; cursor:pointer; border:none; background:transparent; padding:0;
-    transition:transform 0.15s steps(2);
+    position:relative; z-index:2; cursor:pointer; border:none; background:transparent; padding:0.6rem;
+    transition:transform 0.15s steps(2); border-radius:8px;
   }
   .tap-object:hover{transform:translateY(-3px);}
+  .tap-object:not(.opened){animation:tapPulse 1.7s ease-in-out infinite;}
+  @keyframes tapPulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(232,193,112,0.55);}
+    50%{box-shadow:0 0 0 16px rgba(232,193,112,0);}
+  }
   .tap-object .tap-tag{
     display:block; font-family:var(--pixel); font-size:0.5rem; color:var(--px-gold);
     text-align:center; margin-top:0.6rem; animation:blink 1.6s steps(2) infinite;
   }
+  .tap-object.opened{animation:none; box-shadow:none;}
   .tap-object.opened .tap-tag{display:none;}
   .loot-reveal{display:none;}
   .tap-object.opened + .loot-reveal{display:block;}
+
+  /* nudge shown when scrolling into a locked section before its gating item is tapped */
+  .locked-hint{
+    display:none; font-family:var(--pixel); font-size:0.56rem; color:var(--px-accent);
+    text-align:center; opacity:0.85; animation:blink 1.8s steps(2) infinite; position:relative; z-index:2;
+  }
+  .locked-hint.show{display:block;}
+  @media (prefers-reduced-motion: reduce){
+    .tap-object:not(.opened){animation:none;}
+    .locked-hint{animation:none;}
+  }
 
   /* meeting scene */
   .meet-stage{position:relative; z-index:2; height:230px; width:100%; max-width:min(1100px,88vw);}
@@ -227,10 +244,10 @@
      so edge-anchored positioning would otherwise look off-center. */
   #spriteMeetPaty, #spriteMeetAbhi{ transform:translateX(-50%); }
   #spriteMeetAbhi{ transform:translateX(-50%) scaleX(-1); }
-  #spriteMeetPaty{left:-5%;}
-  #spriteMeetAbhi{left:105%;}
-  .meet-stage.met #spriteMeetPaty{left:40%;}
-  .meet-stage.met #spriteMeetAbhi{left:60%;}
+  #spriteMeetPaty{left:14%;}
+  #spriteMeetAbhi{left:86%;}
+  .meet-stage.met #spriteMeetPaty{left:44%;}
+  .meet-stage.met #spriteMeetAbhi{left:56%;}
   #spriteMeetPaty .walker-body{height:153px;} /* ~90% of the standard 170px — Pat'a reads 10% smaller than Abhi in this scene */
   .meet-heart{
     position:absolute; top:0; left:50%; transform:translate(-50%,20px) scale(0);
@@ -355,6 +372,8 @@
   .rsvp-btn.declined:hover{background:#4B5563;}
   .rsvp-success{display:none; text-align:center; margin-top:1.4rem; font-style:italic; color:var(--olive-deep); font-size:1.05rem;}
   .rsvp-note{text-align:center; margin-top:1.6rem; font-size:0.9rem; opacity:0.6;}
+  .req-mark{color:#B5533C; margin-left:0.2rem; font-family:var(--serif); font-size:1rem;}
+  #mealAllergySection{display:flex; flex-direction:column; gap:1.4rem;}
   .guests-section-heading{font-family:var(--label); font-size:0.66rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--olive); margin-bottom:0.2rem;}
   #guestsContainer{display:flex; flex-direction:column; gap:1rem; margin-bottom:0.4rem;}
   .guest-entry{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:1rem; align-items:end; padding-bottom:0.8rem; border-bottom:1px dashed rgba(44,47,34,0.2);}
@@ -366,8 +385,9 @@
 
   /* footer */
   .footer{background:var(--olive-deepest); color:var(--cream); text-align:center; padding:5rem 1.5rem 3rem;}
-  .footer .sprite-box{width:160px; height:96px; margin:0 auto 1.4rem; display:flex; align-items:flex-end; justify-content:center; gap:4px; overflow:hidden;}
-  .footer .sprite-box img{height:88px; width:auto; image-rendering:pixelated; image-rendering:crisp-edges;}
+  .footer .sprite-box{width:240px; height:150px; margin:0 auto 1.4rem; display:flex; align-items:flex-end; justify-content:center; gap:8px;}
+  .footer .sprite-box img{height:140px; width:auto; image-rendering:pixelated; image-rendering:crisp-edges;}
+  .footer .sprite-box img#footerPaty{height:126px;} /* ~90% of Abhi's height — same size relationship as the Act 3 reunion */
   .footer-names{font-family:var(--script); font-size:clamp(2.4rem,6vw,3.4rem); color:var(--gold-light);}
   .footer p{margin-top:0.9rem; opacity:0.62; font-size:0.92rem;}
   .footer .px-credit{font-family:var(--pixel); font-size:0.46rem; opacity:0.4; margin-top:2.2rem; line-height:2;}
@@ -577,9 +597,10 @@
 
   <!-- ACT 2: the match -->
   <section class="px-scene scene-rumor" id="act2">
-    <p class="scene-label px-reveal" id="act2Label">~ THAT NIGHT ~</p>
-    <div class="dialog px-reveal" id="act2Dialog1"></div>
-    <div class="dialog px-reveal" id="act2Dialog2"></div>
+    <p class="locked-hint" id="act2LockedHint">&#8593; Open what you found above to continue the story &#8593;</p>
+    <p class="scene-label px-reveal" id="act2Label" data-gate="chest1">~ THAT NIGHT ~</p>
+    <div class="dialog px-reveal" id="act2Dialog1" data-gate="chest1"></div>
+    <div class="dialog px-reveal" id="act2Dialog2" data-gate="chest1"></div>
     <button class="tap-object px-reveal" id="scroll1" aria-label="Unroll the scroll">
       <svg class="px" viewBox="0 0 72 96" width="90" height="120">
         <g id="scrollRolled">
@@ -629,13 +650,14 @@
     <div class="loot-reveal">
       <div class="dialog px-reveal is-visible" id="act2Loot"></div>
     </div>
-    <div class="dialog px-reveal" id="act2Dialog3"></div>
+    <div class="dialog px-reveal" id="act2Dialog3" data-gate="scroll1"></div>
   </section>
 
   <!-- ACT 3: the first date -->
   <section class="px-scene scene-meet" id="act3">
-    <p class="scene-label px-reveal" id="act3Label">~ PRAGUE &middot; SEPTEMBER 2023 ~</p>
-    <div class="dialog px-reveal" id="act3Dialog1"></div>
+    <p class="locked-hint" id="act3LockedHint">&#8593; Unroll the scroll above to continue the story &#8593;</p>
+    <p class="scene-label px-reveal" id="act3Label" data-gate="scroll1">~ PRAGUE &middot; SEPTEMBER 2023 ~</p>
+    <div class="dialog px-reveal" id="act3Dialog1" data-gate="scroll1"></div>
     <div class="meet-stage" id="meetStage">
       <div class="meet-heart"><svg class="px" viewBox="0 0 40 36" width="100%" height="100%"><use href="#px-heart"/></svg></div>
       <div class="sprite-walker" id="spriteMeetPaty"><img class="walker-body" src="assets/paty/idle_1.png" alt="Pat'a Croft"></div>
@@ -785,31 +807,34 @@
             <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
           </div>
           <div class="field">
-            <label for="fullname" id="lblName">Adventurer's Full Name</label>
+            <label for="fullname" id="lblName">Adventurer's Full Name</label><span class="req-mark" aria-hidden="true">*</span>
             <input type="text" id="fullname" name="name" required>
           </div>
           <div class="field">
-            <label for="email" id="lblEmail">Email Address</label>
+            <label for="email" id="lblEmail">Email Address</label><span class="req-mark" aria-hidden="true">*</span>
             <input type="email" id="email" name="email" required>
           </div>
           <div class="field">
-            <label for="attending" id="lblAttending">Join the party?</label>
-            <select id="attending" name="attending">
+            <label for="attending" id="lblAttending">Join the party?</label><span class="req-mark" aria-hidden="true">*</span>
+            <select id="attending" name="attending" required>
+              <option id="optSelect" value="" disabled selected>&mdash; Please Select &mdash;</option>
               <option id="optAccept" value="accept">Quest accepted — I'll be there</option>
               <option id="optDecline" value="decline">Regretfully declines</option>
             </select>
           </div>
-          <div class="field">
-            <label for="meal" id="lblMeal">Choose Your Rations</label>
-            <select id="meal" name="meal">
-              <option id="optMealVeg" value="veg">Vegetarian</option>
-              <option id="optMealNonVeg" value="nonveg">Non-Vegetarian</option>
-              <option id="optMealKids" value="kids">Kids Meal</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="allergy" id="lblAllergy">Allergy / Dietary Notes</label>
-            <input type="text" id="allergy" name="allergy">
+          <div id="mealAllergySection">
+            <div class="field">
+              <label for="meal" id="lblMeal">Choose Your Rations</label>
+              <select id="meal" name="meal">
+                <option id="optMealVeg" value="veg">Vegetarian</option>
+                <option id="optMealNonVeg" value="nonveg">Non-Vegetarian</option>
+                <option id="optMealKids" value="kids">Kids Meal</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="allergy" id="lblAllergy">Allergy / Dietary Notes</label>
+              <input type="text" id="allergy" name="allergy">
+            </div>
           </div>
           <div id="guestsSection">
             <p class="guests-section-heading" id="lblGuestsSection">Bringing anyone else?</p>
@@ -830,8 +855,8 @@
 
   <footer class="footer">
     <div class="sprite-box">
-      <img src="assets/paty/idle_1.png" alt="Pat'a Croft">
-      <img src="assets/abhi/idle_1.png" alt="Abhi Jones">
+      <img id="footerPaty" src="assets/paty/idle_1.png" alt="Pat'a Croft">
+      <img id="footerAbhi" src="assets/abhi/idle_1.png" alt="Abhi Jones">
     </div>
     <div class="footer-names">Patricia &amp; Abhiroop</div>
     <p id="footLine1">Lucknow to Dublin. Trnava to Prague. And now, one shared map.</p>
@@ -1170,6 +1195,8 @@
     var m = document.getElementById('scroll1'); m.classList.remove('opened');
     document.getElementById('scrollRolled').style.display = '';
     document.getElementById('scrollOpen').style.display = 'none';
+    document.getElementById('act2LockedHint').classList.remove('show');
+    document.getElementById('act3LockedHint').classList.remove('show');
     document.getElementById('tourMontage').style.display = 'none';
     document.getElementById('meetStage').classList.remove('met');
     document.getElementById('continueCue').style.display = 'none';
@@ -1195,6 +1222,7 @@
     var lootEl = document.getElementById('act1Loot');
     typewriteInto(lootEl, lootEl.dataset.full || '', {speed:16});
     showAchievement(chosenSide==='bride' ? '\uD83C\uDFA9' : '\uD83D\uDD25', chosenSide==='bride' ? UI[currentLang].achFoundFedora : UI[currentLang].achFoundTorch);
+    revealGated('chest1');
   });
   document.getElementById('scroll1').addEventListener('click', function(){
     this.classList.add('opened');
@@ -1204,6 +1232,7 @@
     var lootEl = document.getElementById('act2Loot');
     typewriteInto(lootEl, lootEl.dataset.full || '', {speed:16});
     showAchievement('\uD83D\uDCDC', UI[currentLang].achScrollFound);
+    revealGated('scroll1');
   });
   document.getElementById('meetBtn').addEventListener('click', function(){
     document.getElementById('meetStage').classList.add('met');
@@ -1240,16 +1269,38 @@
 
   // ============ OBSERVERS (created after start so hidden elements measure correctly) ============
   var observersInited = false;
+  // ============ GATING: don't reveal the next act until its item is tapped ============
+  var LOCKED_HINTS = { chest1: 'act2LockedHint', scroll1: 'act3LockedHint' };
+  function revealPxElement(el){
+    el.classList.add('is-visible');
+    if(el.classList.contains('dialog') && el.dataset.full){
+      typewriteInto(el, el.dataset.full, {speed:20});
+    }
+  }
+  function revealGated(gateId){
+    var hint = document.getElementById(LOCKED_HINTS[gateId]);
+    if(hint){ hint.classList.remove('show'); }
+    document.querySelectorAll('[data-gate="' + gateId + '"]').forEach(function(el){
+      if(!el.classList.contains('is-visible')){ revealPxElement(el); }
+    });
+  }
+
   function initObservers(){
     if(observersInited){ return; }
     observersInited = true;
     var pxIO = new IntersectionObserver(function(entries){
       entries.forEach(function(e){
         if(e.isIntersecting && !e.target.classList.contains('is-visible')){
-          e.target.classList.add('is-visible');
-          if(e.target.classList.contains('dialog') && e.target.dataset.full){
-            typewriteInto(e.target, e.target.dataset.full, {speed:20});
+          var gateId = e.target.dataset.gate;
+          if(gateId){
+            var gateEl = document.getElementById(gateId);
+            if(gateEl && !gateEl.classList.contains('opened')){
+              var hint = document.getElementById(LOCKED_HINTS[gateId]);
+              if(hint){ hint.classList.add('show'); }
+              return; // wait for the gating item to be tapped first
+            }
           }
+          revealPxElement(e.target);
         }
       });
     }, {threshold:0.2});
@@ -1336,10 +1387,13 @@
   });
 
   function updateAttendingUI(){
-    var declined = document.getElementById('attending').value === 'decline';
+    var val = document.getElementById('attending').value;
+    var accepted = val === 'accept';
+    var declined = val === 'decline';
     var strs = UI[currentLang];
-    document.getElementById('guestsSection').style.display = declined ? 'none' : '';
-    if(declined){ guestsContainer.innerHTML = ''; }
+    document.getElementById('guestsSection').style.display = accepted ? '' : 'none';
+    document.getElementById('mealAllergySection').style.display = accepted ? '' : 'none';
+    if(!accepted){ guestsContainer.innerHTML = ''; }
     var btn = document.getElementById('rsvpBtnText');
     btn.innerHTML = declined ? strs.rsvpBtnTextDecline : strs.rsvpBtnTextAccept;
     btn.classList.toggle('declined', declined);
@@ -1357,7 +1411,7 @@
       return;
     }
     var guestList = [];
-    if(form.attending.value !== 'decline'){
+    if(form.attending.value === 'accept'){
       guestList = Array.prototype.slice.call(document.querySelectorAll('.guest-entry')).map(function(g){
         return {
           name: g.querySelector('.guest-name').value.trim(),

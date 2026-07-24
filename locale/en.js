@@ -38,6 +38,7 @@ window.LOCALE_EN = {
     detQuestLine: 'SIDE QUEST IN PROGRESS: THE GREAT VENUE HUNT',
     rsvpEyebrow: 'Formal invitations to follow &mdash; but you can pledge your attendance now', rsvpHeading: 'Accept the Quest',
     lblName: "Adventurer's Full Name", lblEmail: 'Email Address', lblAttending: 'Join the party?',
+    optSelect: '&mdash; Please Select &mdash;',
     optAccept: "Quest accepted — I'll be there", optDecline: 'Regretfully declines',
     lblMeal: 'Choose Your Rations',
     optMealVeg: 'Vegetarian', optMealNonVeg: 'Non-Vegetarian', optMealKids: 'Kids Meal',

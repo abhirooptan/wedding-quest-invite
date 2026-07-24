@@ -38,6 +38,7 @@ window.LOCALE_CZ = {
     detQuestLine: 'VEDLEJŠÍ ÚKOL PROBÍHÁ: VELKÉ HLEDÁNÍ MÍSTA',
     rsvpEyebrow: 'Oficiální pozvánky přijdou později &mdash; svou účast ale můžeš přislíbit už teď', rsvpHeading: 'Přijmi výzvu',
     lblName: 'Celé jméno dobrodruha', lblEmail: 'E-mailová adresa', lblAttending: 'Přidáš se k výpravě?',
+    optSelect: '&mdash; Prosím vyberte &mdash;',
     optAccept: 'Výzva přijata — budu tam', optDecline: 'S lítostí odmítá',
     lblMeal: 'Vyber si zásoby',
     optMealVeg: 'Vegetariánské', optMealNonVeg: 'Nevegetariánské', optMealKids: 'Dětské jídlo',

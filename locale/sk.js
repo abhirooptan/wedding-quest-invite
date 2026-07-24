@@ -38,6 +38,7 @@ window.LOCALE_SK = {
     detQuestLine: 'VEDĽAJŠIA VÝPRAVA PREBIEHA: VEĽKÉ HĽADANIE MIESTA',
     rsvpEyebrow: 'Oficiálne pozvánky prídu neskôr &mdash; svoju účasť ale môžeš prisľúbiť už teraz', rsvpHeading: 'Prijmi výzvu',
     lblName: 'Celé meno dobrodruha', lblEmail: 'E-mailová adresa', lblAttending: 'Pridáš sa k výprave?',
+    optSelect: '&mdash; Prosím vyber &mdash;',
     optAccept: 'Výzva prijatá — budem tam', optDecline: 'S ľútosťou odmieta',
     lblMeal: 'Vyber si zásoby',
     optMealVeg: 'Vegetariánske', optMealNonVeg: 'Nevegetariánske', optMealKids: 'Detské jedlo',
