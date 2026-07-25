@@ -918,6 +918,7 @@
     if(bgMusic){ bgMusic.volume = soundOn ? 0.55 : 0; }
     if(endMusic){ endMusic.volume = soundOn ? 0.55 : 0; }
     if(lobbyMusicGain){ lobbyMusicGain.gain.value = soundOn ? 0.5 : 0; }
+    if(lobbyAudioEl){ lobbyAudioEl.volume = soundOn ? 0.5 : 0; }
     if(soundOn){ beep(660,0.09,'square',0.1); }
   });
   updateMuteBtn();
@@ -974,23 +975,38 @@
   }
 
   // ============ LOBBY MUSIC (landing / character-select screen) ============
-  // Uses the Web Audio API directly (AudioBufferSourceNode.loopStart/loopEnd)
-  // instead of a plain looping <audio> element, because the loop point here has
-  // to be SAMPLE-ACCURATE: the source file has ~2.47s of silence before the
-  // music actually starts, and the true musical phrase repeats every exactly
-  // 24.000s from that point on (measured via cross-correlation out to 8 repeats
-  // for precision, then fine-tuned by ~6ms to align the exact splice sample and
+  // Prefers the Web Audio API (AudioBufferSourceNode.loopStart/loopEnd) over a
+  // plain looping <audio> element, because the loop point here has to be
+  // SAMPLE-ACCURATE: the source file has ~2.47s of silence before the music
+  // actually starts, and the true musical phrase repeats every exactly 24.000s
+  // from that point on (measured via cross-correlation out to 8 repeats for
+  // precision, then fine-tuned by ~6ms to align the exact splice sample and
   // avoid an audible click -- a naive "loop the whole file" or manual
   // currentTime-polling approach would either replay the lead-in silence every
   // cycle -- there IS no silence anywhere else in the track for it to align
   // with, so that produces a dead-air stutter every loop, not a seamless one --
   // or drift by however coarse the polling interval is, which is well beyond
   // the sub-10ms precision an audible click requires.
+  //
+  // BUT: the Web Audio path needs fetch() to get the raw bytes for
+  // decodeAudioData, and fetch() (and XHR) are unconditionally blocked when
+  // the page is opened directly as a file:// URL -- each local file is treated
+  // as its own opaque cross-origin context, so "fetch a sibling file" is
+  // refused outright, independent of any server/CORS config. That's exactly
+  // how this project gets tested locally (open the .html directly), so it has
+  // to keep working there too. `<audio src>` resource loading is NOT subject
+  // to that restriction (only script-initiated fetch/XHR is), so file:// falls
+  // back to a plain <audio> element with manual loop-point polling instead --
+  // not sample-accurate, but audible and close enough for local testing. The
+  // deployed site (http/https) always gets the precise, click-free loop.
   var LOBBY_LOOP = { start: 2.470, end: 26.464 };
+  var USE_WEBAUDIO_LOBBY = (location.protocol !== 'file:');
   var lobbyBufferPromise = null;
-  var lobbyMusicNode = null, lobbyMusicGain = null;
+  var lobbyMusicNode = null, lobbyMusicGain = null; // Web Audio path
+  var lobbyAudioEl = null; // file:// fallback path
   var lobbyStarted = false, lobbyDone = false;
   function preloadLobbyMusic(){
+    if(!USE_WEBAUDIO_LOBBY) return;
     var ctx = getCtx(); if(!ctx || lobbyBufferPromise) return;
     lobbyBufferPromise = fetch('assets/audio/lobby.mp3')
       .then(function(r){ return r.arrayBuffer(); })
@@ -1000,6 +1016,15 @@
   function startLobbyMusic(){
     if(lobbyStarted || lobbyDone) return;
     lobbyStarted = true;
+    if(!USE_WEBAUDIO_LOBBY){
+      var audio = new Audio('assets/audio/lobby.mp3');
+      audio.addEventListener('timeupdate', function(){
+        if(audio.currentTime >= LOBBY_LOOP.end){ audio.currentTime = LOBBY_LOOP.start; }
+      });
+      fadeInAudioElement(audio, soundOn ? 0.5 : 0, 1200);
+      lobbyAudioEl = audio;
+      return;
+    }
     var ctx = getCtx(); if(!ctx) return;
     if(ctx.state === 'suspended'){ ctx.resume(); }
     preloadLobbyMusic();
@@ -1025,6 +1050,17 @@
   }
   function fadeOutLobbyMusic(){
     lobbyDone = true;
+    if(lobbyAudioEl){
+      var a = lobbyAudioEl;
+      lobbyAudioEl = null;
+      var startVol = a.volume, steps = 24, i = 0;
+      var timer = setInterval(function(){
+        i++;
+        a.volume = Math.max(0, startVol * (1 - i/steps));
+        if(i >= steps){ clearInterval(timer); a.pause(); }
+      }, 50);
+      return;
+    }
     if(!lobbyMusicGain){ return; }
     var ctx = getCtx();
     var g = lobbyMusicGain, src = lobbyMusicNode;
@@ -1358,7 +1394,7 @@
     musicDone = false; // full reset back to landing -- a fresh quest start should be able to play music again
     if(endMusic){ endMusic.pause(); endMusic = null; }
     endMusicStarted = false;
-    lobbyDone = false; lobbyStarted = false; lobbyMusicNode = null; lobbyMusicGain = null;
+    lobbyDone = false; lobbyStarted = false; lobbyMusicNode = null; lobbyMusicGain = null; lobbyAudioEl = null;
     startLobbyMusic(); // this click is itself a user gesture, so lobby music can resume immediately
     document.getElementById('pixelWorld').classList.remove('active');
     document.getElementById('transformBand').style.display = 'none';
