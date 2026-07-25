@@ -1109,6 +1109,7 @@
       act1WalkTimer = startSpriteLoop(walker.querySelector('.walker-body'), PATY_SPRITES.walk, 160);
     }
     walker.classList.remove('hat-flying');
+    walker.classList.remove('mirrored'); // clear the "turned to face the hat" flip from a previous run
     // hat + wind state reset
     hatFlown = false; hatArrived = false; hatTaken = false;
     var stageHat = document.getElementById('stageHat');
@@ -1417,6 +1418,9 @@
               clearInterval(act1WalkTimer);
               var idleImg = sprite.querySelector('.walker-body');
               if(idleImg){ act1WalkTimer = startSpriteLoop(idleImg, PATY_SPRITES.idle, 550); }
+              // she's been walking rightward (facing right); the hat drifts in and
+              // settles to her left, so turn to face it instead of staring away
+              sprite.classList.add('mirrored');
             }, 1800);
             document.getElementById('stageHat').classList.add('hat-arriving');
           }
