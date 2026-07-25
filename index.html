@@ -650,7 +650,7 @@
     <option value="sk">SK</option>
     <option value="cz">CZ</option>
   </select>
-  <button class="mute-toggle" id="muteToggle">&#128266;</button>
+  <button class="mute-toggle" id="muteToggle"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="10.5 5 6 9 2.5 9 2.5 15 6 15 10.5 19 10.5 5"></polygon><path d="M15 8.5a5 5 0 0 1 0 7"></path><path d="M18 5.5a9 9 0 0 1 0 13"></path></svg></button>
 </div>
 <div class="achievement-toast" id="achToast"><span class="ach-icon" id="achIcon">&#127942;</span><span class="ach-text" id="achText"></span></div>
 
@@ -964,8 +964,16 @@
   function sndDissolve(){ for(var i=0;i<9;i++){ beep(280+i*85,0.09,'triangle',0.06,i*0.05); } }
   function sndQuestDone(){ [392,523,659,784,1046].forEach(function(f,i){ beep(f,0.18,'square',0.11,i*0.08); }); }
   function sndLost(){ beep(500,0.1,'sawtooth',0.08); beep(320,0.14,'sawtooth',0.07,0.09); }
+  // Minimal line-art icons (stroke:currentColor) instead of the emoji speaker --
+  // a colored, cartoonish emoji glyph didn't read as remotely elegant once the
+  // control restyled for the wedding-info section (§ .top-controls.elegant).
+  // Using currentColor means these need zero extra styling per theme -- they
+  // just inherit whatever .mute-toggle's `color` already is (gold in pixel
+  // mode, olive in elegant mode).
+  var ICON_VOLUME_ON = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="10.5 5 6 9 2.5 9 2.5 15 6 15 10.5 19 10.5 5"></polygon><path d="M15 8.5a5 5 0 0 1 0 7"></path><path d="M18 5.5a9 9 0 0 1 0 13"></path></svg>';
+  var ICON_VOLUME_OFF = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="10.5 5 6 9 2.5 9 2.5 15 6 15 10.5 19 10.5 5"></polygon><line x1="16" y1="9" x2="22" y2="15"></line><line x1="22" y1="9" x2="16" y2="15"></line></svg>';
   function updateMuteBtn(){
-    document.getElementById('muteToggle').innerHTML = soundOn ? '&#128266;' : '&#128263;';
+    document.getElementById('muteToggle').innerHTML = soundOn ? ICON_VOLUME_ON : ICON_VOLUME_OFF;
   }
   document.getElementById('muteToggle').addEventListener('click', function(){
     soundOn = !soundOn;
@@ -1199,6 +1207,37 @@
 
   var currentLang = localStorage.getItem('questLang') || 'en';
 
+  // The per-side story dialogue (act1Dialog1, act2Loot, etc) isn't part of UI --
+  // it's set once, per side, at startQuest() time from STORY[lang][side], keyed
+  // by element id in a dataset.full attribute that the typewriter effect reads
+  // from when each box gets revealed. applyLanguage()'s generic id-matching loop
+  // only walks UI's keys, so it never touched any of this -- switching language
+  // mid-story silently left every dialogue box showing whatever language was
+  // active when the quest started. Re-point dataset.full at the new language for
+  // anything not yet revealed, and instantly re-render anything already on
+  // screen (no re-typewriting -- this is a language swap, not a replay).
+  function updateStoryLanguage(lang){
+    if(!chosenSide) return; // entry modal, before any side is chosen -- nothing to translate yet
+    resetToken++; // abort any typewriter still mid-animation -- otherwise it keeps
+                   // appending characters from the OLD language on top of the swap below
+    var story = STORY[lang][chosenSide];
+    document.getElementById('act1Label').textContent = story.act1Label;
+    ['act1Dialog1','act1Dialog2','act2Dialog1','act2Dialog2','act2Dialog3','act3Dialog1'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.dataset.full = story[id];
+      if(el.innerHTML.trim() !== ''){ el.innerHTML = story[id]; }
+    });
+    ['act1Loot','act2Loot'].forEach(function(id){
+      var el = document.getElementById(id);
+      el.dataset.full = story[id];
+      if(el.innerHTML.trim() !== ''){ el.innerHTML = story[id]; }
+    });
+    var meetEl = document.getElementById('act3Dialog2');
+    meetEl.dataset.full = MEET_DIALOG[lang];
+    if(meetEl.innerHTML.trim() !== ''){ meetEl.innerHTML = MEET_DIALOG[lang]; }
+  }
+
   function applyLanguage(lang){
     currentLang = lang;
     localStorage.setItem('questLang', lang);
@@ -1215,6 +1254,7 @@
     document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.lang === lang); });
     document.getElementById('landingLangSelect').value = lang; // keep in sync if language changed elsewhere (e.g. the entry modal)
     document.getElementById('tapTag').textContent = (chosenSide === 'bride') ? strs.tapTagBride : strs.tapTag;
+    updateStoryLanguage(lang);
   }
 
   // handles both the landing page's own EN/SK/CZ row and the entry modal's
