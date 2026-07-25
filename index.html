@@ -937,6 +937,40 @@
 <script src="locale/sk.js"></script>
 <script src="locale/cz.js"></script>
 <script>
+  // ============ ON-SCREEN DEBUG PANEL ============
+  // Only active with ?debug=1 in the URL -- normal guests never see this.
+  // Mirrors console.log/console.error onto a visible on-page panel, since
+  // there's no way to plug the phone into devtools right now (no Mac/Xcode/
+  // Apple ID available). Placed before everything else so it captures every
+  // [audio] log from the very first line of script execution onward, including
+  // the early preload calls that happen before any click.
+  if(/[?&]debug=1\b/.test(location.search)){
+    var debugPanel = document.createElement('div');
+    debugPanel.id = 'debugPanel';
+    debugPanel.style.cssText = 'position:fixed;left:0;right:0;bottom:0;max-height:45vh;overflow-y:auto;'
+      + 'background:rgba(0,0,0,0.92);color:#7CFC7C;font-family:monospace;font-size:11px;line-height:1.5;'
+      + 'padding:8px;z-index:999999;white-space:pre-wrap;word-break:break-word;border-top:2px solid #7CFC7C;';
+    var debugHeader = document.createElement('div');
+    debugHeader.textContent = 'DEBUG MODE -- screenshot/copy this panel and send it back';
+    debugHeader.style.cssText = 'color:#FFD966;font-weight:bold;margin-bottom:4px;';
+    debugPanel.appendChild(debugHeader);
+    document.body.appendChild(debugPanel); // safe here -- this <script> tag sits near the end of <body>, which already exists by this point
+    function debugLine(prefix, args){
+      var line = document.createElement('div');
+      line.textContent = '[' + new Date().toISOString().slice(11,19) + '] ' + prefix + ' '
+        + Array.prototype.slice.call(args).map(function(a){
+            try{ return typeof a === 'object' ? JSON.stringify(a) : String(a); }catch(e){ return String(a); }
+          }).join(' ');
+      if(prefix === 'ERR'){ line.style.color = '#FF8080'; }
+      debugPanel.appendChild(line);
+      debugPanel.scrollTop = debugPanel.scrollHeight;
+    }
+    var origConsoleLog = console.log, origConsoleError = console.error;
+    console.log = function(){ origConsoleLog.apply(console, arguments); debugLine('log', arguments); };
+    console.error = function(){ origConsoleError.apply(console, arguments); debugLine('ERR', arguments); };
+    window.addEventListener('error', function(e){ debugLine('ERR', ['window.onerror:', e.message, 'at', e.filename+':'+e.lineno]); });
+  }
+
   // ============ SOUND ENGINE (synthesized, no audio files) ============
   var soundOn = (localStorage.getItem('questSound') !== 'off');
   var audioCtx = null;
