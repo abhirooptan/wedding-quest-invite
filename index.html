@@ -256,10 +256,10 @@
      so edge-anchored positioning would otherwise look off-center. */
   #spriteMeetPaty, #spriteMeetAbhi{ transform:translateX(-50%); }
   #spriteMeetAbhi{ transform:translateX(-50%) scaleX(-1); }
-  #spriteMeetPaty{left:14%;}
-  #spriteMeetAbhi{left:86%;}
-  .meet-stage.met #spriteMeetPaty{left:47%;}
-  .meet-stage.met #spriteMeetAbhi{left:53%;}
+  #spriteMeetPaty{left:28%;}
+  #spriteMeetAbhi{left:72%;}
+  .meet-stage.met #spriteMeetPaty{left:45%;}
+  .meet-stage.met #spriteMeetAbhi{left:55%;}
   #spriteMeetPaty .walker-body{height:153px;} /* ~90% of the standard 170px — Pat'a reads 10% smaller than Abhi in this scene */
   .meet-heart{
     position:absolute; top:0; left:50%; transform:translate(-50%,20px) scale(0);
@@ -1100,6 +1100,7 @@
     clearInterval(act1WalkTimer);
     walker.innerHTML = '<img class="walker-body" alt="">';
     walker.style.left = ''; // clear any stop-point position frozen in by a previous run of this quest
+    walker.style.transition = ''; // and the slowed-down stop-point transition that went with it
     if(side === 'groom'){
       act1WalkTimer = startSpriteLoop(walker.querySelector('.walker-body'), ABHI_SPRITES.walk, 160);
     } else {
@@ -1369,6 +1370,12 @@
         if(chosenSide === 'groom'){
           if(progress > 0.33 && !hatFlown){
             hatFlown = true;
+            // this jump can cover a lot of ground at once (wherever scroll happened to be
+            // when the wind triggered, all the way to the stop mark) -- the default 0.3s
+            // scroll-tracking transition reads as an instant teleport over that distance,
+            // so slow this specific move down to a natural walking pace, timed to finish
+            // just before the idle swap below.
+            sprite.style.transition = 'left 1.15s ease-out';
             sprite.style.left = STOP_LEFT_PCT + '%'; // stop point -- same spot Pat'a's hat lands at
             scrollFreezeY = window.scrollY; // don't let scrolling outrun the hat-loss moment
             spawnWind();
@@ -1394,6 +1401,9 @@
         } else if(chosenSide === 'bride'){
           if(progress > 0.3 && !hatArrived){
             hatArrived = true;
+            // see the matching comment in the groom branch above -- same fix, timed to
+            // finish just before this side's idle swap instead.
+            sprite.style.transition = 'left 1.7s ease-out';
             sprite.style.left = STOP_LEFT_PCT + '%'; // stop right next to where the hat lands
             scrollFreezeY = window.scrollY; // don't let scrolling outrun the hat-arrival moment
             spawnWind(true);
