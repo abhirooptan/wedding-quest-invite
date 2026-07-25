@@ -88,5 +88,5 @@ window.LOCALE_SK = {
       act3Dialog1: '<span class="speaker">ROZPRÁVAČ:</span>SEPTEMBER 2023. Cez more a pol kontinentu sa vrátil do Prahy — tentokrát nie kvôli narodeninám. Kvôli nej.'
     }
   },
-  meetDialog: '<span class="speaker">PAT\'A CROFT:</span>365 dní listov... a ty si tu naozaj.<br><br><span class="speaker">ABHI JONES:</span>Najlepšia zhoda môjho života.<br><br><span class="speaker">PAT\'A CROFT:</span>Ach — a verím, že toto je tvoje. &#127913; Celý rok som ho opatrovala.<br><br><span class="speaker">ABHI JONES:</span>...Ty si celý ten čas mala môj klobúk?'
+  meetDialog: '<span class="speaker">PAT\'A CROFT:</span>365 dní listov... a ty si tu naozaj.<br><br><span class="speaker">ABHI JONES:</span>Najlepšie dobrodružstvo môjho života.<br><br><span class="speaker">PAT\'A CROFT:</span>Ach — a verím, že toto je tvoje. &#127913; Celý rok som ho opatrovala.<br><br><span class="speaker">ABHI JONES:</span>...Ty si celý ten čas mala môj klobúk?'
 };

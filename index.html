@@ -156,18 +156,24 @@
   }
   .skip-link:hover{color:var(--px-gold);}
 
-  /* mute toggle -- z-index must stay above .landing's z-index:1000. At the old
-     z-index:601 the landing screen fully covered and hit-tested over it --
-     invisible AND unclickable the entire time you're on the lobby screen. */
+  /* top-right control cluster: language dropdown (landing screen only -- hidden
+     once the quest starts or is skipped, see JS) + mute toggle (always visible,
+     everywhere). z-index must stay above .landing's z-index:1000 -- at the old
+     z-index:601 the landing screen fully covered and hit-tested over the mute
+     button, invisible AND unclickable the entire time you're on the lobby screen. */
+  .top-controls{position:fixed; top:12px; right:12px; z-index:1001; display:flex; align-items:center; gap:0.5rem;}
+  .lang-select{
+    font-family:var(--pixel); font-size:0.5rem; background:rgba(12,12,24,0.9); color:var(--px-gold);
+    border:2px solid var(--px-gold); padding:0.5rem 0.3rem; cursor:pointer; line-height:1;
+  }
   .mute-toggle{
-    position:fixed; top:12px; right:12px; z-index:1001; font-family:var(--pixel); font-size:0.5rem;
-    background:rgba(12,12,24,0.9); color:var(--px-gold); border:2px solid var(--px-gold);
-    padding:0.55rem 0.6rem; cursor:pointer; line-height:1; display:flex; align-items:center;
-    box-shadow:0 0 10px rgba(232,193,112,0.35);
+    font-family:var(--pixel); font-size:0.5rem; background:rgba(12,12,24,0.9); color:var(--px-gold);
+    border:2px solid var(--px-gold); padding:0.55rem 0.6rem; cursor:pointer; line-height:1;
+    display:flex; align-items:center; box-shadow:0 0 10px rgba(232,193,112,0.35);
   }
   .mute-toggle:hover{background:rgba(232,193,112,0.15);}
 
-  /* language selector -- used by the landing page's own row and the entry modal's */
+  /* language selector (entry modal only now -- the landing page uses .lang-select above) */
   .lang-row{display:flex; gap:0.6rem; justify-content:center; margin-bottom:1.6rem;}
   .lang-btn{
     font-family:var(--pixel); font-size:0.56rem; background:var(--px-dusk); color:var(--px-text);
@@ -447,7 +453,9 @@
      little extra top clearance so that doesn't happen at the moment a section
      first comes into view. */
   @media (max-width:640px){
-    .mute-toggle{top:8px; right:8px; font-size:0.42rem; padding:0.45rem 0.55rem;}
+    .top-controls{top:8px; right:8px; gap:0.35rem;}
+    .lang-select{font-size:0.42rem; padding:0.45rem 0.25rem;}
+    .mute-toggle{font-size:0.42rem; padding:0.45rem 0.55rem;}
     .px-scene{padding-top:6.5rem;}
   }
 </style>
@@ -605,11 +613,6 @@
 <!-- ============ LANDING ============ -->
 <div class="landing" id="landing">
   <div class="landing-stars" id="landingStars"></div>
-  <div class="lang-row">
-    <button class="lang-btn active" id="langEnBtn" data-lang="en">EN</button>
-    <button class="lang-btn" id="langSkBtn" data-lang="sk">SK</button>
-    <button class="lang-btn" id="langCzBtn" data-lang="cz">CZ</button>
-  </div>
   <h1 id="landingTitle">THE QUEST FOR<br>THE OTHER HALF</h1>
   <p class="sub" id="landingSub">Two explorers. One quest.<br>A true story. (Mostly.)<br><br>Patricia &amp; Abhiroop</p>
   <div class="side-cards">
@@ -629,7 +632,14 @@
   <button class="skip-link" id="skipLinkLanding">Just here for the wedding details? Skip the adventure &rarr;</button>
 </div>
 
-<button class="mute-toggle" id="muteToggle">&#128266;</button>
+<div class="top-controls" id="topControls">
+  <select class="lang-select" id="landingLangSelect" aria-label="Language">
+    <option value="en">EN</option>
+    <option value="sk">SK</option>
+    <option value="cz">CZ</option>
+  </select>
+  <button class="mute-toggle" id="muteToggle">&#128266;</button>
+</div>
 <div class="achievement-toast" id="achToast"><span class="ach-icon" id="achIcon">&#127942;</span><span class="ach-text" id="achText"></span></div>
 
 <!-- ============ PIXEL WORLD ============ -->
@@ -1107,16 +1117,11 @@
     g.gain.linearRampToValueAtTime(0.0001, now + 1.2);
     setTimeout(function(){ try{ src.stop(); }catch(e){} }, 1300);
   }
-  // lobby music can't autoplay on page load (browser autoplay policy) -- start it
-  // on the page's first click/tap/keypress instead, same as any other "click to
-  // enter" pattern; only fires while still on the landing screen
-  function firstGestureStartLobby(){
-    if(!document.getElementById('landing').classList.contains('dismissed')){
-      startLobbyMusic();
-    }
-  }
-  document.addEventListener('pointerdown', firstGestureStartLobby, {once:true});
-  document.addEventListener('keydown', firstGestureStartLobby, {once:true});
+  // lobby music can't autoplay on page load (browser autoplay policy) -- it's
+  // started explicitly from the entry modal's "Begin the Adventure" click
+  // (below), not from a generic first-interaction listener. That's deliberate:
+  // a generic listener would also fire from clicking a language option inside
+  // the modal, starting music before the player has actually chosen to play.
 
   // ============ END MUSIC (fades in once, at the RSVP section, and stays on) ============
   var endMusic = null, endMusicStarted = false;
@@ -1196,6 +1201,7 @@
     });
     if(typeof updateAttendingUI === 'function'){ updateAttendingUI(); }
     document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.lang === lang); });
+    document.getElementById('landingLangSelect').value = lang; // keep in sync if language changed elsewhere (e.g. the entry modal)
     document.getElementById('tapTag').textContent = (chosenSide === 'bride') ? strs.tapTagBride : strs.tapTag;
   }
 
@@ -1203,6 +1209,10 @@
   // identical row (shares the .lang-btn class + data-lang attribute)
   document.querySelectorAll('.lang-btn').forEach(function(btn){
     btn.addEventListener('click', function(){ applyLanguage(btn.dataset.lang); sndSelect(); });
+  });
+  document.getElementById('landingLangSelect').addEventListener('change', function(){
+    applyLanguage(this.value);
+    sndSelect();
   });
 
   var chosenSide = null;
@@ -1378,6 +1388,7 @@
     document.getElementById('transformBand').style.display = '';
     document.getElementById('elegantWorld').style.display = '';
     document.getElementById('landing').classList.add('dismissed');
+    document.getElementById('landingLangSelect').style.display = 'none'; // no more in-app language switching once the quest is underway
     document.body.classList.remove('locked');
     window.scrollTo({top:0, behavior:'auto'});
     initObservers();
@@ -1399,6 +1410,7 @@
     fadeOutMusic(); // no-op if nothing was playing yet (e.g. skipped straight from landing)
     fadeOutLobbyMusic(); // covers skipping straight from the landing screen, where lobby music may be playing
     document.getElementById('landing').classList.add('dismissed');
+    document.getElementById('landingLangSelect').style.display = 'none'; // no more in-app language switching once past the landing screen
     document.getElementById('pixelWorld').classList.remove('active');
     document.getElementById('transformBand').style.display = 'none';
     document.getElementById('elegantWorld').style.display = '';
@@ -1412,6 +1424,7 @@
   document.getElementById('entryPlayBtn').addEventListener('click', function(){
     document.getElementById('entryModal').classList.add('dismissed');
     sndSelect();
+    startLobbyMusic(); // the only place lobby music ever starts -- see the comment above startLobbyMusic's old first-gesture listener
   });
   document.getElementById('entrySkipBtn').addEventListener('click', function(){
     document.getElementById('entryModal').classList.add('dismissed');

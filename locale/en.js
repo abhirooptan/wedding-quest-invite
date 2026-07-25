@@ -88,5 +88,5 @@ window.LOCALE_EN = {
       act3Dialog1: '<span class="speaker">NARRATOR:</span>SEPTEMBER 2023. Across the sea and half a continent, he returned to Prague — not for a birthday this time. For her.'
     }
   },
-  meetDialog: '<span class="speaker">PAT\'A CROFT:</span>365 days of letters... and you\'re really here.<br><br><span class="speaker">ABHI JONES:</span>Best match of my life.<br><br><span class="speaker">PAT\'A CROFT:</span>Oh — and I believe this is yours. &#127913; Kept it safe for a year.<br><br><span class="speaker">ABHI JONES:</span>...You had my fedora ALL ALONG?'
+  meetDialog: '<span class="speaker">PAT\'A CROFT:</span>365 days of letters... and you\'re really here.<br><br><span class="speaker">ABHI JONES:</span>Best adventure of my life.<br><br><span class="speaker">PAT\'A CROFT:</span>Oh — and I believe this is yours. &#127913; Kept it safe for a year.<br><br><span class="speaker">ABHI JONES:</span>...You had my fedora ALL ALONG?'
 };
