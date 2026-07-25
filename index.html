@@ -941,7 +941,14 @@
   var soundOn = (localStorage.getItem('questSound') !== 'off');
   var audioCtx = null;
   function getCtx(){
-    if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+    if(!audioCtx){
+      try{
+        audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+        console.log('[audio] AudioContext created, initial state:', audioCtx.state);
+      }catch(e){
+        console.error('[audio] AudioContext construction failed:', e);
+      }
+    }
     return audioCtx;
   }
   function beep(freq, dur, type, vol, delay){
@@ -988,9 +995,10 @@
     // pause() resumes from the same currentTime, so this is seamless either way.
     // endMusic is gated on endMusicStarted so this doesn't prematurely start it
     // during its dormant "unlocked but not yet triggered" state.
-    if(bgMusic){ if(soundOn){ bgMusic.play().catch(function(){}); } else { bgMusic.pause(); } }
-    if(endMusic && endMusicStarted){ if(soundOn){ endMusic.play().catch(function(){}); } else { endMusic.pause(); } }
-    if(lobbyAudioEl){ if(soundOn){ lobbyAudioEl.play().catch(function(){}); } else { lobbyAudioEl.pause(); } }
+    console.log('[audio] mute toggle: soundOn =', soundOn, 'bgMusic =', !!bgMusic, 'endMusic playing =', !!(endMusic && endMusicStarted), 'lobbyAudioEl =', !!lobbyAudioEl, 'lobbyMusicGain =', !!lobbyMusicGain);
+    if(bgMusic){ if(soundOn){ bgMusic.play().catch(function(e){ console.error('[audio] mute-toggle bgMusic.play() rejected:', e); }); } else { bgMusic.pause(); } }
+    if(endMusic && endMusicStarted){ if(soundOn){ endMusic.play().catch(function(e){ console.error('[audio] mute-toggle endMusic.play() rejected:', e); }); } else { endMusic.pause(); } }
+    if(lobbyAudioEl){ if(soundOn){ lobbyAudioEl.play().catch(function(e){ console.error('[audio] mute-toggle lobbyAudioEl.play() rejected:', e); }); } else { lobbyAudioEl.pause(); } }
     if(lobbyMusicGain){ lobbyMusicGain.gain.value = soundOn ? 0.5 : 0; } // Web Audio GainNode -- a different API surface, already reliable on iOS
     if(soundOn){ beep(660,0.09,'square',0.1); }
   });
@@ -1003,7 +1011,7 @@
     // instead of volume/muted specifically because of this, and that part does
     // work correctly on iOS regardless of whether the fade itself animates.
     audio.volume = 0;
-    audio.play().catch(function(){});
+    audio.play().catch(function(e){ console.error('[audio] fadeInAudioElement play() rejected for', audio.src, ':', e); });
     var steps = 24, i = 0, stepMs = ms/steps;
     var timer = setInterval(function(){
       i++;
@@ -1094,15 +1102,23 @@
     // context rather than the shared one getCtx() manages, keeping that one
     // untouched (i.e. not yet created at all) until a real gesture happens.
     var decodeCtx;
-    try{ decodeCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; }
+    try{ decodeCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){
+      console.error('[audio] lobby decode-context construction failed:', e);
+      return;
+    }
     lobbyDecodePromise = fetch('assets/audio/lobby.mp3')
-      .then(function(r){ return r.arrayBuffer(); })
-      .then(function(buf){ return decodeCtx.decodeAudioData(buf); })
-      .then(function(audioBuffer){ lobbyAudioBuffer = audioBuffer; return audioBuffer; });
+      .then(function(r){ console.log('[audio] lobby fetch ok, status', r.status); return r.arrayBuffer(); })
+      .then(function(buf){ console.log('[audio] lobby arrayBuffer bytes:', buf.byteLength); return decodeCtx.decodeAudioData(buf); })
+      .then(function(audioBuffer){
+        console.log('[audio] lobby decoded ok, duration:', audioBuffer.duration);
+        lobbyAudioBuffer = audioBuffer;
+        return audioBuffer;
+      });
+    lobbyDecodePromise.catch(function(e){ console.error('[audio] lobby preload/decode failed:', e); }); // logging only -- doesn't consume the promise, callers still see the rejection
   }
   preloadAndDecodeLobby(); // safe before any gesture -- decoding needs no gesture, only actual playback does
   function playLobbyBuffer(ctx, audioBuffer){
-    if(lobbyDone) return;
+    if(lobbyDone){ console.log('[audio] playLobbyBuffer: lobbyDone already true, skipping'); return; }
     var src = ctx.createBufferSource();
     src.buffer = audioBuffer;
     src.loop = true;
@@ -1111,13 +1127,18 @@
     var gain = ctx.createGain();
     gain.gain.value = 0;
     src.connect(gain); gain.connect(ctx.destination);
-    src.start(0);
+    try{
+      src.start(0);
+      console.log('[audio] lobby src.start() called, ctx.state:', ctx.state);
+    }catch(e){
+      console.error('[audio] lobby src.start() threw:', e);
+    }
     lobbyMusicNode = src; lobbyMusicGain = gain;
     var target = soundOn ? 0.5 : 0, steps = 24, i = 0;
     var timer = setInterval(function(){
       i++;
       gain.gain.value = Math.min(target, target*i/steps);
-      if(i >= steps){ clearInterval(timer); }
+      if(i >= steps){ clearInterval(timer); console.log('[audio] lobby fade-in complete, ctx.state:', ctx.state, 'gain:', gain.gain.value); }
     }, 50);
   }
   function startLobbyMusic(){
@@ -1145,13 +1166,19 @@
     // through an async fetch+decode chain even though the context itself was
     // created on time, and that gap was apparently still enough for iOS to
     // treat the resulting playback as not gesture-authorized.
-    var ctx = getCtx(); if(!ctx) return;
-    if(ctx.state === 'suspended'){ ctx.resume(); }
+    var ctx = getCtx();
+    console.log('[audio] startLobbyMusic: ctx =', ctx, 'state =', ctx ? ctx.state : 'n/a', 'buffer ready =', !!lobbyAudioBuffer);
+    if(!ctx) return;
+    if(ctx.state === 'suspended'){
+      ctx.resume().then(function(){ console.log('[audio] ctx.resume() resolved, state:', ctx.state); })
+                   .catch(function(e){ console.error('[audio] ctx.resume() rejected:', e); });
+    }
     if(lobbyAudioBuffer){
       playLobbyBuffer(ctx, lobbyAudioBuffer);
     } else {
+      console.log('[audio] buffer not ready yet at click time, waiting on decode promise');
       preloadAndDecodeLobby();
-      if(lobbyDecodePromise){ lobbyDecodePromise.then(function(buf){ playLobbyBuffer(ctx, buf); }).catch(function(){}); }
+      if(lobbyDecodePromise){ lobbyDecodePromise.then(function(buf){ playLobbyBuffer(ctx, buf); }).catch(function(e){ console.error('[audio] lobby decode-then-play chain failed:', e); }); }
     }
   }
   function fadeOutLobbyMusic(){
@@ -1207,8 +1234,17 @@
     // standard pattern: audio hardware doesn't actually start producing sound
     // until slightly after play() is called, so pausing immediately (same tick)
     // reliably beats it there in practice, without needing to mute.
-    audio.play().catch(function(){});
+    // an AbortError here ("play() request was interrupted by a call to pause()")
+    // is the NORMAL, expected outcome of this exact pattern -- not a real
+    // failure, just how the Promise API reports "you paused before play finished
+    // starting." Anything else logged as an error below is worth looking at.
+    audio.play().then(function(){ console.log('[audio] endMusic unlock play() resolved'); })
+                 .catch(function(e){
+                   if(e && e.name === 'AbortError'){ console.log('[audio] endMusic unlock play() aborted by the immediate pause() -- expected'); }
+                   else { console.error('[audio] endMusic unlock play() rejected unexpectedly:', e); }
+                 });
     audio.pause();
+    console.log('[audio] endMusic unlock: created + play()+pause() called, paused now:', audio.paused);
     audio.currentTime = 0;
     endMusic = audio;
   }
@@ -1220,8 +1256,10 @@
         if(e.isIntersecting && !endMusicStarted){
           endMusicStarted = true;
           stopMusicNow(); // defensive -- should already be stopped by the time RSVP is reached
+          console.log('[audio] RSVP reached, endMusicUnlocked was:', endMusicUnlocked, 'reusing existing element:', !!endMusic);
           if(!endMusic){ endMusic = new Audio('assets/audio/the_end.mp3'); endMusic.loop = true; } // unlock somehow never ran -- best effort, may be silent on iOS
           fadeInAudioElement(endMusic, soundOn ? 0.55 : 0, 1200);
+          setTimeout(function(){ console.log('[audio] endMusic after fadeIn: paused =', endMusic.paused, 'volume =', endMusic.volume); }, 1300);
           io.disconnect(); // one-shot: once started, it stays on regardless of further scrolling
         }
       });
