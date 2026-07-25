@@ -258,14 +258,21 @@
   #spriteMeetAbhi{ transform:translateX(-50%) scaleX(-1); }
   #spriteMeetPaty{left:14%;}
   #spriteMeetAbhi{left:86%;}
-  .meet-stage.met #spriteMeetPaty{left:44%;}
-  .meet-stage.met #spriteMeetAbhi{left:56%;}
+  .meet-stage.met #spriteMeetPaty{left:47%;}
+  .meet-stage.met #spriteMeetAbhi{left:53%;}
   #spriteMeetPaty .walker-body{height:153px;} /* ~90% of the standard 170px — Pat'a reads 10% smaller than Abhi in this scene */
   .meet-heart{
     position:absolute; top:0; left:50%; transform:translate(-50%,20px) scale(0);
     width:40px; height:36px; transition:transform 0.6s steps(5) 1.4s;
   }
   .meet-stage.met .meet-heart{transform:translate(-50%,0) scale(1);}
+  /* the beat lives on an INNER wrapper, not .meet-heart itself — .meet-heart's own
+     transform is driven by the pop-in transition above; a transform animation on
+     the same element would fully replace it rather than compose (see bug #4 in
+     PROJECT_DOCUMENTATION.md), so the continuous beat has to be a separate element. */
+  .meet-heart-beat{width:100%; height:100%;}
+  .meet-stage.met .meet-heart-beat{animation:heartBeat 0.9s ease-in-out 2s infinite;}
+  @keyframes heartBeat{0%,100%{transform:scale(1);} 30%{transform:scale(1.22);} 55%{transform:scale(1);}}
 
   /* ============ THE TRANSFORMATION: pixel dissolve ============ */
   .transform-band{
@@ -656,7 +663,7 @@
     <p class="scene-label px-reveal" id="act3Label" data-gate="scroll1">~ PRAGUE &middot; SEPTEMBER 2023 ~</p>
     <div class="dialog px-reveal" id="act3Dialog1" data-gate="scroll1"></div>
     <div class="meet-stage" id="meetStage">
-      <div class="meet-heart"><svg class="px" viewBox="0 0 40 36" width="100%" height="100%"><use href="#px-heart"/></svg></div>
+      <div class="meet-heart"><div class="meet-heart-beat"><svg class="px" viewBox="0 0 40 36" width="100%" height="100%"><use href="#px-heart"/></svg></div></div>
       <div class="sprite-walker" id="spriteMeetPaty"><img class="walker-body" src="assets/paty/idle_1.png" alt="Pat'a Croft"></div>
       <div class="sprite-walker mirrored" id="spriteMeetAbhi"><img class="walker-body" src="assets/abhi_nohat/idle_1.png" alt="Abhi Jones"></div>
     </div>
@@ -1040,6 +1047,7 @@
     + '</g>';
   var hatFlown = false, hatArrived = false, hatTaken = false;
   var scrollFreezeY = null; // set the instant the hat-loss/hat-arrival moment triggers; cleared when its chest is opened
+  var STOP_LEFT_PCT = 66; // where Act 1's walking character plants for good after the wind moment — 2/3 across the stage
 
   // ============ SPRITE ART (replaces the old hand-coded SVG rigs) ============
   var PATY_SPRITES = { idle: ['assets/paty/idle_1.png','assets/paty/idle_2.png'],
@@ -1091,6 +1099,7 @@
     var walker = document.getElementById('act1Sprite');
     clearInterval(act1WalkTimer);
     walker.innerHTML = '<img class="walker-body" alt="">';
+    walker.style.left = ''; // clear any stop-point position frozen in by a previous run of this quest
     if(side === 'groom'){
       act1WalkTimer = startSpriteLoop(walker.querySelector('.walker-body'), ABHI_SPRITES.walk, 160);
     } else {
@@ -1347,14 +1356,20 @@
       if(act1 && sprite && document.getElementById('pixelWorld').classList.contains('active')){
         var r = act1.getBoundingClientRect();
         var progress = Math.min(Math.max(-r.top / (r.height - window.innerHeight || 1), 0), 1);
-        // Pat'a stops short of where the hat lands (66%) instead of walking through it;
-        // Abhi's own range is unaffected since his hat leaves from his own position.
-        var walkSpan = chosenSide === 'bride' ? 36 : 62;
-        sprite.style.left = (8 + progress * walkSpan) + '%';
+        // Once the wind takes/delivers the fedora, the character plants at the
+        // 2/3-across stop point for good; hatFlown/hatArrived double as a
+        // "stopped walking" flag from here on, so neither scrolling further nor
+        // scrolling back up ever repositions them again this quest.
+        var stopped = chosenSide === 'groom' ? hatFlown : hatArrived;
+        if(!stopped){
+          var walkSpan = chosenSide === 'bride' ? 36 : 62;
+          sprite.style.left = (8 + progress * walkSpan) + '%';
+        }
         // fedora wind choreography
         if(chosenSide === 'groom'){
           if(progress > 0.33 && !hatFlown){
             hatFlown = true;
+            sprite.style.left = STOP_LEFT_PCT + '%'; // stop point -- same spot Pat'a's hat lands at
             scrollFreezeY = window.scrollY; // don't let scrolling outrun the hat-loss moment
             spawnWind();
             sndLost();
@@ -1368,17 +1383,28 @@
             sprite.classList.add('hat-flying');
             // dialogue about the hat only starts once the hatFly animation (1.25s) has played out
             setTimeout(function(){
+              scrollFreezeY = null; // animation done — let scrolling continue on down to the chest
               revealPxElement(document.getElementById('act1Dialog2'));
+              // he's done moving for this scene — settle into an idle loop, hatless
+              clearInterval(act1WalkTimer);
+              var idleImg = sprite.querySelector('.walker-body');
+              if(idleImg){ act1WalkTimer = startSpriteLoop(idleImg, ABHI_NOHAT_SPRITES.idle, 550); }
             }, 1250);
           }
         } else if(chosenSide === 'bride'){
           if(progress > 0.3 && !hatArrived){
             hatArrived = true;
+            sprite.style.left = STOP_LEFT_PCT + '%'; // stop right next to where the hat lands
             scrollFreezeY = window.scrollY; // don't let scrolling outrun the hat-arrival moment
             spawnWind(true);
             // dialogue about the hat only starts once the hatDrift animation (1.8s) has played out
             setTimeout(function(){
+              scrollFreezeY = null; // animation done — let scrolling continue on down to the chest
               revealPxElement(document.getElementById('act1Dialog2'));
+              // she's done moving for this scene — settle into an idle loop
+              clearInterval(act1WalkTimer);
+              var idleImg = sprite.querySelector('.walker-body');
+              if(idleImg){ act1WalkTimer = startSpriteLoop(idleImg, PATY_SPRITES.idle, 550); }
             }, 1800);
             document.getElementById('stageHat').classList.add('hat-arriving');
           }
