@@ -26,6 +26,34 @@
   img{max-width:100%;display:block;}
   svg.px{shape-rendering:crispEdges;}
 
+  /* ============ ENTRY MODAL ============ */
+  .entry-modal{
+    position:fixed; inset:0; z-index:2000; background:rgba(6,6,14,0.97);
+    display:flex; align-items:center; justify-content:center; padding:1.5rem;
+    transition:opacity 0.4s ease, visibility 0.4s;
+  }
+  .entry-modal.dismissed{opacity:0; visibility:hidden; pointer-events:none;}
+  .entry-modal-box{
+    background:var(--px-dusk); border:3px solid var(--px-gold); padding:2.4rem 1.8rem;
+    max-width:420px; width:100%; text-align:center;
+  }
+  .entry-eyebrow{
+    font-family:var(--pixel); font-size:0.58rem; color:var(--px-gold);
+    margin-bottom:1.3rem; letter-spacing:0.05em;
+  }
+  .entry-play-btn{
+    display:block; width:100%; margin-top:1.8rem; font-family:var(--pixel); font-size:0.62rem;
+    background:var(--px-night); color:var(--px-gold); border:2px solid var(--px-gold);
+    padding:0.9rem; cursor:pointer; line-height:1.6;
+  }
+  .entry-play-btn:hover{background:var(--px-gold); color:var(--px-night);}
+  .entry-skip-btn{
+    display:block; width:100%; margin-top:1.1rem; background:none; border:none;
+    color:rgba(242,239,223,0.6); text-decoration:underline; font-family:var(--serif);
+    font-size:0.85rem; cursor:pointer; padding:0.5rem;
+  }
+  .entry-skip-btn:hover{color:var(--px-gold);}
+
   /* ============ LANDING / SIDE SELECT ============ */
   .landing{
     position:fixed; inset:0; z-index:1000; background:var(--px-night);
@@ -127,41 +155,25 @@
     color:rgba(242,239,223,0.55); text-decoration:underline; cursor:pointer; background:none; border:none;
   }
   .skip-link:hover{color:var(--px-gold);}
-  .skip-corner{
-    position:fixed; top:12px; left:12px; z-index:600; font-family:var(--pixel); font-size:0.46rem;
-    background:rgba(12,12,24,0.85); color:rgba(242,239,223,0.75); border:2px solid var(--px-stone);
-    padding:0.5rem 0.7rem; cursor:pointer; line-height:1.6; display:none;
-  }
-  .skip-corner.visible{display:block;}
-  .skip-corner:hover{border-color:var(--px-gold); color:var(--px-gold);}
 
-  /* mute toggle -- z-index must stay above .landing's z-index:1000, since this is
-     the one corner control meant to be usable ON the landing screen itself (the
-     others only ever show once .landing is dismissed). At the old z-index:601 the
-     landing screen fully covered and hit-tested over it -- invisible AND unclickable
-     the entire time you're on the lobby screen, not just visually subtle. */
+  /* mute toggle -- z-index must stay above .landing's z-index:1000. At the old
+     z-index:601 the landing screen fully covered and hit-tested over it --
+     invisible AND unclickable the entire time you're on the lobby screen. */
   .mute-toggle{
     position:fixed; top:12px; right:12px; z-index:1001; font-family:var(--pixel); font-size:0.5rem;
     background:rgba(12,12,24,0.9); color:var(--px-gold); border:2px solid var(--px-gold);
-    padding:0.55rem 0.7rem; cursor:pointer; line-height:1; display:flex; align-items:center; gap:0.4rem;
+    padding:0.55rem 0.6rem; cursor:pointer; line-height:1; display:flex; align-items:center;
     box-shadow:0 0 10px rgba(232,193,112,0.35);
   }
   .mute-toggle:hover{background:rgba(232,193,112,0.15);}
 
-  /* language selector */
+  /* language selector -- used by the landing page's own row and the entry modal's */
   .lang-row{display:flex; gap:0.6rem; justify-content:center; margin-bottom:1.6rem;}
   .lang-btn{
     font-family:var(--pixel); font-size:0.56rem; background:var(--px-dusk); color:var(--px-text);
     border:2px solid var(--px-stone); padding:0.5rem 0.8rem; cursor:pointer;
   }
   .lang-btn.active{border-color:var(--px-gold); color:var(--px-gold);}
-  .lang-corner{
-    position:fixed; top:104px; right:12px; z-index:600; font-family:var(--pixel); font-size:0.46rem;
-    background:rgba(12,12,24,0.85); color:var(--px-text); border:2px solid var(--px-stone);
-    padding:0.5rem 0.7rem; cursor:pointer; line-height:1.6; display:none;
-  }
-  .lang-corner.visible{display:block;}
-  .lang-corner:hover{border-color:var(--px-gold); color:var(--px-gold);}
 
   .px-reveal{opacity:0; transform:translateY(24px); transition:opacity 0.7s steps(6), transform 0.7s steps(6);}
   .px-reveal.is-visible{opacity:1; transform:translateY(0);}
@@ -429,30 +441,14 @@
   .footer p{margin-top:0.9rem; opacity:0.62; font-size:0.92rem;}
   .footer .px-credit{font-family:var(--pixel); font-size:0.46rem; opacity:0.4; margin-top:2.2rem; line-height:2;}
 
-  /* switch-side link */
-  .side-switch{
-    position:fixed; top:58px; right:12px; z-index:600; font-family:var(--pixel); font-size:0.46rem;
-    background:rgba(12,12,24,0.85); color:var(--px-gold); border:2px solid var(--px-stone);
-    padding:0.5rem 0.7rem; cursor:pointer; display:none; line-height:1.6;
-  }
-  .side-switch.visible{display:block;}
-  .side-switch:hover{border-color:var(--px-gold);}
-
-  /* On narrow screens the top-right corner cluster (mute/switch-side/language)
-     takes up a lot more of the width relative to centered scene text, and the
-     scroll-freeze during Act 1's wind moment can hold a scene heading or
-     locked-hint right at the top of the viewport for a couple of seconds while
-     it's fully covered by these fixed, opaque buttons. Two changes: shrink the
-     buttons themselves, and give scene content enough top clearance that it
-     doesn't render directly behind that shrunken zone at the moment a section
-     first comes into view (mid-scroll passes are unavoidable and brief; the
-     freeze is not, so that's the case this specifically targets). */
+  /* On narrow screens the scroll-freeze during Act 1's wind moment can hold a
+     scene heading or locked-hint right at the top of the viewport for a couple
+     of seconds while the mute button sits on top of it -- give scene content a
+     little extra top clearance so that doesn't happen at the moment a section
+     first comes into view. */
   @media (max-width:640px){
     .mute-toggle{top:8px; right:8px; font-size:0.42rem; padding:0.45rem 0.55rem;}
-    .side-switch{top:48px; right:8px; font-size:0.4rem; padding:0.45rem 0.6rem;}
-    .lang-corner{top:88px; right:8px; font-size:0.4rem; padding:0.45rem 0.6rem;}
-    .skip-corner{top:8px; left:8px; font-size:0.4rem; padding:0.45rem 0.6rem;}
-    .px-scene{padding-top:8.5rem;}
+    .px-scene{padding-top:6.5rem;}
   }
 </style>
 </head>
@@ -588,6 +584,24 @@
   </defs>
 </svg>
 
+<!-- ============ ENTRY MODAL ============ -->
+<!-- Shown before anything else: picks language and whether to play the pixel-world
+     adventure or jump straight to the wedding info. Doubles as the page's first
+     user gesture, which is what actually lets background audio start at all --
+     browsers block any audio before one, regardless of how the code is written. -->
+<div class="entry-modal" id="entryModal">
+  <div class="entry-modal-box">
+    <p class="entry-eyebrow" id="entryEyebrow">CHOOSE YOUR LANGUAGE</p>
+    <div class="lang-row">
+      <button class="lang-btn active" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="sk">SK</button>
+      <button class="lang-btn" data-lang="cz">CZ</button>
+    </div>
+    <button class="entry-play-btn" id="entryPlayBtn">&#9654; <span id="entryPlayLabel">BEGIN THE ADVENTURE</span></button>
+    <button class="entry-skip-btn" id="entrySkipBtn"><span id="entrySkipLabel">Just here for the wedding details? Skip the adventure &rarr;</span></button>
+  </div>
+</div>
+
 <!-- ============ LANDING ============ -->
 <div class="landing" id="landing">
   <div class="landing-stars" id="landingStars"></div>
@@ -615,12 +629,8 @@
   <button class="skip-link" id="skipLinkLanding">Just here for the wedding details? Skip the adventure &rarr;</button>
 </div>
 
-<button class="skip-corner" id="skipCorner">&#9654; SKIP TO WEDDING INFO</button>
-<button class="mute-toggle" id="muteToggle">&#128266; <span>SOUND</span></button>
-<button class="lang-corner" id="langCorner">&#127760; EN &middot; CHANGE</button>
+<button class="mute-toggle" id="muteToggle">&#128266;</button>
 <div class="achievement-toast" id="achToast"><span class="ach-icon" id="achIcon">&#127942;</span><span class="ach-text" id="achText"></span></div>
-
-<button class="side-switch" id="sideSwitch">&#8635; SWITCH SIDE</button>
 
 <!-- ============ PIXEL WORLD ============ -->
 <div class="pixel-world" id="pixelWorld">
@@ -933,14 +943,7 @@
   function sndQuestDone(){ [392,523,659,784,1046].forEach(function(f,i){ beep(f,0.18,'square',0.11,i*0.08); }); }
   function sndLost(){ beep(500,0.1,'sawtooth',0.08); beep(320,0.14,'sawtooth',0.07,0.09); }
   function updateMuteBtn(){
-    var strs = UI[currentLang] || UI.en;
-    // fall back to plain English if a stale cached locale/*.js (from before these
-    // keys existed) is still loaded -- better a wrong-language label than the
-    // literal string "undefined" rendered on screen
-    var onLabel = strs.soundOnLabel || 'SOUND';
-    var offLabel = strs.soundOffLabel || 'MUTED';
-    document.getElementById('muteToggle').innerHTML =
-      (soundOn ? '&#128266;' : '&#128263;') + ' <span>' + (soundOn ? onLabel : offLabel) + '</span>';
+    document.getElementById('muteToggle').innerHTML = soundOn ? '&#128266;' : '&#128263;';
   }
   document.getElementById('muteToggle').addEventListener('click', function(){
     soundOn = !soundOn;
@@ -1193,15 +1196,13 @@
     });
     if(typeof updateAttendingUI === 'function'){ updateAttendingUI(); }
     document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.lang === lang); });
-    document.getElementById('langCorner').innerHTML = strs.langCorner;
     document.getElementById('tapTag').textContent = (chosenSide === 'bride') ? strs.tapTagBride : strs.tapTag;
   }
 
+  // handles both the landing page's own EN/SK/CZ row and the entry modal's
+  // identical row (shares the .lang-btn class + data-lang attribute)
   document.querySelectorAll('.lang-btn').forEach(function(btn){
     btn.addEventListener('click', function(){ applyLanguage(btn.dataset.lang); sndSelect(); });
-  });
-  document.getElementById('langCorner').addEventListener('click', function(){
-    resetInteractionsFull();
   });
 
   var chosenSide = null;
@@ -1237,11 +1238,6 @@
           band.classList.add('play');
           sndDissolve();
           fadeOutMusic(); // leaving the pixel world for the wedding-info section -- music fades out for good
-          // and the quest-only corner buttons (switch side / skip / change language) have
-          // nothing left to do here -- hide them for good, same one-way transition as the music
-          document.getElementById('sideSwitch').classList.remove('visible');
-          document.getElementById('skipCorner').classList.remove('visible');
-          document.getElementById('langCorner').classList.remove('visible');
         } else {
           // reset when out of view so it replays next time, with a fresh dissolve pattern
           band.classList.remove('play');
@@ -1382,9 +1378,6 @@
     document.getElementById('transformBand').style.display = '';
     document.getElementById('elegantWorld').style.display = '';
     document.getElementById('landing').classList.add('dismissed');
-    document.getElementById('sideSwitch').classList.add('visible');
-    document.getElementById('skipCorner').classList.add('visible');
-    document.getElementById('langCorner').classList.add('visible');
     document.body.classList.remove('locked');
     window.scrollTo({top:0, behavior:'auto'});
     initObservers();
@@ -1396,78 +1389,34 @@
 
   document.getElementById('chooseBride').addEventListener('click', function(){ startQuest('bride'); });
   document.getElementById('chooseGroom').addEventListener('click', function(){ startQuest('groom'); });
-  document.getElementById('sideSwitch').addEventListener('click', function(){
-    // reset interactions and replay from the top with the other side
-    resetInteractions();
-    startQuest(chosenSide==='bride' ? 'groom' : 'bride');
-  });
 
   // ---------- Skip the adventure entirely ----------
+  // Reachable from the entry modal's skip button and the landing page's own
+  // inline "just here for the wedding details" link -- switching sides or
+  // restarting from a fresh state is done by refreshing the page rather than
+  // an in-app control (see the entry modal at the top of <body>).
   function skipToWeddingInfo(){
     fadeOutMusic(); // no-op if nothing was playing yet (e.g. skipped straight from landing)
     fadeOutLobbyMusic(); // covers skipping straight from the landing screen, where lobby music may be playing
     document.getElementById('landing').classList.add('dismissed');
     document.getElementById('pixelWorld').classList.remove('active');
     document.getElementById('transformBand').style.display = 'none';
-    document.getElementById('skipCorner').classList.remove('visible');
-    document.getElementById('sideSwitch').classList.remove('visible');
-    document.getElementById('langCorner').classList.remove('visible');
     document.getElementById('elegantWorld').style.display = '';
     document.body.classList.remove('locked');
     initObservers();
     window.scrollTo({top:0, behavior:'auto'});
   }
   document.getElementById('skipLinkLanding').addEventListener('click', skipToWeddingInfo);
-  document.getElementById('skipCorner').addEventListener('click', skipToWeddingInfo);
 
-  // ---------- Change language mid-experience: soft reset back to landing ----------
-  function resetInteractionsFull(){
-    resetInteractions();
-    stopMusicNow();
-    musicDone = false; // full reset back to landing -- a fresh quest start should be able to play music again
-    if(endMusic){ endMusic.pause(); endMusic = null; }
-    endMusicStarted = false;
-    lobbyDone = false; lobbyStarted = false; lobbyMusicNode = null; lobbyMusicGain = null; lobbyAudioEl = null;
-    startLobbyMusic(); // this click is itself a user gesture, so lobby music can resume immediately
-    document.getElementById('pixelWorld').classList.remove('active');
-    document.getElementById('transformBand').style.display = 'none';
-    document.getElementById('elegantWorld').style.display = 'none';
-    document.getElementById('landing').classList.remove('dismissed');
-    document.getElementById('sideSwitch').classList.remove('visible');
-    document.getElementById('skipCorner').classList.remove('visible');
-    document.getElementById('langCorner').classList.remove('visible');
-    document.body.classList.add('locked');
-    chosenSide = null;
-    window.scrollTo({top:0, behavior:'auto'});
-  }
-
-  function resetInteractions(){
-    resetToken++; // cancel any in-flight typewriter animations
-    clearInterval(act1WalkTimer);
-    scrollFreezeY = null;
-    var c = document.getElementById('chest1'); c.classList.remove('opened');
-    document.getElementById('chestClosed1').style.display = '';
-    document.getElementById('chestOpen1').style.display = 'none';
-    var m = document.getElementById('scroll1'); m.classList.remove('opened');
-    document.getElementById('scrollRolled').style.display = '';
-    document.getElementById('scrollOpen').style.display = 'none';
-    document.getElementById('act2LockedHint').classList.remove('show');
-    document.getElementById('act3LockedHint').classList.remove('show');
-    document.getElementById('tourMontage').style.display = 'none';
-    document.getElementById('meetStage').classList.remove('met');
-    document.getElementById('continueCue').style.display = 'none';
-    document.getElementById('transformBand').classList.remove('play');
-    document.getElementById('act3Dialog2').style.display = 'none';
-    document.getElementById('act3Dialog2').innerHTML = '';
-    document.getElementById('meetBtn').style.display = '';
-    document.getElementById('act1Loot').innerHTML = '';
-    document.getElementById('act2Loot').innerHTML = '';
-    document.querySelectorAll('.px-reveal').forEach(function(el){
-      el.classList.remove('is-visible');
-      if(!el.classList.contains('tap-object')){ el.innerHTML=''; }
-    });
-    document.querySelectorAll('.elegant-world .reveal').forEach(function(el){ el.classList.remove('is-visible'); });
-  }
+  // ---------- Entry modal: language + play-or-skip, shown before anything else ----------
+  document.getElementById('entryPlayBtn').addEventListener('click', function(){
+    document.getElementById('entryModal').classList.add('dismissed');
+    sndSelect();
+  });
+  document.getElementById('entrySkipBtn').addEventListener('click', function(){
+    document.getElementById('entryModal').classList.add('dismissed');
+    skipToWeddingInfo();
+  });
 
   // ============ TAP INTERACTIONS ============
   document.getElementById('chest1').addEventListener('click', function(){
