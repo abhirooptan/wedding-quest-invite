@@ -909,9 +909,50 @@
     soundOn = !soundOn;
     localStorage.setItem('questSound', soundOn ? 'on' : 'off');
     updateMuteBtn();
+    if(bgMusic){ bgMusic.volume = soundOn ? 0.55 : 0; }
     if(soundOn){ beep(660,0.09,'square',0.1); }
   });
   updateMuteBtn();
+
+  // ============ BACKGROUND MUSIC (actual audio files, per character) ============
+  var MUSIC_TRACKS = { bride: 'assets/audio/lara_croft.mp3', groom: 'assets/audio/indiana_jones.mp3' };
+  var bgMusic = null;
+  var musicFadeTimer = null;
+  // once true, the player has left the pixel world for the wedding-info section --
+  // music never autoplays again this session, even if they scroll back up (side
+  // switches and quest restarts are the only things allowed to clear this).
+  var musicDone = false;
+
+  function playQuestMusic(side){
+    if(musicDone) return;
+    if(bgMusic && bgMusic.dataset.side === side){ return; } // already playing this side's track
+    stopMusicNow();
+    var audio = new Audio(MUSIC_TRACKS[side]);
+    audio.dataset.side = side;
+    audio.loop = true;
+    audio.volume = soundOn ? 0.55 : 0;
+    audio.play().catch(function(){}); // ignore autoplay-policy rejections; this always fires from a click handler
+    bgMusic = audio;
+  }
+  function stopMusicNow(){
+    clearInterval(musicFadeTimer);
+    if(bgMusic){ bgMusic.pause(); bgMusic = null; }
+  }
+  // fades the CURRENT track out over ~1.2s, then stops it for good (musicDone=true) --
+  // used for the pixel-world -> wedding-info transition, not an abrupt cut
+  function fadeOutMusic(){
+    musicDone = true;
+    clearInterval(musicFadeTimer);
+    if(!bgMusic){ return; }
+    var m = bgMusic;
+    bgMusic = null; // detach immediately so nothing else can touch/restart this instance mid-fade
+    var startVol = m.volume, steps = 24, i = 0;
+    musicFadeTimer = setInterval(function(){
+      i++;
+      m.volume = Math.max(0, startVol * (1 - i/steps));
+      if(i >= steps){ clearInterval(musicFadeTimer); m.pause(); }
+    }, 50);
+  }
 
   // ============ TYPEWRITER ============
   var resetToken = 0;
@@ -1012,6 +1053,7 @@
         if(e.isIntersecting){
           band.classList.add('play');
           sndDissolve();
+          fadeOutMusic(); // leaving the pixel world for the wedding-info section -- music fades out for good
         } else {
           // reset when out of view so it replays next time, with a fresh dissolve pattern
           band.classList.remove('play');
@@ -1160,6 +1202,7 @@
     initObservers();
     observeTransformBand();
     sndSelect();
+    playQuestMusic(side);
   }
 
   document.getElementById('chooseBride').addEventListener('click', function(){ startQuest('bride'); });
@@ -1172,6 +1215,7 @@
 
   // ---------- Skip the adventure entirely ----------
   function skipToWeddingInfo(){
+    fadeOutMusic(); // no-op if nothing was playing yet (e.g. skipped straight from landing)
     document.getElementById('landing').classList.add('dismissed');
     document.getElementById('pixelWorld').classList.remove('active');
     document.getElementById('transformBand').style.display = 'none';
@@ -1189,6 +1233,8 @@
   // ---------- Change language mid-experience: soft reset back to landing ----------
   function resetInteractionsFull(){
     resetInteractions();
+    stopMusicNow();
+    musicDone = false; // full reset back to landing -- a fresh quest start should be able to play music again
     document.getElementById('pixelWorld').classList.remove('active');
     document.getElementById('transformBand').style.display = 'none';
     document.getElementById('elegantWorld').style.display = 'none';
