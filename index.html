@@ -643,8 +643,8 @@
           <rect x="20" y="10" width="60" height="4" fill="#A89B78"/>
           <rect x="20" y="126" width="60" height="4" fill="#A89B78"/>
           <text x="50" y="27" text-anchor="middle" font-family="'Press Start 2P',monospace" font-size="9" fill="#4A3218">SOUGHT</text>
-          <rect x="30" y="34" width="40" height="56" fill="#00000022"/>
-          <image id="posterImg" href="" x="32" y="34" width="36" height="56" preserveAspectRatio="xMidYMax meet" style="image-rendering:pixelated;"/>
+          <rect x="26" y="34" width="48" height="48" fill="#00000022"/>
+          <image id="posterImg" href="" x="28" y="36" width="44" height="44" preserveAspectRatio="xMidYMid meet" style="image-rendering:pixelated;"/>
           <text x="50" y="118" text-anchor="middle" font-family="'Press Start 2P',monospace" font-size="6" fill="#6B4A26">IF FOUND:</text>
           <text x="50" y="127" text-anchor="middle" font-family="'Press Start 2P',monospace" font-size="6" fill="#6B4A26">WRITE</text>
         </g>
@@ -1051,12 +1051,14 @@
 
   // ============ SPRITE ART (replaces the old hand-coded SVG rigs) ============
   var PATY_SPRITES = { idle: ['assets/paty/idle_1.png','assets/paty/idle_2.png'],
-                        walk: ['assets/paty/walk_1.png','assets/paty/walk_2.png','assets/paty/walk_3.png','assets/paty/walk_4.png'] };
+                        walk: ['assets/paty/walk_1.png','assets/paty/walk_2.png','assets/paty/walk_3.png','assets/paty/walk_4.png'],
+                        portrait: 'assets/paty/portrait.png' };
   var ABHI_SPRITES = { idle: ['assets/abhi/idle_1.png','assets/abhi/idle_2.png'],
                         walk: ['assets/abhi/walk_1.png','assets/abhi/walk_2.png','assets/abhi/walk_3.png','assets/abhi/walk_4.png'],
                         hat: 'assets/abhi/prop_hat.png' };
   var ABHI_NOHAT_SPRITES = { idle: ['assets/abhi_nohat/idle_1.png','assets/abhi_nohat/idle_2.png'],
-                              walk: ['assets/abhi_nohat/walk_1.png','assets/abhi_nohat/walk_2.png','assets/abhi_nohat/walk_3.png','assets/abhi_nohat/walk_4.png'] };
+                              walk: ['assets/abhi_nohat/walk_1.png','assets/abhi_nohat/walk_2.png','assets/abhi_nohat/walk_3.png','assets/abhi_nohat/walk_4.png'],
+                              portrait: 'assets/abhi_nohat/portrait.png' };
   function startSpriteLoop(imgEl, frames, intervalMs){
     if(!imgEl || !frames.length){ return null; }
     var i = 0;
@@ -1138,7 +1140,7 @@
         +'</svg>';
     // scroll poster shows the OTHER character (hatless for Abhi — by this point
     // in the story his fedora has already blown away, per Act 1)
-    document.getElementById('posterImg').setAttribute('href', side==='bride' ? ABHI_NOHAT_SPRITES.idle[0] : PATY_SPRITES.idle[0]);
+    document.getElementById('posterImg').setAttribute('href', side==='bride' ? ABHI_NOHAT_SPRITES.portrait : PATY_SPRITES.portrait);
     // dialog voice colors
     var voiceClass = (side==='bride') ? 'paty-voice' : 'abhi-voice';
     ['act1Dialog1','act1Dialog2','act2Dialog2','act2Dialog3'].forEach(function(id){
