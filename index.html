@@ -1465,6 +1465,7 @@
     document.getElementById('pixelWorld').classList.remove('active');
     document.getElementById('transformBand').style.display = 'none';
     document.getElementById('elegantWorld').style.display = '';
+    document.getElementById('topControls').classList.add('elegant'); // skip bypasses the pixel-dissolve transition entirely, so it has to set this itself rather than relying on that transition's own trigger
     document.body.classList.remove('locked');
     initObservers();
     window.scrollTo({top:0, behavior:'auto'});
