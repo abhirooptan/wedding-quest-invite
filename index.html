@@ -151,7 +151,7 @@
   }
   .lang-btn.active{border-color:var(--px-gold); color:var(--px-gold);}
   .lang-corner{
-    position:fixed; top:56px; right:12px; z-index:600; font-family:var(--pixel); font-size:0.46rem;
+    position:fixed; top:104px; right:12px; z-index:600; font-family:var(--pixel); font-size:0.46rem;
     background:rgba(12,12,24,0.85); color:var(--px-text); border:2px solid var(--px-stone);
     padding:0.5rem 0.7rem; cursor:pointer; line-height:1.6; display:none;
   }
@@ -258,8 +258,14 @@
   #spriteMeetAbhi{ transform:translateX(-50%) scaleX(-1); }
   #spriteMeetPaty{left:28%;}
   #spriteMeetAbhi{left:72%;}
-  .meet-stage.met #spriteMeetPaty{left:45%;}
-  .meet-stage.met #spriteMeetAbhi{left:55%;}
+  /* fixed px gap (not %) for the final "met" position -- the sprite boxes
+     themselves are a fixed 140px wide, so a percentage-of-stage-width gap
+     shrinks along with the stage on narrow viewports until the (unshrinking)
+     boxes overlap; calc(50% +/- 55px) keeps the ~110px gap this was tuned at
+     on desktop (1100px stage: 550-55=495px=45%, matching the old value
+     exactly) constant in pixels at any stage width instead. */
+  .meet-stage.met #spriteMeetPaty{left:calc(50% - 55px);}
+  .meet-stage.met #spriteMeetAbhi{left:calc(50% + 55px);}
   #spriteMeetPaty .walker-body{height:153px;} /* ~90% of the standard 170px — Pat'a reads 10% smaller than Abhi in this scene */
   .meet-heart{
     position:absolute; top:0; left:50%; transform:translate(-50%,20px) scale(0);
@@ -420,7 +426,7 @@
 
   /* switch-side link */
   .side-switch{
-    position:fixed; top:12px; right:12px; z-index:600; font-family:var(--pixel); font-size:0.46rem;
+    position:fixed; top:58px; right:12px; z-index:600; font-family:var(--pixel); font-size:0.46rem;
     background:rgba(12,12,24,0.85); color:var(--px-gold); border:2px solid var(--px-stone);
     padding:0.5rem 0.7rem; cursor:pointer; display:none; line-height:1.6;
   }
@@ -1162,6 +1168,11 @@
           band.classList.add('play');
           sndDissolve();
           fadeOutMusic(); // leaving the pixel world for the wedding-info section -- music fades out for good
+          // and the quest-only corner buttons (switch side / skip / change language) have
+          // nothing left to do here -- hide them for good, same one-way transition as the music
+          document.getElementById('sideSwitch').classList.remove('visible');
+          document.getElementById('skipCorner').classList.remove('visible');
+          document.getElementById('langCorner').classList.remove('visible');
         } else {
           // reset when out of view so it replays next time, with a fresh dissolve pattern
           band.classList.remove('play');
