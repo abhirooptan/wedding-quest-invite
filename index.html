@@ -910,9 +910,23 @@
     localStorage.setItem('questSound', soundOn ? 'on' : 'off');
     updateMuteBtn();
     if(bgMusic){ bgMusic.volume = soundOn ? 0.55 : 0; }
+    if(endMusic){ endMusic.volume = soundOn ? 0.55 : 0; }
+    if(lobbyMusicGain){ lobbyMusicGain.gain.value = soundOn ? 0.5 : 0; }
     if(soundOn){ beep(660,0.09,'square',0.1); }
   });
   updateMuteBtn();
+
+  // fades an <audio> element in from 0 to targetVol over `ms`, starting playback immediately
+  function fadeInAudioElement(audio, targetVol, ms){
+    audio.volume = 0;
+    audio.play().catch(function(){});
+    var steps = 24, i = 0, stepMs = ms/steps;
+    var timer = setInterval(function(){
+      i++;
+      audio.volume = Math.min(targetVol, targetVol*i/steps);
+      if(i >= steps){ clearInterval(timer); }
+    }, stepMs);
+  }
 
   // ============ BACKGROUND MUSIC (actual audio files, per character) ============
   var MUSIC_TRACKS = { bride: 'assets/audio/lara_croft.mp3', groom: 'assets/audio/indiana_jones.mp3' };
@@ -930,8 +944,7 @@
     var audio = new Audio(MUSIC_TRACKS[side]);
     audio.dataset.side = side;
     audio.loop = true;
-    audio.volume = soundOn ? 0.55 : 0;
-    audio.play().catch(function(){}); // ignore autoplay-policy rejections; this always fires from a click handler
+    fadeInAudioElement(audio, soundOn ? 0.55 : 0, 1200); // fades in as the lobby track fades out
     bgMusic = audio;
   }
   function stopMusicNow(){
@@ -953,6 +966,101 @@
       if(i >= steps){ clearInterval(musicFadeTimer); m.pause(); }
     }, 50);
   }
+
+  // ============ LOBBY MUSIC (landing / character-select screen) ============
+  // Uses the Web Audio API directly (AudioBufferSourceNode.loopStart/loopEnd)
+  // instead of a plain looping <audio> element, because the loop point here has
+  // to be SAMPLE-ACCURATE: the source file has ~2.47s of silence before the
+  // music actually starts, and the true musical phrase repeats every exactly
+  // 24.000s from that point on (measured via cross-correlation out to 8 repeats
+  // for precision, then fine-tuned by ~6ms to align the exact splice sample and
+  // avoid an audible click -- a naive "loop the whole file" or manual
+  // currentTime-polling approach would either replay the lead-in silence every
+  // cycle -- there IS no silence anywhere else in the track for it to align
+  // with, so that produces a dead-air stutter every loop, not a seamless one --
+  // or drift by however coarse the polling interval is, which is well beyond
+  // the sub-10ms precision an audible click requires.
+  var LOBBY_LOOP = { start: 2.470, end: 26.464 };
+  var lobbyBufferPromise = null;
+  var lobbyMusicNode = null, lobbyMusicGain = null;
+  var lobbyStarted = false, lobbyDone = false;
+  function preloadLobbyMusic(){
+    var ctx = getCtx(); if(!ctx || lobbyBufferPromise) return;
+    lobbyBufferPromise = fetch('assets/audio/lobby.mp3')
+      .then(function(r){ return r.arrayBuffer(); })
+      .then(function(buf){ return ctx.decodeAudioData(buf); });
+  }
+  preloadLobbyMusic(); // kick off fetch+decode early; only actual playback needs a user gesture
+  function startLobbyMusic(){
+    if(lobbyStarted || lobbyDone) return;
+    lobbyStarted = true;
+    var ctx = getCtx(); if(!ctx) return;
+    if(ctx.state === 'suspended'){ ctx.resume(); }
+    preloadLobbyMusic();
+    lobbyBufferPromise.then(function(audioBuffer){
+      if(lobbyDone) return; // faded out while still decoding
+      var src = ctx.createBufferSource();
+      src.buffer = audioBuffer;
+      src.loop = true;
+      src.loopStart = LOBBY_LOOP.start;
+      src.loopEnd = LOBBY_LOOP.end;
+      var gain = ctx.createGain();
+      gain.gain.value = 0;
+      src.connect(gain); gain.connect(ctx.destination);
+      src.start(0);
+      lobbyMusicNode = src; lobbyMusicGain = gain;
+      var target = soundOn ? 0.5 : 0, steps = 24, i = 0;
+      var timer = setInterval(function(){
+        i++;
+        gain.gain.value = Math.min(target, target*i/steps);
+        if(i >= steps){ clearInterval(timer); }
+      }, 50);
+    }).catch(function(){});
+  }
+  function fadeOutLobbyMusic(){
+    lobbyDone = true;
+    if(!lobbyMusicGain){ return; }
+    var ctx = getCtx();
+    var g = lobbyMusicGain, src = lobbyMusicNode;
+    lobbyMusicGain = null; lobbyMusicNode = null;
+    var now = ctx.currentTime;
+    g.gain.cancelScheduledValues(now);
+    g.gain.setValueAtTime(g.gain.value, now);
+    g.gain.linearRampToValueAtTime(0.0001, now + 1.2);
+    setTimeout(function(){ try{ src.stop(); }catch(e){} }, 1300);
+  }
+  // lobby music can't autoplay on page load (browser autoplay policy) -- start it
+  // on the page's first click/tap/keypress instead, same as any other "click to
+  // enter" pattern; only fires while still on the landing screen
+  function firstGestureStartLobby(){
+    if(!document.getElementById('landing').classList.contains('dismissed')){
+      startLobbyMusic();
+    }
+  }
+  document.addEventListener('pointerdown', firstGestureStartLobby, {once:true});
+  document.addEventListener('keydown', firstGestureStartLobby, {once:true});
+
+  // ============ END MUSIC (fades in once, at the RSVP section, and stays on) ============
+  var endMusic = null, endMusicStarted = false;
+  function initEndMusicObserver(){
+    var target = document.querySelector('.rsvp-section');
+    if(!target) return;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting && !endMusicStarted){
+          endMusicStarted = true;
+          stopMusicNow(); // defensive -- should already be stopped by the time RSVP is reached
+          var audio = new Audio('assets/audio/the_end.mp3');
+          audio.loop = true;
+          fadeInAudioElement(audio, soundOn ? 0.55 : 0, 1200);
+          endMusic = audio;
+          io.disconnect(); // one-shot: once started, it stays on regardless of further scrolling
+        }
+      });
+    }, {threshold:0.2});
+    io.observe(target);
+  }
+  initEndMusicObserver();
 
   // ============ TYPEWRITER ============
   var resetToken = 0;
@@ -1202,6 +1310,7 @@
     initObservers();
     observeTransformBand();
     sndSelect();
+    fadeOutLobbyMusic();
     playQuestMusic(side);
   }
 
@@ -1216,6 +1325,7 @@
   // ---------- Skip the adventure entirely ----------
   function skipToWeddingInfo(){
     fadeOutMusic(); // no-op if nothing was playing yet (e.g. skipped straight from landing)
+    fadeOutLobbyMusic(); // covers skipping straight from the landing screen, where lobby music may be playing
     document.getElementById('landing').classList.add('dismissed');
     document.getElementById('pixelWorld').classList.remove('active');
     document.getElementById('transformBand').style.display = 'none';
@@ -1235,6 +1345,10 @@
     resetInteractions();
     stopMusicNow();
     musicDone = false; // full reset back to landing -- a fresh quest start should be able to play music again
+    if(endMusic){ endMusic.pause(); endMusic = null; }
+    endMusicStarted = false;
+    lobbyDone = false; lobbyStarted = false; lobbyMusicNode = null; lobbyMusicGain = null;
+    startLobbyMusic(); // this click is itself a user gesture, so lobby music can resume immediately
     document.getElementById('pixelWorld').classList.remove('active');
     document.getElementById('transformBand').style.display = 'none';
     document.getElementById('elegantWorld').style.display = 'none';
