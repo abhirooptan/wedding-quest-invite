@@ -979,16 +979,21 @@
     soundOn = !soundOn;
     localStorage.setItem('questSound', soundOn ? 'on' : 'off');
     updateMuteBtn();
-    if(bgMusic){ bgMusic.volume = soundOn ? 0.55 : 0; }
-    if(endMusic){ endMusic.volume = soundOn ? 0.55 : 0; }
-    if(lobbyMusicGain){ lobbyMusicGain.gain.value = soundOn ? 0.5 : 0; }
-    if(lobbyAudioEl){ lobbyAudioEl.volume = soundOn ? 0.5 : 0; }
+    // .muted, not .volume, for the plain <audio>-element tracks: iOS Safari
+    // ignores HTMLMediaElement.volume entirely (always-1.0, hardware-controlled
+    // by design -- documented WebKit behavior, not a bug), so this toggle had no
+    // audible effect there at all. .muted IS respected everywhere including iOS.
+    if(bgMusic){ bgMusic.muted = !soundOn; bgMusic.volume = soundOn ? 0.55 : 0; }
+    if(endMusic){ endMusic.muted = !soundOn; endMusic.volume = soundOn ? 0.55 : 0; }
+    if(lobbyAudioEl){ lobbyAudioEl.muted = !soundOn; lobbyAudioEl.volume = soundOn ? 0.5 : 0; }
+    if(lobbyMusicGain){ lobbyMusicGain.gain.value = soundOn ? 0.5 : 0; } // Web Audio GainNode -- .volume/.muted don't apply, this already works on iOS
     if(soundOn){ beep(660,0.09,'square',0.1); }
   });
 
   // fades an <audio> element in from 0 to targetVol over `ms`, starting playback immediately
   function fadeInAudioElement(audio, targetVol, ms){
     audio.volume = 0;
+    audio.muted = (targetVol === 0); // iOS ignores .volume entirely -- .muted is what actually silences it there
     audio.play().catch(function(){});
     var steps = 24, i = 0, stepMs = ms/steps;
     var timer = setInterval(function(){
@@ -1067,18 +1072,15 @@
   // (http/https) always gets the precise, click-free loop.
   var LOBBY_LOOP = { start: 0.023, end: 24.028 };
   var USE_WEBAUDIO_LOBBY = (location.protocol !== 'file:');
-  var lobbyBufferPromise = null;
+  var lobbyByteBufferPromise = null; // raw fetch only -- no AudioContext involved, safe to kick off anytime
   var lobbyMusicNode = null, lobbyMusicGain = null; // Web Audio path
   var lobbyAudioEl = null; // file:// fallback path
   var lobbyStarted = false, lobbyDone = false;
-  function preloadLobbyMusic(){
-    if(!USE_WEBAUDIO_LOBBY) return;
-    var ctx = getCtx(); if(!ctx || lobbyBufferPromise) return;
-    lobbyBufferPromise = fetch('assets/audio/lobby.mp3')
-      .then(function(r){ return r.arrayBuffer(); })
-      .then(function(buf){ return ctx.decodeAudioData(buf); });
+  function preloadLobbyBytes(){
+    if(!USE_WEBAUDIO_LOBBY || lobbyByteBufferPromise) return;
+    lobbyByteBufferPromise = fetch('assets/audio/lobby.mp3').then(function(r){ return r.arrayBuffer(); });
   }
-  preloadLobbyMusic(); // kick off fetch+decode early; only actual playback needs a user gesture
+  preloadLobbyBytes(); // just the download -- safe before any gesture, unlike creating an AudioContext (see below)
   function startLobbyMusic(){
     if(lobbyStarted || lobbyDone) return;
     lobbyStarted = true;
@@ -1091,28 +1093,38 @@
       lobbyAudioEl = audio;
       return;
     }
+    // getCtx() (creates the shared AudioContext the first time it's ever called)
+    // has to happen HERE, synchronously inside this gesture-triggered call --
+    // not earlier, e.g. from the page-load-time preload above. iOS Safari can
+    // permanently refuse to ever run a context that was first created outside a
+    // user gesture, even if resume() is later called from a real one; this was
+    // the actual cause of lobby music never playing on iOS regardless of how
+    // many times it was tapped. Decoding itself doesn't need a gesture (it works
+    // on a suspended context), only creating+running the context does.
     var ctx = getCtx(); if(!ctx) return;
     if(ctx.state === 'suspended'){ ctx.resume(); }
-    preloadLobbyMusic();
-    lobbyBufferPromise.then(function(audioBuffer){
-      if(lobbyDone) return; // faded out while still decoding
-      var src = ctx.createBufferSource();
-      src.buffer = audioBuffer;
-      src.loop = true;
-      src.loopStart = LOBBY_LOOP.start;
-      src.loopEnd = LOBBY_LOOP.end;
-      var gain = ctx.createGain();
-      gain.gain.value = 0;
-      src.connect(gain); gain.connect(ctx.destination);
-      src.start(0);
-      lobbyMusicNode = src; lobbyMusicGain = gain;
-      var target = soundOn ? 0.5 : 0, steps = 24, i = 0;
-      var timer = setInterval(function(){
-        i++;
-        gain.gain.value = Math.min(target, target*i/steps);
-        if(i >= steps){ clearInterval(timer); }
-      }, 50);
-    }).catch(function(){});
+    preloadLobbyBytes();
+    lobbyByteBufferPromise
+      .then(function(arrayBuf){ return ctx.decodeAudioData(arrayBuf); })
+      .then(function(audioBuffer){
+        if(lobbyDone) return; // faded out while still decoding
+        var src = ctx.createBufferSource();
+        src.buffer = audioBuffer;
+        src.loop = true;
+        src.loopStart = LOBBY_LOOP.start;
+        src.loopEnd = LOBBY_LOOP.end;
+        var gain = ctx.createGain();
+        gain.gain.value = 0;
+        src.connect(gain); gain.connect(ctx.destination);
+        src.start(0);
+        lobbyMusicNode = src; lobbyMusicGain = gain;
+        var target = soundOn ? 0.5 : 0, steps = 24, i = 0;
+        var timer = setInterval(function(){
+          i++;
+          gain.gain.value = Math.min(target, target*i/steps);
+          if(i >= steps){ clearInterval(timer); }
+        }, 50);
+      }).catch(function(){});
   }
   function fadeOutLobbyMusic(){
     lobbyDone = true;
@@ -1144,7 +1156,27 @@
   // the modal, starting music before the player has actually chosen to play.
 
   // ============ END MUSIC (fades in once, at the RSVP section, and stays on) ============
-  var endMusic = null, endMusicStarted = false;
+  var endMusic = null, endMusicStarted = false, endMusicUnlocked = false;
+  // iOS Safari flatly refuses .play() unless it's called synchronously in
+  // response to a real user gesture -- scrolling an IntersectionObserver
+  // target into view doesn't count, no matter how many times something ELSE
+  // gets tapped first. The standard workaround: play the element (silently)
+  // once during an actual gesture, then immediately pause it. iOS treats that
+  // element as "unlocked" for the rest of the page's life, so the later
+  // IntersectionObserver-triggered .play() (same element, reused, not a new
+  // one) is allowed through even though that call itself isn't gesture-driven.
+  function unlockEndMusic(){
+    if(endMusicUnlocked) return;
+    endMusicUnlocked = true;
+    var audio = new Audio('assets/audio/the_end.mp3');
+    audio.loop = true;
+    audio.volume = 0;
+    audio.muted = true; // this play+immediately-pause is purely to unlock the element on iOS -- must be silent regardless of soundOn, .volume alone won't do that there
+    var p = audio.play();
+    if(p && p.then){ p.then(function(){ audio.pause(); audio.currentTime = 0; }).catch(function(){}); }
+    else { audio.pause(); audio.currentTime = 0; }
+    endMusic = audio;
+  }
   function initEndMusicObserver(){
     var target = document.querySelector('.rsvp-section');
     if(!target) return;
@@ -1153,10 +1185,8 @@
         if(e.isIntersecting && !endMusicStarted){
           endMusicStarted = true;
           stopMusicNow(); // defensive -- should already be stopped by the time RSVP is reached
-          var audio = new Audio('assets/audio/the_end.mp3');
-          audio.loop = true;
-          fadeInAudioElement(audio, soundOn ? 0.55 : 0, 1200);
-          endMusic = audio;
+          if(!endMusic){ endMusic = new Audio('assets/audio/the_end.mp3'); endMusic.loop = true; } // unlock somehow never ran -- best effort, may be silent on iOS
+          fadeInAudioElement(endMusic, soundOn ? 0.55 : 0, 1200);
           io.disconnect(); // one-shot: once started, it stays on regardless of further scrolling
         }
       });
@@ -1487,11 +1517,13 @@
     forceSoundOn();
     sndSelect();
     startLobbyMusic(); // the only place lobby music ever starts -- see the comment above startLobbyMusic's old first-gesture listener
+    unlockEndMusic(); // both entry paths can eventually reach the RSVP section, so both need to unlock it
   });
   document.getElementById('entrySkipBtn').addEventListener('click', function(){
     document.getElementById('entryModal').classList.add('dismissed');
     forceSoundOn();
     skipToWeddingInfo();
+    unlockEndMusic();
   });
 
   // ============ TAP INTERACTIONS ============
