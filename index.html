@@ -20,7 +20,7 @@
     --label:'Marcellus',serif; --pixel:'Press Start 2P',monospace;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
+  html{scroll-behavior:smooth; overflow-x:hidden;}
   body{background:var(--px-night); color:var(--px-text); font-family:var(--serif); overflow-x:hidden;}
   body.locked{overflow:hidden;}
   img{max-width:100%;display:block;}
@@ -437,6 +437,23 @@
   }
   .side-switch.visible{display:block;}
   .side-switch:hover{border-color:var(--px-gold);}
+
+  /* On narrow screens the top-right corner cluster (mute/switch-side/language)
+     takes up a lot more of the width relative to centered scene text, and the
+     scroll-freeze during Act 1's wind moment can hold a scene heading or
+     locked-hint right at the top of the viewport for a couple of seconds while
+     it's fully covered by these fixed, opaque buttons. Two changes: shrink the
+     buttons themselves, and give scene content enough top clearance that it
+     doesn't render directly behind that shrunken zone at the moment a section
+     first comes into view (mid-scroll passes are unavoidable and brief; the
+     freeze is not, so that's the case this specifically targets). */
+  @media (max-width:640px){
+    .mute-toggle{top:8px; right:8px; font-size:0.42rem; padding:0.45rem 0.55rem;}
+    .side-switch{top:48px; right:8px; font-size:0.4rem; padding:0.45rem 0.6rem;}
+    .lang-corner{top:88px; right:8px; font-size:0.4rem; padding:0.45rem 0.6rem;}
+    .skip-corner{top:8px; left:8px; font-size:0.4rem; padding:0.45rem 0.6rem;}
+    .px-scene{padding-top:8.5rem;}
+  }
 </style>
 </head>
 <body class="locked">
@@ -917,8 +934,13 @@
   function sndLost(){ beep(500,0.1,'sawtooth',0.08); beep(320,0.14,'sawtooth',0.07,0.09); }
   function updateMuteBtn(){
     var strs = UI[currentLang] || UI.en;
+    // fall back to plain English if a stale cached locale/*.js (from before these
+    // keys existed) is still loaded -- better a wrong-language label than the
+    // literal string "undefined" rendered on screen
+    var onLabel = strs.soundOnLabel || 'SOUND';
+    var offLabel = strs.soundOffLabel || 'MUTED';
     document.getElementById('muteToggle').innerHTML =
-      (soundOn ? '&#128266;' : '&#128263;') + ' <span>' + (soundOn ? strs.soundOnLabel : strs.soundOffLabel) + '</span>';
+      (soundOn ? '&#128266;' : '&#128263;') + ' <span>' + (soundOn ? onLabel : offLabel) + '</span>';
   }
   document.getElementById('muteToggle').addEventListener('click', function(){
     soundOn = !soundOn;
