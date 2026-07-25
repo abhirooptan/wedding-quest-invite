@@ -6,7 +6,7 @@
 window.LOCALE_SK = {
   ui: {
     landingTitle: 'VÝPRAVA ZA<br>DRUHOU POLOVIČKOU',
-    landingSub: "Dvaja bádatelia. Jedna zhoda.<br>Skutočný príbeh. (Väčšinou.)<br><br>Patricia &amp; Abhiroop",
+    landingSub: "Dvaja bádatelia. Jedna výprava.<br>Skutočný príbeh. (Väčšinou.)<br><br>Patricia &amp; Abhiroop",
     brideCardTitle: 'STRANA NEVESTY', brideCardDesc: "Hraj za PAT'U CROFT<br>Bádateľku zlatého mesta",
     groomCardTitle: 'STRANA ŽENÍCHA', groomCardDesc: 'Hraj za ABHIHO JONESA<br>Hľadača veľkých dobrodružstiev',
     pressHint: '&#9654; VYBER SI STRANU A ZAČNI &#9664;',

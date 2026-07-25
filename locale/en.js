@@ -6,7 +6,7 @@
 window.LOCALE_EN = {
   ui: {
     landingTitle: 'THE QUEST FOR<br>THE OTHER HALF',
-    landingSub: "Two explorers. One match.<br>A true story. (Mostly.)<br><br>Patricia &amp; Abhiroop",
+    landingSub: "Two explorers. One quest.<br>A true story. (Mostly.)<br><br>Patricia &amp; Abhiroop",
     brideCardTitle: "BRIDE'S SIDE", brideCardDesc: "Play as PAT'A CROFT<br>Explorer of the Golden City",
     groomCardTitle: "GROOM'S SIDE", groomCardDesc: "Play as ABHI JONES<br>Seeker of grand adventures",
     pressHint: '&#9654; CHOOSE YOUR SIDE TO BEGIN &#9664;',
