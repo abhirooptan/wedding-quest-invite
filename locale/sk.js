@@ -10,6 +10,7 @@ window.LOCALE_SK = {
     brideCardTitle: 'STRANA NEVESTY', brideCardDesc: "Hraj za PAT'U CROFT<br>Bádateľku zlatého mesta",
     groomCardTitle: 'STRANA ŽENÍCHA', groomCardDesc: 'Hraj za ABHIHO JONESA<br>Hľadača veľkých dobrodružstiev',
     pressHint: '&#9654; VYBER SI STRANU A ZAČNI &#9664;',
+    soundOnLabel: 'ZVUK', soundOffLabel: 'STÍŠENÉ',
     skipLinkLanding: 'Prišiel si len po info o svadbe? Preskočiť dobrodružstvo &rarr;',
     skipCorner: '&#9654; PRESKOČIŤ NA INFO O SVADBE',
     tapTag: '[ KLEPNI PRE OTVORENIE ]', tapTagBride: '[ KLEPNI A ZDVIHNI ]',
