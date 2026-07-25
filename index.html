@@ -979,21 +979,30 @@
     soundOn = !soundOn;
     localStorage.setItem('questSound', soundOn ? 'on' : 'off');
     updateMuteBtn();
-    // .muted, not .volume, for the plain <audio>-element tracks: iOS Safari
-    // ignores HTMLMediaElement.volume entirely (always-1.0, hardware-controlled
-    // by design -- documented WebKit behavior, not a bug), so this toggle had no
-    // audible effect there at all. .muted IS respected everywhere including iOS.
-    if(bgMusic){ bgMusic.muted = !soundOn; bgMusic.volume = soundOn ? 0.55 : 0; }
-    if(endMusic){ endMusic.muted = !soundOn; endMusic.volume = soundOn ? 0.55 : 0; }
-    if(lobbyAudioEl){ lobbyAudioEl.muted = !soundOn; lobbyAudioEl.volume = soundOn ? 0.5 : 0; }
-    if(lobbyMusicGain){ lobbyMusicGain.gain.value = soundOn ? 0.5 : 0; } // Web Audio GainNode -- .volume/.muted don't apply, this already works on iOS
+    // pause()/play() rather than .volume or .muted for the plain <audio>-element
+    // tracks: iOS Safari ignores HTMLMediaElement.volume entirely (always-1.0,
+    // hardware-controlled by design), and .muted has enough of its own platform
+    // quirks (see unlockEndMusic's comment on muted plays not always "counting")
+    // that it isn't trustworthy either. pause()/play() are the two most
+    // basic, universally-reliable media operations there are -- play() after
+    // pause() resumes from the same currentTime, so this is seamless either way.
+    // endMusic is gated on endMusicStarted so this doesn't prematurely start it
+    // during its dormant "unlocked but not yet triggered" state.
+    if(bgMusic){ if(soundOn){ bgMusic.play().catch(function(){}); } else { bgMusic.pause(); } }
+    if(endMusic && endMusicStarted){ if(soundOn){ endMusic.play().catch(function(){}); } else { endMusic.pause(); } }
+    if(lobbyAudioEl){ if(soundOn){ lobbyAudioEl.play().catch(function(){}); } else { lobbyAudioEl.pause(); } }
+    if(lobbyMusicGain){ lobbyMusicGain.gain.value = soundOn ? 0.5 : 0; } // Web Audio GainNode -- a different API surface, already reliable on iOS
     if(soundOn){ beep(660,0.09,'square',0.1); }
   });
 
   // fades an <audio> element in from 0 to targetVol over `ms`, starting playback immediately
   function fadeInAudioElement(audio, targetVol, ms){
+    // fade quality (the gradual volume ramp below) is best-effort only -- iOS
+    // ignores HTMLMediaElement.volume entirely, so it just plays at full volume
+    // immediately there with no ramp. The mute toggle uses pause()/play()
+    // instead of volume/muted specifically because of this, and that part does
+    // work correctly on iOS regardless of whether the fade itself animates.
     audio.volume = 0;
-    audio.muted = (targetVol === 0); // iOS ignores .volume entirely -- .muted is what actually silences it there
     audio.play().catch(function(){});
     var steps = 24, i = 0, stepMs = ms/steps;
     var timer = setInterval(function(){
@@ -1072,15 +1081,45 @@
   // (http/https) always gets the precise, click-free loop.
   var LOBBY_LOOP = { start: 0.023, end: 24.028 };
   var USE_WEBAUDIO_LOBBY = (location.protocol !== 'file:');
-  var lobbyByteBufferPromise = null; // raw fetch only -- no AudioContext involved, safe to kick off anytime
+  var lobbyAudioBuffer = null; // decoded ahead of time -- ready to play with ZERO async
+                                // gap once a gesture arrives, see startLobbyMusic() below
+  var lobbyDecodePromise = null;
   var lobbyMusicNode = null, lobbyMusicGain = null; // Web Audio path
   var lobbyAudioEl = null; // file:// fallback path
   var lobbyStarted = false, lobbyDone = false;
-  function preloadLobbyBytes(){
-    if(!USE_WEBAUDIO_LOBBY || lobbyByteBufferPromise) return;
-    lobbyByteBufferPromise = fetch('assets/audio/lobby.mp3').then(function(r){ return r.arrayBuffer(); });
+  function preloadAndDecodeLobby(){
+    if(!USE_WEBAUDIO_LOBBY || lobbyDecodePromise) return;
+    // decodeAudioData doesn't need a gesture-authorized/running context -- it
+    // works regardless of context state -- so this uses its OWN disposable
+    // context rather than the shared one getCtx() manages, keeping that one
+    // untouched (i.e. not yet created at all) until a real gesture happens.
+    var decodeCtx;
+    try{ decodeCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; }
+    lobbyDecodePromise = fetch('assets/audio/lobby.mp3')
+      .then(function(r){ return r.arrayBuffer(); })
+      .then(function(buf){ return decodeCtx.decodeAudioData(buf); })
+      .then(function(audioBuffer){ lobbyAudioBuffer = audioBuffer; return audioBuffer; });
   }
-  preloadLobbyBytes(); // just the download -- safe before any gesture, unlike creating an AudioContext (see below)
+  preloadAndDecodeLobby(); // safe before any gesture -- decoding needs no gesture, only actual playback does
+  function playLobbyBuffer(ctx, audioBuffer){
+    if(lobbyDone) return;
+    var src = ctx.createBufferSource();
+    src.buffer = audioBuffer;
+    src.loop = true;
+    src.loopStart = LOBBY_LOOP.start;
+    src.loopEnd = LOBBY_LOOP.end;
+    var gain = ctx.createGain();
+    gain.gain.value = 0;
+    src.connect(gain); gain.connect(ctx.destination);
+    src.start(0);
+    lobbyMusicNode = src; lobbyMusicGain = gain;
+    var target = soundOn ? 0.5 : 0, steps = 24, i = 0;
+    var timer = setInterval(function(){
+      i++;
+      gain.gain.value = Math.min(target, target*i/steps);
+      if(i >= steps){ clearInterval(timer); }
+    }, 50);
+  }
   function startLobbyMusic(){
     if(lobbyStarted || lobbyDone) return;
     lobbyStarted = true;
@@ -1095,36 +1134,25 @@
     }
     // getCtx() (creates the shared AudioContext the first time it's ever called)
     // has to happen HERE, synchronously inside this gesture-triggered call --
-    // not earlier, e.g. from the page-load-time preload above. iOS Safari can
-    // permanently refuse to ever run a context that was first created outside a
-    // user gesture, even if resume() is later called from a real one; this was
-    // the actual cause of lobby music never playing on iOS regardless of how
-    // many times it was tapped. Decoding itself doesn't need a gesture (it works
-    // on a suspended context), only creating+running the context does.
+    // not earlier. iOS Safari can permanently refuse to ever run a context that
+    // was first created outside a user gesture, even if resume() is later
+    // called from a real one. Just as important: if the buffer is already
+    // decoded (the common case, since decoding started well before this click),
+    // playback starts with NO async gap at all from the gesture -- entirely
+    // inside this synchronous handler, the most reliable pattern there is.
+    // Moving context creation into the gesture alone wasn't sufficient on real
+    // iOS hardware; the previous version still routed the actual src.start()
+    // through an async fetch+decode chain even though the context itself was
+    // created on time, and that gap was apparently still enough for iOS to
+    // treat the resulting playback as not gesture-authorized.
     var ctx = getCtx(); if(!ctx) return;
     if(ctx.state === 'suspended'){ ctx.resume(); }
-    preloadLobbyBytes();
-    lobbyByteBufferPromise
-      .then(function(arrayBuf){ return ctx.decodeAudioData(arrayBuf); })
-      .then(function(audioBuffer){
-        if(lobbyDone) return; // faded out while still decoding
-        var src = ctx.createBufferSource();
-        src.buffer = audioBuffer;
-        src.loop = true;
-        src.loopStart = LOBBY_LOOP.start;
-        src.loopEnd = LOBBY_LOOP.end;
-        var gain = ctx.createGain();
-        gain.gain.value = 0;
-        src.connect(gain); gain.connect(ctx.destination);
-        src.start(0);
-        lobbyMusicNode = src; lobbyMusicGain = gain;
-        var target = soundOn ? 0.5 : 0, steps = 24, i = 0;
-        var timer = setInterval(function(){
-          i++;
-          gain.gain.value = Math.min(target, target*i/steps);
-          if(i >= steps){ clearInterval(timer); }
-        }, 50);
-      }).catch(function(){});
+    if(lobbyAudioBuffer){
+      playLobbyBuffer(ctx, lobbyAudioBuffer);
+    } else {
+      preloadAndDecodeLobby();
+      if(lobbyDecodePromise){ lobbyDecodePromise.then(function(buf){ playLobbyBuffer(ctx, buf); }).catch(function(){}); }
+    }
   }
   function fadeOutLobbyMusic(){
     lobbyDone = true;
@@ -1170,11 +1198,18 @@
     endMusicUnlocked = true;
     var audio = new Audio('assets/audio/the_end.mp3');
     audio.loop = true;
-    audio.volume = 0;
-    audio.muted = true; // this play+immediately-pause is purely to unlock the element on iOS -- must be silent regardless of soundOn, .volume alone won't do that there
-    var p = audio.play();
-    if(p && p.then){ p.then(function(){ audio.pause(); audio.currentTime = 0; }).catch(function(){}); }
-    else { audio.pause(); audio.currentTime = 0; }
+    // Deliberately NOT muted here, and NOT waiting for the play() promise before
+    // pausing. A muted/silenced play may not register as a real, gesture-
+    // authorized play at all on iOS -- since a muted autoplay doesn't need
+    // permission in the first place, it may grant no unlock credit either, which
+    // would make the whole trick a no-op. Calling pause() synchronously, in the
+    // very next line rather than inside the play() promise's .then(), is the
+    // standard pattern: audio hardware doesn't actually start producing sound
+    // until slightly after play() is called, so pausing immediately (same tick)
+    // reliably beats it there in practice, without needing to mute.
+    audio.play().catch(function(){});
+    audio.pause();
+    audio.currentTime = 0;
     endMusic = audio;
   }
   function initEndMusicObserver(){
