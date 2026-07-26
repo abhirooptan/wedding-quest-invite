@@ -321,27 +321,52 @@
     display:flex; align-items:center; justify-content:center; padding:6rem 1.5rem;
   }
   .dissolve-grid{position:absolute; inset:0; display:grid; grid-template-columns:repeat(12,1fr); grid-template-rows:repeat(14,1fr); z-index:1; pointer-events:none;}
-  .dissolve-grid i{background:var(--cream); opacity:0;}
-  .transform-band.play .dissolve-grid i{opacity:1; transition:opacity 0.45s steps(3);}
+  /* two-stage dissolve: dark game-palette cells pop in first (radiating out from
+     the dialogue panel at the grid's center, per-cell delay in --d1), then a
+     second wave of cells turns cream a beat later (--d2) as the ivory world
+     "replaces" the dark one rather than the two colours appearing simultaneously */
+  .dissolve-grid i{
+    background:var(--px-dusk); opacity:0;
+    transition:opacity 0.4s steps(3) var(--d1,0s), background-color 0.45s steps(3) var(--d2,0s);
+  }
+  .transform-band.play .dissolve-grid i{opacity:1;}
+  .transform-band.play.ivory-phase .dissolve-grid i{background:var(--cream);}
   .px-farewell{
     position:absolute; top:16%; left:50%; transform:translateX(-50%); z-index:2;
     font-family:var(--pixel); font-size:clamp(0.55rem,2.6vw,0.72rem); color:var(--px-text);
     line-height:2.2; text-align:center; text-shadow:2px 2px 0 rgba(0,0,0,0.4); width:100%; padding:0 1rem;
-    transition:opacity 0.7s ease;
+    /* colour shifts toward olive as the background lightens underneath it, THEN
+       fades out -- keeps it legible through the brightest part of the wipe
+       instead of going ivory-on-ivory (see Volume_2_Revised §3.3) */
+    transition:color 0.9s ease 0.3s, opacity 0.6s ease 1.4s;
   }
-  .transform-band.play .px-farewell{opacity:0; transition-delay:1s;}
-  .transform-content{
-    position:relative; z-index:2; text-align:center; max-width:640px;
-    opacity:0; transform:translateY(26px);
-    transition:opacity 1.1s ease 1.7s, transform 1.1s ease 1.7s;
+  .transform-band.play .px-farewell{color:var(--olive-deep); opacity:0;}
+  .transform-content{position:relative; z-index:2; text-align:center; max-width:740px; transform:translateY(-4vh);}
+  /* editorial copy gets its own staggered entrance (date -> heading -> divider ->
+     paragraph) instead of fading in as one block, so it reads with a natural
+     rhythm rather than competing with the pixel effect (Volume_2_Revised §3.4) */
+  .transform-content p, .transform-content .transform-rule{
+    opacity:0; transform:translateY(18px); transition:opacity 0.8s ease, transform 0.8s ease;
   }
-  .transform-band.play .transform-content{opacity:1; transform:translateY(0);}
-  .transform-eyebrow{font-family:var(--label); letter-spacing:0.4em; text-transform:uppercase; font-size:0.72rem; color:var(--gold); margin-bottom:1.4rem;}
-  .transform-heading{font-family:var(--serif); font-weight:400; font-size:clamp(1.9rem,5vw,2.9rem); line-height:1.25; color:var(--olive-deep);}
+  .transform-band.play .transform-eyebrow{transition-delay:2.4s;}
+  .transform-band.play .transform-heading{transition-delay:2.55s;}
+  .transform-band.play .transform-rule{transition-delay:2.7s;}
+  .transform-band.play .transform-sub{transition-delay:2.9s;}
+  .transform-band.play .transform-eyebrow,
+  .transform-band.play .transform-heading,
+  .transform-band.play .transform-rule,
+  .transform-band.play .transform-sub{opacity:1; transform:translateY(0);}
+  .transform-eyebrow{font-family:var(--label); letter-spacing:0.4em; text-transform:uppercase; font-size:0.82rem; color:var(--gold); margin-bottom:0.9rem;}
+  .transform-heading{font-family:var(--serif); font-weight:400; font-size:clamp(2.875rem,4.5vw,4.75rem); line-height:1.15; color:var(--olive-deep);}
   .transform-rule{width:52px; height:1px; background:var(--gold); margin:1.8rem auto;}
-  .transform-sub{font-family:var(--serif); font-style:italic; font-size:clamp(1.05rem,2.6vw,1.25rem); line-height:1.7; color:var(--ink); opacity:0.75;}
+  .transform-sub{font-family:var(--serif); font-style:italic; font-size:clamp(1.25rem,2.6vw,1.5rem); line-height:1.7; color:var(--ink); opacity:0.75;}
   @media (prefers-reduced-motion: reduce){
-    .transform-band.play .dissolve-grid i, .transform-band.play .transform-content{transition:none;}
+    .transform-band.play .dissolve-grid i,
+    .transform-band.play .px-farewell,
+    .transform-band.play .transform-eyebrow,
+    .transform-band.play .transform-heading,
+    .transform-band.play .transform-rule,
+    .transform-band.play .transform-sub{transition:none;}
   }
 
   /* ============ ELEGANT WORLD ============ */
@@ -361,62 +386,208 @@
     html{scroll-behavior:auto;}
   }
 
-  /* expeditions: passport stamps */
+  /* expeditions: illustrated waypoint map -- every destination is a real
+     button positioned over its illustrated marker on the map artwork
+     (percentage coordinates), not a decorative background with unrelated
+     buttons on top. Clicking opens a centred Polaroid deck; the map dims
+     behind it. See Expeditions_Map_Implementation_Spec.md. */
   .expeditions-section{background:var(--cream);}
-  .stamp-grid{margin-top:2.8rem; display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; max-width:720px; margin-left:auto; margin-right:auto;}
-  .stamp{
-    border:1.5px solid var(--olive); border-radius:6px; padding:0.7rem 1.1rem;
-    font-family:var(--label); font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase;
-    color:var(--olive-deep); background:rgba(143,160,122,0.07); position:relative;
+  .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
+  .expeditions-map-scroll{margin-top:2.8rem;}
+  .expeditions-map-wrap{position:relative; width:min(100%,1500px); margin-inline:auto;}
+  .expeditions-map{position:relative; width:100%; opacity:0; transition:opacity 0.7s ease;}
+  .expeditions-map.is-visible{opacity:1;}
+  .expeditions-map img{display:block; width:100%; height:auto;}
+  .expeditions-map.dimmed::after{
+    content:''; position:absolute; inset:0; background:rgba(35,30,20,0.45);
+    transition:opacity 0.3s ease; border-radius:2px;
   }
-  .stamp small{display:block; font-size:0.58rem; letter-spacing:0.2em; color:var(--gold); margin-top:0.25rem;}
-  .stamp:nth-child(odd){transform:rotate(-2.5deg);}
-  .stamp:nth-child(even){transform:rotate(2deg);}
-  .stamp:nth-child(3n){border-style:dashed;}
-  .expedition-note{text-align:center; margin-top:2.2rem; font-style:italic; opacity:0.7; font-size:1.05rem;}
+  .map-waypoints{position:absolute; inset:0;}
+  .map-waypoint{
+    position:absolute; width:clamp(28px,4vw,44px); height:clamp(28px,4vw,44px);
+    transform:translate(-50%,-50%); border:0; border-radius:50%; background:transparent;
+    cursor:pointer; padding:0; box-shadow:0 0 0 0 rgba(196,166,97,0);
+    transition:transform 220ms ease, box-shadow 220ms ease;
+  }
+  .map-waypoint:hover, .map-waypoint:focus-visible{
+    box-shadow:0 0 0 3px rgba(196,166,97,0.6); transform:translate(-50%,-52%);
+  }
+  .map-waypoint:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+  .map-waypoint.active{box-shadow:0 0 0 3px rgba(196,166,97,0.9);}
+  @media (prefers-reduced-motion: reduce){
+    .map-waypoint, .expeditions-map{transition:none;}
+  }
+  @media (max-width:768px){
+    .expeditions-map-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:0.7rem;}
+    .expeditions-map-wrap{width:1100px; max-width:none;}
+    .map-waypoint{width:44px; height:44px;} /* fixed touch target on mobile regardless of the clamp() above */
+  }
 
-  /* proposal: santorini sunset */
-  .proposal-section{
-    background:linear-gradient(180deg,#2C3550 0%, #6E4A5E 40%, #C97B4A 75%, #E8C170 100%);
-    color:var(--cream); text-align:center;
+  /* hover/focus preview: one shared floating card, repositioned per waypoint
+     (desktop pointer devices only -- mobile has no hover state to rely on) */
+  .map-hover-preview{
+    position:absolute; z-index:5; width:clamp(140px,15vw,200px); pointer-events:none;
+    opacity:0; transform:translateY(6px); transition:opacity 0.2s ease, transform 0.2s ease;
+    background:#FFFDF7; border-radius:2px; box-shadow:0 10px 26px rgba(0,0,0,0.2); padding:0.5rem 0.5rem 0.65rem;
   }
+  .map-hover-preview.show{opacity:1; transform:translateY(0);}
+  .map-hover-preview .mhp-photo{
+    position:relative; width:100%; aspect-ratio:4/5; border-radius:1px; overflow:hidden;
+    background:linear-gradient(145deg, rgba(223,214,193,0.85), rgba(199,190,170,0.55));
+    display:flex; align-items:center; justify-content:center; color:rgba(44,47,34,0.4);
+    font-family:var(--label); font-size:1.1rem; letter-spacing:0.06em;
+  }
+  .map-hover-preview .mhp-photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  .map-hover-preview .mhp-label{margin-top:0.5rem; font-family:var(--label); font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--olive-deep); text-align:center;}
+  .map-hover-preview .mhp-count{font-size:0.6rem; opacity:0.55; text-align:center; margin-top:0.15rem; font-family:var(--label); letter-spacing:0.05em;}
+  @media (max-width:768px){ .map-hover-preview{display:none;} }
+
+  /* Polaroid deck: fixed centred overlay so both desktop and mobile share one
+     implementation -- the semi-transparent scrim still lets the map show
+     through, satisfying "map remains visible behind" without two separate
+     layout systems to maintain. */
+  .polaroid-deck{
+    position:fixed; inset:0; z-index:700; display:flex; align-items:center; justify-content:center;
+    padding:1.5rem; background:rgba(30,26,18,0.55);
+    opacity:0; visibility:hidden; transition:opacity 0.3s ease, visibility 0.3s;
+  }
+  .polaroid-deck.open{opacity:1; visibility:visible;}
+  .polaroid-card{
+    background:var(--cream); border-radius:2px; max-width:420px; width:100%; padding:1.9rem 1.7rem 1.7rem;
+    position:relative; box-shadow:0 24px 64px rgba(0,0,0,0.32);
+    transform:translateY(16px); opacity:0; transition:transform 0.35s ease, opacity 0.35s ease;
+  }
+  .polaroid-deck.open .polaroid-card{transform:translateY(0); opacity:1;}
+  .polaroid-close{
+    position:absolute; top:0.5rem; right:0.5rem; width:34px; height:34px; border:none; background:transparent;
+    cursor:pointer; color:var(--olive-deep); display:flex; align-items:center; justify-content:center; opacity:0.6;
+  }
+  .polaroid-close:hover{opacity:1;}
+  .polaroid-close svg{width:18px; height:18px;}
+  .polaroid-photo-stage{position:relative; width:100%; aspect-ratio:4/5;}
+  .polaroid-photo{
+    position:absolute; inset:0; border-radius:2px; overflow:hidden;
+    background:linear-gradient(145deg, rgba(223,214,193,0.85), rgba(199,190,170,0.55));
+    display:flex; align-items:center; justify-content:center; color:rgba(44,47,34,0.5);
+    font-family:var(--label); font-size:0.72rem; text-align:center; padding:1.2rem; line-height:1.6;
+    transition:opacity 0.4s ease, transform 0.4s ease;
+  }
+  .polaroid-photo.swap{opacity:0; transform:translateY(10px);}
+  .polaroid-photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  .polaroid-caption{margin-top:1.1rem; text-align:center;}
+  .polaroid-caption .p-label{font-family:var(--label); font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--olive-deep);}
+  .polaroid-caption .p-memory{margin-top:0.5rem; font-style:italic; opacity:0.8; font-size:0.98rem; line-height:1.55;}
+  .polaroid-nav{display:flex; align-items:center; justify-content:center; gap:1.4rem; margin-top:1.3rem;}
+  .polaroid-nav button{
+    background:none; border:1px solid var(--olive); color:var(--olive-deep); width:34px; height:34px;
+    border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .polaroid-nav button:hover:not(:disabled){background:var(--gold-light); border-color:var(--gold);}
+  .polaroid-nav button:disabled{opacity:0.25; cursor:default;}
+  .polaroid-nav button svg{width:16px; height:16px;}
+  .polaroid-counter{font-family:var(--label); font-size:0.7rem; letter-spacing:0.08em; color:var(--gold); min-width:3.6rem; text-align:center;}
+  @media (prefers-reduced-motion: reduce){
+    .polaroid-deck, .polaroid-card, .polaroid-photo{transition-duration:1ms;}
+  }
+  .expedition-note{text-align:center; margin-top:2.4rem; font-style:italic; opacity:0.7; font-size:1.05rem;}
+
+  /* proposal: santorini sunset -- the emotional climax before practical wedding
+     info begins. Copy reveals sequentially (not all at once) per Task3's
+     motion choreography, and the gradient darkens toward olive at the very
+     bottom so the handoff into Wedding Details reads as "daylight becoming
+     evening" rather than a hard section cut. */
+  .proposal-section{
+    background:linear-gradient(180deg,#2C3550 0%, #6E4A5E 40%, #C97B4A 75%, #E8C170 92%, var(--olive-deep) 100%);
+    color:var(--cream); text-align:center; position:relative; overflow:hidden;
+  }
+  .proposal-section .section-inner{position:relative; z-index:1;}
   .proposal-section h2{color:var(--cream);}
   .proposal-section .eyebrow{color:#F2DA8C;}
   .proposal-line{font-style:italic; font-size:clamp(1.2rem,3vw,1.55rem); line-height:1.7; max-width:600px; margin:1.8rem auto 0;}
   .proposal-script{font-family:var(--script); font-size:clamp(2.6rem,8vw,4rem); color:#FFF3D6; margin-top:1.6rem; text-shadow:0 2px 18px rgba(0,0,0,0.25);}
   .proposal-date{font-family:var(--label); letter-spacing:0.22em; font-size:0.85rem; text-transform:uppercase; color:#F2DA8C; margin-top:1.2rem;}
-  .proposal-sun{width:70px; height:70px; margin:0 auto 1.4rem; border-radius:50%; background:radial-gradient(circle, #FFF3D6 0%, #F2C744 55%, rgba(242,199,68,0) 72%);}
+  .proposal-sun{
+    width:70px; height:70px; margin:0 auto 1.4rem; border-radius:50%;
+    background:radial-gradient(circle, #FFF3D6 0%, #F2C744 55%, rgba(242,199,68,0) 72%);
+    transition:transform 1.8s ease, filter 1.8s ease;
+  }
+  .proposal-section.play .proposal-sun{transform:translateY(28px); filter:brightness(1.1);}
+  /* reserved photography layer -- future engagement photo fades into the
+     lower third under the gradient; a warm-grey placeholder holds the space
+     and correct proportions until it exists (Task3 "Proposal Photograph") */
+  .proposal-photo-placeholder{
+    position:absolute; left:0; right:0; bottom:0; height:38%; z-index:0; pointer-events:none;
+    display:flex; align-items:flex-end; justify-content:center; padding-bottom:1.3rem;
+  }
+  .proposal-photo-placeholder img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  /* the darkening gradient is its own layer so it still reads as a moody vignette
+     whether or not a real photo has been dropped in underneath it yet */
+  .proposal-photo-scrim{
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(44,53,80,0) 0%, rgba(35,24,16,0.5) 55%, rgba(20,14,10,0.72) 100%);
+  }
+  .proposal-photo-placeholder span{
+    position:relative; font-family:var(--label); font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; color:rgba(255,255,255,0.5);
+  }
+  /* sequential reveal: each element gets its own delay off .proposal-section.play
+     instead of every line fading in together (Task3 §"Motion Choreography") */
+  .proposal-section .p-seq{opacity:0; transform:translateY(16px); transition:opacity 0.9s ease, transform 0.9s ease;}
+  .proposal-section.play #propEyebrow{transition-delay:0.5s;}
+  .proposal-section.play #propHeading{transition-delay:0.7s;}
+  .proposal-section.play #propLine1{transition-delay:1.1s;}
+  .proposal-section.play #propScript{transition-delay:1.8s;}
+  .proposal-section.play #propDate{transition-delay:2.3s;}
+  .proposal-section.play #propLine2{transition-delay:2.6s;}
+  .proposal-section.play .p-seq{opacity:1; transform:translateY(0);}
+  @media (prefers-reduced-motion: reduce){
+    .proposal-sun, .proposal-section .p-seq{transition:none;}
+  }
 
-  /* gallery */
-  .gallery-section{background:#EFEBD9;}
-  .gallery-grid{margin-top:3rem; display:grid; gap:0.9rem; grid-template-columns:repeat(6,1fr);}
-  .g-tile{border-radius:2px; aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:rgba(255,255,255,0.92);}
-  .g-tile svg{width:24px; height:24px; opacity:0.9;}
-  .g-tile span{font-family:var(--label); font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; margin-top:0.5rem;}
-  .g1{grid-column:span 3; background:linear-gradient(150deg,#5A6B45,#2C3520);}
-  .g2{grid-column:span 3; background:linear-gradient(150deg,#8FA07A,#5A6B45);}
-  .g3{grid-column:span 2; background:linear-gradient(150deg,#4C5B39,#2C3520);}
-  .g4{grid-column:span 2; background:linear-gradient(150deg,#6B7A54,#3B4A2E);}
-  .g5{grid-column:span 2; background:linear-gradient(150deg,var(--gold),#9A7C3E);}
-  @media (max-width:720px){.gallery-grid{grid-template-columns:repeat(2,1fr);} .g1,.g2,.g3,.g4,.g5{grid-column:span 1;}}
-  .gallery-note{text-align:center; margin-top:2rem; font-family:var(--label); font-size:0.74rem; letter-spacing:0.08em; opacity:0.6;}
-
-  /* details */
+  /* details -- editorial chapters, not dashboard cards (Task4): information is
+     organised by spacing/typography/dividers instead of bordered containers,
+     which was "the biggest visual break in the entire experience" per the doc. */
   .details-section{background:linear-gradient(180deg,var(--olive-deep),var(--olive-deepest)); color:var(--cream);}
   .details-section h2{color:var(--cream);}
-  .details-grid{margin-top:3rem; display:grid; grid-template-columns:1fr 1fr; gap:1.8rem;}
-  @media (max-width:640px){.details-grid{grid-template-columns:1fr;}}
-  .arch-card{border:1px solid rgba(196,166,97,0.35); border-radius:70px 70px 4px 4px; padding:3rem 1.6rem 2rem; text-align:center; background:rgba(196,166,97,0.04);}
-  .arch-card svg{width:30px; height:30px; margin:0 auto 1rem; color:var(--gold);}
-  .arch-card h3{font-weight:500; font-size:1.35rem; margin-bottom:0.5rem;}
-  .arch-card p{opacity:0.75; line-height:1.6;}
+  .details-intro{max-width:480px; margin:1.1rem auto 0; font-style:italic; opacity:0.75; font-size:1.05rem; text-align:center;}
+  .detail-chapter{max-width:600px; margin:0 auto; text-align:center;}
+  .detail-chapter-media{
+    position:relative; overflow:hidden; width:100%; border-radius:2px; margin-bottom:1.5rem; border:1px solid rgba(196,166,97,0.25);
+    background:linear-gradient(150deg, rgba(196,166,97,0.14), rgba(196,166,97,0.05));
+    display:flex; align-items:center; justify-content:center; padding:1rem; text-align:center;
+    color:rgba(248,245,234,0.45); font-family:var(--label); font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase;
+  }
+  .detail-chapter-media img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  .detail-media-169{aspect-ratio:16/9;}
+  .detail-chapter h3{font-weight:500; font-size:1.5rem; margin-bottom:0.5rem;}
+  .detail-chapter p{opacity:0.75; line-height:1.6;}
+  .detail-map-link{
+    display:inline-block; margin-top:0.9rem; font-family:var(--label); font-size:0.74rem; letter-spacing:0.06em;
+    color:var(--gold-light); text-decoration:none; border-bottom:1px solid rgba(224,202,152,0.4);
+  }
+  .detail-map-link:hover{color:var(--cream);}
+  .detail-divider{width:44px; height:1px; background:rgba(196,166,97,0.4); margin:3.2rem auto;}
+  .detail-support-row{display:flex; justify-content:center; gap:2.6rem; flex-wrap:wrap; margin-top:0.4rem;}
+  .detail-support-item{text-align:center; font-family:var(--label); font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; opacity:0.85;}
+  .detail-support-item small{display:block; margin-top:0.4rem; font-family:var(--serif); font-style:italic; text-transform:none; letter-spacing:0; font-size:0.85rem; opacity:0.55;}
   .detail-time{font-family:var(--label); letter-spacing:0.12em; font-size:0.82rem; color:var(--gold-light); margin-top:0.8rem; display:block;}
-  .quest-line{font-family:var(--pixel); font-size:0.5rem; color:var(--gold-light); opacity:0.65; text-align:center; margin-top:2.4rem; line-height:2;}
+  .quest-line{font-family:var(--pixel); font-size:0.5rem; color:var(--gold-light); opacity:0.65; text-align:center; margin-top:3rem; line-height:2;}
+
+  /* sticky RSVP: appears once the guest reaches Wedding Details' first chapter,
+     hides again once the RSVP section itself is on screen (Task4 "Mobile") */
+  .sticky-rsvp{
+    position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(24px);
+    background:var(--olive-deep); color:var(--cream); font-family:var(--label); font-size:0.78rem; letter-spacing:0.08em;
+    border:none; cursor:pointer; padding:0.7rem 1.5rem; border-radius:30px; box-shadow:0 6px 18px rgba(0,0,0,0.2);
+    opacity:0; pointer-events:none; z-index:500; transition:opacity 0.35s ease, transform 0.35s ease;
+  }
+  .sticky-rsvp.show{opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto;}
+  @media (max-width:640px){ .sticky-rsvp{bottom:16px; font-size:0.72rem; padding:0.6rem 1.3rem;} }
+  @media (prefers-reduced-motion: reduce){ .sticky-rsvp{transition:opacity 0.2s ease;} }
 
   /* rsvp */
   .rsvp-section{background:#F1EEDF;}
   .rsvp-section h2{text-align:center;}
-  .trellis-frame{max-width:560px; margin:2.4rem auto 0; border:1px solid rgba(90,107,69,0.3); padding:2.4rem 1.8rem; position:relative; border-radius:2px; background:var(--cream);}
+  .trellis-frame{max-width:600px; margin:2.4rem auto 0; border:1px solid rgba(90,107,69,0.3); padding:2.4rem 1.8rem; position:relative; border-radius:2px; background:var(--cream);}
   .trellis-frame::before, .trellis-frame::after{content:''; position:absolute; width:26px; height:26px; border:1px solid var(--gold);}
   .trellis-frame::before{top:-1px; left:-1px; border-right:none; border-bottom:none;}
   .trellis-frame::after{bottom:-1px; right:-1px; border-left:none; border-top:none;}
@@ -430,7 +601,14 @@
   .rsvp-btn:hover{background:var(--gold); color:var(--ink);}
   .rsvp-btn.declined{background:#6B7280;}
   .rsvp-btn.declined:hover{background:#4B5563;}
-  .rsvp-success{display:none; text-align:center; margin-top:1.4rem; font-style:italic; color:var(--olive-deep); font-size:1.05rem;}
+  /* success replaces the form in place -- form fields hide (not just the
+     button) so the guest is left with a quiet confirmation, not a spent form
+     still sitting on screen (Task5 "Confirmation State") */
+  .rsvp-form.submitted > *:not(.rsvp-success){display:none !important;}
+  .rsvp-success{display:none; text-align:center; margin-top:0.4rem;}
+  .rsvp-success-icon{width:26px; height:26px; margin:0 auto 0.9rem; color:var(--gold);}
+  .rsvp-success-icon svg{width:100%; height:100%;}
+  .rsvp-success p{font-style:italic; color:var(--olive-deep); font-size:1.1rem; line-height:1.65;}
   .rsvp-note{text-align:center; margin-top:1.6rem; font-size:0.9rem; opacity:0.6;}
   .req-mark{color:#B5533C; margin-left:0.2rem; font-family:var(--serif); font-size:1rem;}
   #mealAllergySection{display:flex; flex-direction:column; gap:1.4rem;}
@@ -443,9 +621,11 @@
   .add-guest-btn{align-self:flex-start; background:transparent; border:1px dashed var(--gold); color:var(--olive-deep); padding:0.7rem 1.2rem; border-radius:2px; cursor:pointer; font-family:var(--label); font-size:0.8rem; letter-spacing:0.04em; margin-bottom:0.4rem;}
   .add-guest-btn:hover{background:var(--gold-light);}
 
-  /* footer */
-  .footer{background:var(--olive-deepest); color:var(--cream); text-align:center; padding:5rem 1.5rem 3rem;}
-  .footer .sprite-box{width:240px; height:150px; margin:0 auto 1.4rem; position:relative; display:flex; align-items:flex-end; justify-content:center; gap:8px;}
+  /* footer -- closes the story, not the website: fewer competing lines and
+     more room around the characters so it reads as a storybook's final page
+     rather than game credits packed into one screen (Task5 "Farewell / Footer") */
+  .footer{background:var(--olive-deepest); color:var(--cream); text-align:center; padding:7rem 1.5rem 3.5rem;}
+  .footer .sprite-box{width:240px; height:150px; margin:0 auto 2rem; position:relative; display:flex; align-items:flex-end; justify-content:center; gap:8px;}
   .footer .sprite-box img{height:140px; width:auto; image-rendering:pixelated; image-rendering:crisp-edges;}
   .footer .sprite-box img#footerPaty{height:126px;} /* ~90% of Abhi's height — same size relationship as the Act 3 reunion */
   .footer .sprite-box img#footerAbhi{transform:scaleX(-1);} /* mirrored so the couple face each other, matching the Act 3 reunion convention */
@@ -457,7 +637,9 @@
   @media (prefers-reduced-motion: reduce){ .footer-deco{animation:none;} }
   .footer-names{font-family:var(--script); font-size:clamp(2.4rem,6vw,3.4rem); color:var(--gold-light);}
   .footer p{margin-top:0.9rem; opacity:0.62; font-size:0.92rem;}
-  .footer .px-credit{font-family:var(--pixel); font-size:0.46rem; opacity:0.4; margin-top:2.2rem; line-height:2;}
+  .footer-tagline{font-style:italic;}
+  .footer .px-credit{font-family:var(--pixel); font-size:0.46rem; opacity:0.4; margin-top:2.8rem; line-height:2;}
+  .footer-copyright{margin-top:1.3rem; font-size:0.7rem; opacity:0.35;}
 
   /* On narrow screens the scroll-freeze during Act 1's wind moment can hold a
      scene heading or locked-hint right at the top of the viewport for a couple
@@ -795,70 +977,98 @@
     <div class="section-inner">
       <p class="eyebrow center reveal" id="expedEyebrow">And the trips never stopped</p>
       <h2 class="center reveal" id="expedHeading">The Expeditions</h2>
-      <div class="stamp-grid reveal">
-        <div class="stamp" id="stampMalta">Malta</div>
-        <div class="stamp" id="stampPoland">Poland</div>
-        <div class="stamp" id="stampSlovakia">Slovakia</div>
-        <div class="stamp" id="stampMallorca">Mallorca</div>
-        <div class="stamp" id="stampIndia">India</div>
-        <div class="stamp" id="stampAdriatic">Adriatic Sea <small id="stampSailing">&#9973; sailing</small></div>
-        <div class="stamp" id="stampPortugal">Portugal</div>
-        <div class="stamp" id="stampSpain">Spain</div>
-        <div class="stamp" id="stampBelgium">Belgium</div>
-        <div class="stamp" id="stampLondon">London</div>
+      <p class="expedition-note reveal" id="expedNote" style="margin-top:0.8rem;">Ten countries, two passports, one shared map — every trip another chapter.</p>
+
+      <ul class="sr-only" id="expedSrList" aria-label="Expedition destinations"></ul>
+
+      <div class="expeditions-map-scroll">
+        <div class="expeditions-map-wrap">
+          <div class="expeditions-map" id="expeditionsMap">
+            <img src="assets/images/expeditions-map.png" alt="Illustrated map of Patricia and Abhiroop's shared expeditions, from Ireland and London through mainland Europe to Malta, Santorini and India" id="expeditionsMapImg">
+            <div class="map-waypoints" id="mapWaypoints"></div>
+            <div class="map-hover-preview" id="mapHoverPreview" aria-hidden="true">
+              <div class="mhp-photo" id="mhpPhoto"></div>
+              <p class="mhp-label" id="mhpLabel"></p>
+              <p class="mhp-count" id="mhpCount"></p>
+            </div>
+          </div>
+        </div>
       </div>
-      <p class="expedition-note reveal" id="expedNote">Ten countries, two passports, one shared map — every trip another chapter.</p>
     </div>
   </section>
 
-  <section class="proposal-section">
-    <div class="section-inner">
-      <div class="proposal-sun reveal"></div>
-      <p class="eyebrow center reveal" id="propEyebrow">Santorini &middot; Skaros Rock</p>
-      <h2 class="center reveal" id="propHeading">The Sunset That Changed Everything</h2>
-      <p class="proposal-line reveal" id="propLine1">As the sun sank into the Aegean, one explorer got down on one knee — and the greatest treasure hunt of all came to an end.</p>
-      <p class="proposal-script reveal" id="propScript">She said yes</p>
-      <p class="proposal-date reveal" id="propDate">29 March 2026</p>
-      <p class="proposal-line reveal" id="propLine2" style="font-size:1.05rem; opacity:0.85;">New York celebrated with us that spring. And now... the final adventure is being planned.</p>
-    </div>
-  </section>
-
-  <section class="gallery-section">
-    <div class="section-inner">
-      <p class="eyebrow center reveal" id="galEyebrow">The treasure was the memories</p>
-      <h2 class="center reveal" id="galHeading">Our Gallery</h2>
-      <div class="gallery-grid">
-        <div class="g-tile g1 reveal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3l1.5 2H19a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h3.5L9 3zm3 6a4 4 0 100 8 4 4 0 000-8z"/></svg><span>Lucknow</span></div>
-        <div class="g-tile g2 reveal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3l1.5 2H19a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h3.5L9 3zm3 6a4 4 0 100 8 4 4 0 000-8z"/></svg><span>Dublin</span></div>
-        <div class="g-tile g3 reveal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3l1.5 2H19a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h3.5L9 3zm3 6a4 4 0 100 8 4 4 0 000-8z"/></svg><span>Trnava</span></div>
-        <div class="g-tile g4 reveal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3l1.5 2H19a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h3.5L9 3zm3 6a4 4 0 100 8 4 4 0 000-8z"/></svg><span>Prague</span></div>
-        <div class="g-tile g5 reveal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C.5 8 3 4 7 4c2 0 4 1.5 5 3.5C13 5.5 15 4 17 4c4 0 6.5 4 4.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg><span id="gTogether">Together</span></div>
+  <div class="polaroid-deck" id="polaroidDeck" role="dialog" aria-modal="true" aria-label="Destination memories">
+    <div class="polaroid-card">
+      <button type="button" class="polaroid-close" id="polaroidClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+      <div class="polaroid-photo-stage">
+        <div class="polaroid-photo" id="polaroidPhoto"><img id="polaroidPhotoImg" alt="" style="display:none;"><span id="polaroidPhotoNote"></span></div>
       </div>
-      <p class="gallery-note" id="galNote">Real photos coming here — from every place this quest has taken us</p>
+      <div class="polaroid-caption">
+        <p class="p-label" id="polaroidLabel"></p>
+        <p class="p-memory" id="polaroidMemory"></p>
+      </div>
+      <div class="polaroid-nav">
+        <button type="button" id="polaroidPrev" aria-label="Previous photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <span class="polaroid-counter" id="polaroidCounter"></span>
+        <button type="button" id="polaroidNext" aria-label="Next photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <section class="proposal-section" id="proposalSection">
+    <div class="proposal-photo-placeholder">
+      <img id="proposalPhotoImg" alt="" style="display:none;">
+      <div class="proposal-photo-scrim"></div>
+      <span id="propPhotoNote">Engagement photograph coming soon</span>
+    </div>
+    <div class="section-inner">
+      <div class="proposal-sun"></div>
+      <p class="eyebrow center p-seq" id="propEyebrow">Santorini &middot; Skaros Rock</p>
+      <h2 class="center p-seq" id="propHeading">The Sunset That Changed Everything</h2>
+      <p class="proposal-line p-seq" id="propLine1">As the sun sank into the Aegean, one explorer got down on one knee — and the greatest treasure hunt of all came to an end.</p>
+      <p class="proposal-script p-seq" id="propScript">She said yes</p>
+      <p class="proposal-date p-seq" id="propDate">29 March 2026</p>
+      <p class="proposal-line p-seq" id="propLine2" style="font-size:1.05rem; opacity:0.85;">New York celebrated with us that spring. And now... the final adventure is being planned.</p>
     </div>
   </section>
 
-  <section class="details-section">
+  <section class="details-section" id="detailsSection">
     <div class="section-inner">
       <p class="eyebrow center reveal" id="detEyebrow" style="color:var(--gold-light);">The final level</p>
       <h2 class="center reveal" id="detHeading">The Wedding</h2>
-      <div class="details-grid">
-        <div class="arch-card reveal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 2L3 7l9 5 9-5-9-5z"/><path d="M3 7v10l9 5 9-5V7"/></svg>
-          <h3 id="ceremonyTitle">Ceremony</h3>
-          <p id="ceremonyDesc">Venue scouting expedition<br>currently underway</p>
-          <span class="detail-time" id="ceremonyTime">Date &amp; place to be revealed</span>
-        </div>
-        <div class="arch-card reveal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 20V10a2 2 0 012-2h12a2 2 0 012 2v10"/><path d="M4 20h16"/><path d="M9 20v-5h6v5"/></svg>
-          <h3 id="receptionTitle">Celebration</h3>
-          <p id="receptionDesc">One legendary party<br>details coming soon</p>
-          <span class="detail-time" id="receptionTime">Watch this space</span>
-        </div>
+      <p class="details-intro reveal" id="detIntro">The next part of the story is still being planned. Everything you need will appear here.</p>
+
+      <div class="detail-chapter reveal" id="chapterCeremony">
+        <div class="detail-chapter-media detail-media-169"><img id="ceremonyPhotoImg" alt="" style="display:none;"><span id="ceremonyPhotoNote">Venue photograph coming soon</span></div>
+        <h3 id="ceremonyTitle">Ceremony</h3>
+        <p id="ceremonyDesc">Venue scouting expedition<br>currently underway</p>
+        <span class="detail-time" id="ceremonyTime">Date &amp; place to be revealed</span>
+        <a class="detail-map-link" id="ceremonyMapLink" href="#" style="display:none;">Open in Maps &rarr;</a>
       </div>
+
+      <div class="detail-divider" aria-hidden="true"></div>
+
+      <div class="detail-chapter reveal" id="chapterCelebration">
+        <div class="detail-chapter-media detail-media-169"><img id="receptionPhotoImg" alt="" style="display:none;"><span id="receptionPhotoNote">Celebration photograph coming soon</span></div>
+        <h3 id="receptionTitle">Celebration</h3>
+        <p id="receptionDesc">One legendary party<br>details coming soon</p>
+        <span class="detail-time" id="receptionTime">Watch this space</span>
+      </div>
+
+      <div class="detail-divider" aria-hidden="true"></div>
+
+      <div class="detail-support-row reveal">
+        <div class="detail-support-item"><span id="supportTravel">Travel</span><small id="supportTravelNote">Coming soon</small></div>
+        <div class="detail-support-item"><span id="supportStay">Accommodation</span><small id="supportStayNote">Coming soon</small></div>
+        <div class="detail-support-item"><span id="supportFaq">FAQ</span><small id="supportFaqNote">Coming soon</small></div>
+      </div>
+
       <p class="quest-line" id="detQuestLine">SIDE QUEST IN PROGRESS: THE GREAT VENUE HUNT</p>
     </div>
   </section>
+  <button class="sticky-rsvp" id="stickyRsvp" type="button"><span id="stickyRsvpLabel">RSVP &rarr;</span></button>
 
   <section class="rsvp-section">
     <div class="section-inner">
@@ -910,7 +1120,10 @@
             <textarea id="message" name="message" rows="3"></textarea>
           </div>
           <button type="submit" class="rsvp-btn" id="rsvpBtnText">&#9654; ACCEPT QUEST</button>
-          <p class="rsvp-success" id="rsvpSuccess">Quest accepted! Thank you — we can't wait to celebrate with you.</p>
+          <div class="rsvp-success" id="rsvpSuccess">
+            <div class="rsvp-success-icon" id="rsvpSuccessIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.5-9.5-9C.7 7.8 3 4.5 6.5 4.5c2 0 3.7 1.2 5.5 3.3 1.8-2.1 3.5-3.3 5.5-3.3 3.5 0 5.8 3.3 4 6.5-2.5 4.5-9.5 9-9.5 9z"/></svg></div>
+            <p id="rsvpSuccessText">Quest accepted! Thank you — we can't wait to celebrate with you.</p>
+          </div>
         </form>
       </div>
       <p class="rsvp-note" id="rsvpNote">Questions? Reach out at hello@patriciaandabhiroop.com</p>
@@ -926,9 +1139,9 @@
       <span class="footer-deco footer-deco-r" aria-hidden="true">&#10024;</span>
     </div>
     <div class="footer-names">Patricia &amp; Abhiroop</div>
-    <p id="footLine1">Lucknow to Dublin. Trnava to Prague. And now, one shared map.</p>
-    <p id="footLine2">Wedding details coming soon &mdash; the quest continues</p>
-    <p class="px-credit" id="footCredit">PLAYER 1 &amp; PLAYER 2 &middot; CO-OP MODE: FOREVER<br>&#9829; THANKS FOR PLAYING &#9829;</p>
+    <p class="footer-tagline" id="footTagline">The adventure continues.</p>
+    <p class="px-credit" id="footCredit">PLAYER 1 &amp; PLAYER 2 &middot; CO-OP MODE: FOREVER</p>
+    <p class="footer-copyright" id="footCopyright">&copy; 2026 Patricia &amp; Abhiroop</p>
   </footer>
 </div>
 
@@ -1344,6 +1557,235 @@
 
   var currentLang = localStorage.getItem('questLang') || 'en';
 
+  // ============ EXPEDITIONS: ILLUSTRATED WAYPOINT MAP ============
+  // Percentage coordinates over assets/images/expeditions-map.png, per
+  // Expeditions_Map_Implementation_Spec.md. Location names/routes are baked
+  // into the artwork itself -- these buttons are the accessible interactive
+  // layer on top of it, not a decorative background.
+  // `id` doubles as the filename slug under assets/photos/expeditions/:
+  // <id>.jpg is photo 1, <id>-2.jpg / <id>-3.jpg ... up to <id>-12.jpg are
+  // additional deck photos, all optional and resolved lazily on first open.
+  // coordinates re-measured directly against the updated map artwork (colour-
+  // thresholded marker detection, not eyeballed) after the image update added
+  // real markers at New York + Adriatic Sea and removed a stray unlabeled
+  // waypoint that used to sit between Poland and Czech Republic.
+  var EXPEDITIONS = [
+    {id:'ireland', key:'destIreland', x:11.2, y:21.4},
+    {id:'london', key:'destLondon', x:18.8, y:21.2},
+    {id:'belgium', key:'destBelgium', x:29.0, y:22.8},
+    {id:'poland', key:'destPoland', x:43.5, y:19.6},
+    {id:'czech-republic', key:'destCzechRepublic', x:40.2, y:36.7},
+    {id:'slovakia', key:'destSlovakia', x:48.8, y:40.9},
+    {id:'new-york', key:'destNewYork', x:13.2, y:49.6},
+    {id:'adriatic-sea', key:'destAdriaticSea', x:54.0, y:50.7},
+    {id:'portugal', key:'destPortugal', x:14.0, y:57.8},
+    {id:'spain', key:'destSpain', x:20.4, y:54.3},
+    {id:'mallorca', key:'destMallorca', x:29.5, y:52.6},
+    {id:'malta', key:'destMalta', x:46.1, y:74.1},
+    {id:'santorini', key:'destSantorini', x:60.9, y:85.4},
+    {id:'india', key:'destIndia', x:75.9, y:65.9}
+  ];
+  var MAX_DECK_PHOTOS = 12;
+  var expeditionPhotoCache = {};
+  // probes <id>[-n].{jpg,jpeg,png} for n=1..MAX_DECK_PHOTOS in parallel and
+  // caches whichever ones actually resolve -- lets a destination go from zero
+  // photos to a full deck just by dropping numbered files in, no code changes,
+  // and doesn't require the numbers to be contiguous.
+  function resolveExpeditionPhotos(id, cb){
+    if(expeditionPhotoCache[id]){ cb(expeditionPhotoCache[id]); return; }
+    var found = new Array(MAX_DECK_PHOTOS);
+    var pending = MAX_DECK_PHOTOS;
+    function finish(){
+      var list = found.filter(function(u){ return !!u; });
+      expeditionPhotoCache[id] = list;
+      cb(list);
+    }
+    for(var n = 1; n <= MAX_DECK_PHOTOS; n++){
+      (function(n){
+        var base = 'assets/photos/expeditions/' + id + (n === 1 ? '' : ('-' + n));
+        var exts = ['.jpg','.jpeg','.png'];
+        var ei = 0;
+        var probe = new Image();
+        function tryExt(){
+          if(ei >= exts.length){ pending--; if(pending === 0){ finish(); } return; }
+          probe.onload = function(){ found[n-1] = base + exts[ei]; pending--; if(pending === 0){ finish(); } };
+          probe.onerror = function(){ ei++; tryExt(); };
+          probe.src = base + exts[ei];
+        }
+        tryExt();
+      })(n);
+    }
+  }
+  // tries each candidate URL in order (covers .jpg/.jpeg/.png without asking
+  // the user to rename anything); falls back to the placeholder note if none
+  // of them exist yet -- this is what lets photo uploads "just work" with no
+  // further code changes once dropped into assets/photos/.
+  function wireImageWithFallbacks(img, note, basePath){
+    var candidates = [basePath + '.jpg', basePath + '.jpeg', basePath + '.png'];
+    var i = 0;
+    img.onload = function(){ img.style.display = ''; if(note) note.style.display = 'none'; };
+    img.onerror = function(){
+      i++;
+      if(i < candidates.length){ img.src = candidates[i]; }
+      else { img.style.display = 'none'; if(note) note.style.display = ''; }
+    };
+    img.style.display = 'none';
+    if(note) note.style.display = '';
+    img.src = candidates[0];
+  }
+
+  // "IRELAND" -> "I", "CZECH REPUBLIC" -> "CR" -- used for the hover preview's
+  // placeholder tile before any photo has been uploaded for that destination
+  function destinationInitials(name){
+    return name.split(/\s+/).slice(0,2).map(function(w){ return w.charAt(0).toUpperCase(); }).join('');
+  }
+  function renderExpeditionWaypoints(lang){
+    var strs = UI[lang];
+    var wrap = document.getElementById('mapWaypoints');
+    var srList = document.getElementById('expedSrList');
+    if(!wrap) return;
+    wrap.innerHTML = '';
+    srList.innerHTML = '';
+    EXPEDITIONS.forEach(function(ex, idx){
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'map-waypoint';
+      btn.style.left = ex.x + '%';
+      btn.style.top = ex.y + '%';
+      btn.setAttribute('aria-label', strs.expedOpenLabel.replace('{name}', strs[ex.key]));
+      btn.setAttribute('aria-haspopup', 'dialog');
+      btn.addEventListener('mouseenter', function(){ showMapHoverPreview(idx); });
+      btn.addEventListener('mouseleave', hideMapHoverPreview);
+      btn.addEventListener('focus', function(){ showMapHoverPreview(idx); });
+      btn.addEventListener('blur', hideMapHoverPreview);
+      btn.addEventListener('click', function(){ openPolaroidDeck(idx); });
+      wrap.appendChild(btn);
+
+      var li = document.createElement('li');
+      li.textContent = strs[ex.key];
+      srList.appendChild(li);
+    });
+  }
+
+  function showMapHoverPreview(idx){
+    var ex = EXPEDITIONS[idx];
+    var strs = UI[currentLang];
+    var preview = document.getElementById('mapHoverPreview');
+    preview.style.left = ex.x + '%';
+    preview.style.top = ex.y + '%';
+    // flip to the other side near the map's edges so the preview never runs off it
+    var xOffset = ex.x > 62 ? '-108%' : '18px';
+    var yOffset = ex.y > 65 ? 'calc(-100% - 18px)' : '-50%';
+    preview.style.transform = 'translate(' + xOffset + ',' + yOffset + ')';
+    document.getElementById('mhpLabel').textContent = strs[ex.key];
+    var photoEl = document.getElementById('mhpPhoto');
+    var countEl = document.getElementById('mhpCount');
+    photoEl.innerHTML = '';
+    countEl.textContent = '';
+    resolveExpeditionPhotos(ex.id, function(photos){
+      countEl.textContent = photos.length ? strs.expedMemoryCountTemplate.replace('{n}', photos.length) : strs.expedComingSoon;
+      if(photos.length){
+        var img = document.createElement('img');
+        img.src = photos[0]; img.alt = '';
+        photoEl.innerHTML = '';
+        photoEl.appendChild(img);
+      } else {
+        photoEl.textContent = destinationInitials(strs[ex.key]);
+      }
+    });
+    preview.classList.add('show');
+  }
+  function hideMapHoverPreview(){
+    document.getElementById('mapHoverPreview').classList.remove('show');
+  }
+
+  // ---- Polaroid deck: previous/next, keyboard arrows, Escape, touch swipe ----
+  var deckState = {idx:null, photos:[], photoIdx:0, triggerBtn:null};
+  function openPolaroidDeck(idx){
+    var ex = EXPEDITIONS[idx];
+    var strs = UI[currentLang];
+    hideMapHoverPreview();
+    document.getElementById('expeditionsMap').classList.add('dimmed');
+    var waypointBtns = document.querySelectorAll('.map-waypoint');
+    waypointBtns.forEach(function(b,i){ b.classList.toggle('active', i===idx); });
+    deckState.idx = idx;
+    deckState.triggerBtn = waypointBtns[idx];
+    document.getElementById('polaroidLabel').textContent = strs[ex.key];
+    document.getElementById('polaroidDeck').setAttribute('aria-label', strs[ex.key] + ' memories');
+    resolveExpeditionPhotos(ex.id, function(photos){
+      deckState.photos = photos;
+      deckState.photoIdx = 0;
+      renderPolaroidPhoto(true);
+      document.getElementById('polaroidDeck').classList.add('open');
+      document.getElementById('polaroidClose').focus();
+      document.removeEventListener('keydown', onDeckKeydown);
+      document.addEventListener('keydown', onDeckKeydown);
+    });
+    sndTap();
+  }
+  function closePolaroidDeck(){
+    document.getElementById('polaroidDeck').classList.remove('open');
+    document.getElementById('expeditionsMap').classList.remove('dimmed');
+    document.querySelectorAll('.map-waypoint').forEach(function(b){ b.classList.remove('active'); });
+    document.removeEventListener('keydown', onDeckKeydown);
+    if(deckState.triggerBtn){ deckState.triggerBtn.focus(); }
+  }
+  function onDeckKeydown(e){
+    if(e.key === 'Escape'){ closePolaroidDeck(); }
+    else if(e.key === 'ArrowLeft'){ stepPolaroid(-1); }
+    else if(e.key === 'ArrowRight'){ stepPolaroid(1); }
+  }
+  function stepPolaroid(dir){
+    var total = deckState.photos.length || 1;
+    var next = deckState.photoIdx + dir;
+    if(next < 0 || next >= total) return;
+    deckState.photoIdx = next;
+    renderPolaroidPhoto(false);
+  }
+  function renderPolaroidPhoto(instant){
+    var strs = UI[currentLang];
+    var photoEl = document.getElementById('polaroidPhoto');
+    var render = function(){
+      var img = document.getElementById('polaroidPhotoImg');
+      var note = document.getElementById('polaroidPhotoNote');
+      if(deckState.photos.length){
+        img.src = deckState.photos[deckState.photoIdx];
+        img.style.display = ''; note.style.display = 'none';
+      } else {
+        img.style.display = 'none'; note.style.display = '';
+        note.textContent = strs.expedComingSoonLong;
+      }
+      // per-destination memory line: once real captions exist, add locale keys
+      // named "memory_<id>" (e.g. memory_ireland) and they'll be picked up
+      // automatically here -- falls back to the generic placeholder until then
+      var ex = EXPEDITIONS[deckState.idx];
+      document.getElementById('polaroidMemory').textContent = strs['memory_' + ex.id] || strs.expedPlaceholderMemory;
+      var total = deckState.photos.length || 1;
+      document.getElementById('polaroidCounter').textContent = (deckState.photoIdx+1) + ' / ' + total;
+      document.getElementById('polaroidPrev').disabled = deckState.photoIdx <= 0;
+      document.getElementById('polaroidNext').disabled = deckState.photoIdx >= total - 1;
+      photoEl.classList.remove('swap');
+    };
+    if(instant){ render(); return; }
+    photoEl.classList.add('swap');
+    setTimeout(render, 180);
+  }
+  document.getElementById('polaroidClose').addEventListener('click', closePolaroidDeck);
+  document.getElementById('polaroidPrev').addEventListener('click', function(){ stepPolaroid(-1); });
+  document.getElementById('polaroidNext').addEventListener('click', function(){ stepPolaroid(1); });
+  document.getElementById('polaroidDeck').addEventListener('click', function(e){ if(e.target === this){ closePolaroidDeck(); } });
+  (function(){
+    var startX = null;
+    var stage = document.querySelector('.polaroid-photo-stage');
+    stage.addEventListener('touchstart', function(e){ startX = e.touches[0].clientX; }, {passive:true});
+    stage.addEventListener('touchend', function(e){
+      if(startX === null) return;
+      var dx = e.changedTouches[0].clientX - startX;
+      if(Math.abs(dx) > 40){ stepPolaroid(dx < 0 ? 1 : -1); }
+      startX = null;
+    }, {passive:true});
+  })();
+
   // The per-side story dialogue (act1Dialog1, act2Loot, etc) isn't part of UI --
   // it's set once, per side, at startQuest() time from STORY[lang][side], keyed
   // by element id in a dataset.full attribute that the typewriter effect reads
@@ -1392,6 +1834,7 @@
     document.getElementById('landingLangSelect').value = lang; // keep in sync if language changed elsewhere (e.g. the entry modal)
     document.getElementById('tapTag').textContent = (chosenSide === 'bride') ? strs.tapTagBride : strs.tapTag;
     updateStoryLanguage(lang);
+    renderExpeditionWaypoints(lang);
   }
 
   // handles both the landing page's own EN/SK/CZ row and the entry modal's
@@ -1418,19 +1861,32 @@
     starsBox.appendChild(s);
   }
 
-  // dissolve grid: 12x14 cream cells with random pixel-dissolve delays
+  // dissolve grid: 12x14 cells, two delay values per cell (--d1 dark-in, --d2
+  // ivory-swap) computed from distance-to-center so the wipe visibly radiates
+  // outward from the middle of the grid (where the dialogue panel sat) instead
+  // of popping in at uniformly random points (Volume_2_Revised §3.2)
+  var GRID_COLS = 12, GRID_ROWS = 14;
   var dissolveGrid = document.getElementById('dissolveGrid');
-  for(var d=0; d<168; d++){
-    var cell = document.createElement('i');
-    cell.style.transitionDelay = (Math.random()*1.3).toFixed(2) + 's';
-    dissolveGrid.appendChild(cell);
+  function setupDissolveCells(){
+    dissolveGrid.innerHTML = '';
+    var maxDist = Math.hypot(GRID_COLS/2, GRID_ROWS/2);
+    for(var r=0; r<GRID_ROWS; r++){
+      for(var c=0; c<GRID_COLS; c++){
+        var cell = document.createElement('i');
+        var dist = Math.hypot((c - GRID_COLS/2 + 0.5), (r - GRID_ROWS/2 + 0.5)) / maxDist;
+        cell.style.setProperty('--d1', (dist*0.75 + Math.random()*0.25).toFixed(2) + 's');
+        cell.style.setProperty('--d2', (dist*0.5 + Math.random()*0.3).toFixed(2) + 's');
+        dissolveGrid.appendChild(cell);
+      }
+    }
   }
+  setupDissolveCells();
   var bandObserved = false;
   function observeTransformBand(){
     if(bandObserved){ return; }
     bandObserved = true;
     var band = document.getElementById('transformBand');
-    var cells = dissolveGrid.querySelectorAll('i');
+    var ivoryTimer = null;
     var bandIO = new IntersectionObserver(function(entries){
       entries.forEach(function(e){
         if(e.isIntersecting){
@@ -1438,12 +1894,15 @@
           sndDissolve();
           fadeOutMusic(); // leaving the pixel world for the wedding-info section -- music fades out for good
           document.getElementById('topControls').classList.add('elegant'); // and its own look transforms to match, for good
+          // ivory cells swap in on their own beat, after the dark field has had
+          // time to spread -- this is what makes it read as "reality replacing
+          // the dark pixels" rather than one flat colour fade
+          ivoryTimer = setTimeout(function(){ band.classList.add('ivory-phase'); }, 900);
         } else {
           // reset when out of view so it replays next time, with a fresh dissolve pattern
-          band.classList.remove('play');
-          cells.forEach(function(cell){
-            cell.style.transitionDelay = (Math.random()*1.3).toFixed(2) + 's';
-          });
+          clearTimeout(ivoryTimer);
+          band.classList.remove('play','ivory-phase');
+          setupDissolveCells();
         }
       });
     }, {threshold:0.35});
@@ -1705,8 +2164,18 @@
   });
 
   document.getElementById('continueCue').addEventListener('click', function(){
-    document.getElementById('transformBand').scrollIntoView({behavior:'smooth'});
+    // brief confirmation beat before the scroll even starts -- disables the
+    // button and dims the reunion dialogue slightly so the pixel wipe feels
+    // like it's being earned rather than triggered instantly (Volume_2_Revised §3.1)
+    this.disabled = true;
+    this.style.opacity = '0.5';
+    var dlg = document.getElementById('act3Dialog2');
+    dlg.style.transition = 'opacity 0.3s ease';
+    dlg.style.opacity = '0.85';
     sndTap();
+    setTimeout(function(){
+      document.getElementById('transformBand').scrollIntoView({behavior:'smooth'});
+    }, 300);
   });
 
   // ============ OBSERVERS (created after start so hidden elements measure correctly) ============
@@ -1751,6 +2220,52 @@
       entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('is-visible'); } });
     }, {threshold:0.15});
     document.querySelectorAll('.elegant-world .reveal').forEach(function(el){ elIO.observe(el); });
+    // expeditions map: simple fade-in on entry (per spec's own tolerance --
+    // "a small vertical reveal is enough" -- rather than the full animated
+    // SVG route-trace, which risks not aligning with the illustrated dashes)
+    var expedMap = document.getElementById('expeditionsMap');
+    if(expedMap){
+      var expedIO = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if(e.isIntersecting){ expedMap.classList.add('is-visible'); expedIO.disconnect(); }
+        });
+      }, {threshold:0.2});
+      expedIO.observe(expedMap);
+    }
+    // proposal section: sequential typography reveal + sun drift, one-shot
+    // (Task3's motion choreography needs its own play class, not the generic
+    // per-element .reveal used elsewhere -- see the .proposal-section.play rules)
+    var proposalSection = document.getElementById('proposalSection');
+    if(proposalSection){
+      var propIO = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if(e.isIntersecting){
+            proposalSection.classList.add('play');
+            propIO.disconnect();
+          }
+        });
+      }, {threshold:0.3});
+      propIO.observe(proposalSection);
+    }
+    // sticky RSVP button: appears once the first Wedding Details chapter is
+    // reached, hides again once the real RSVP form is on screen (Task4 spec)
+    var stickyRsvp = document.getElementById('stickyRsvp');
+    var chapterCeremony = document.getElementById('chapterCeremony');
+    var rsvpSectionEl = document.querySelector('.rsvp-section');
+    if(stickyRsvp && chapterCeremony && rsvpSectionEl){
+      var showStickyIO = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){ if(e.isIntersecting){ stickyRsvp.classList.add('show'); } });
+      }, {threshold:0.1});
+      showStickyIO.observe(chapterCeremony);
+      var hideStickyIO = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){ if(e.isIntersecting){ stickyRsvp.classList.remove('show'); } });
+      }, {threshold:0.15});
+      hideStickyIO.observe(rsvpSectionEl);
+      stickyRsvp.addEventListener('click', function(){
+        rsvpSectionEl.scrollIntoView({behavior:'smooth'});
+        sndTap();
+      });
+    }
   }
 
   // ============ SCROLL: walking sprite steps across its stage ============
@@ -1907,8 +2422,8 @@
     var form = this;
     if(document.getElementById('website').value){
       // honeypot filled \u2014 bot \u2014 silently pretend success, don't submit
+      form.classList.add('submitted');
       document.getElementById('rsvpSuccess').style.display = 'block';
-      form.querySelector('.rsvp-btn').style.display = 'none';
       return;
     }
     var guestList = [];
@@ -1943,10 +2458,11 @@
       return res.json();
     }).then(function(json){
       if(json.result !== 'success') throw new Error('Script reported failure');
-      var successEl = document.getElementById('rsvpSuccess');
-      successEl.innerHTML = (payload.attending === 'decline') ? UI[currentLang].rsvpSuccessDecline : UI[currentLang].rsvpSuccessAccept;
-      successEl.style.display = 'block';
-      btn.style.display = 'none';
+      var accepted = payload.attending !== 'decline';
+      document.getElementById('rsvpSuccessText').innerHTML = accepted ? UI[currentLang].rsvpSuccessAccept : UI[currentLang].rsvpSuccessDecline;
+      document.getElementById('rsvpSuccessIcon').style.display = accepted ? '' : 'none';
+      form.classList.add('submitted');
+      document.getElementById('rsvpSuccess').style.display = 'block';
       sndQuestDone();
       showAchievement('\uD83C\uDFC6', UI[currentLang].achRsvpDone);
     }).catch(function(err){
@@ -1956,6 +2472,12 @@
       btn.textContent = originalBtnText;
     });
   });
+
+  // ============ STATIC PHOTO SLOTS (proposal + wedding venue) ============
+  // language-independent, so these just get wired once rather than per applyLanguage()
+  wireImageWithFallbacks(document.getElementById('proposalPhotoImg'), document.getElementById('propPhotoNote'), 'assets/photos/proposal/sunset');
+  wireImageWithFallbacks(document.getElementById('ceremonyPhotoImg'), document.getElementById('ceremonyPhotoNote'), 'assets/photos/wedding/ceremony');
+  wireImageWithFallbacks(document.getElementById('receptionPhotoImg'), document.getElementById('receptionPhotoNote'), 'assets/photos/wedding/celebration');
 
   // ============ INITIAL LANGUAGE APPLICATION ============
   applyLanguage(currentLang);
