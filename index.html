@@ -427,20 +427,27 @@
      Polaroids floating directly over the map, opening upward from the
      waypoint (desktop pointer devices only -- mobile has no hover to rely on). */
   .map-hover-preview{
-    position:absolute; z-index:5; width:clamp(160px,17vw,220px); pointer-events:none;
-    opacity:0; transform:translate(-50%, calc(-100% - 14px)) translateY(6px);
+    position:absolute; z-index:5; width:clamp(120px,13vw,165px); pointer-events:none;
+    opacity:0; transform:translate(-50%, calc(-100% - 12px)) translateY(6px);
     transition:opacity 0.2s ease, transform 0.2s ease;
   }
-  .map-hover-preview.show{opacity:1; transform:translate(-50%, calc(-100% - 14px)) translateY(0);}
-  .mhp-fan{position:relative; width:100%; aspect-ratio:4/5;}
-  .mhp-fan-card{
-    position:absolute; top:0; left:50%; width:70%; height:100%; margin-left:-35%;
-    box-sizing:border-box; border-radius:1px; overflow:hidden;
-    background:linear-gradient(145deg, rgba(223,214,193,0.9), rgba(199,190,170,0.6));
-    border:3px solid #FFFDF7; border-bottom-width:8px; box-shadow:0 4px 12px rgba(0,0,0,0.22);
-    transform:translateX(var(--offsetx,0)) rotate(var(--angle,0deg));
+  .map-hover-preview.show{opacity:1; transform:translate(-50%, calc(-100% - 12px)) translateY(0);}
+  /* small STATIC pile of Polaroids (tight overlap, slight rotation jitter --
+     like a stack tossed on a table, not a spread-out fan). Real Polaroid
+     proportions: a 3:4 photo with a thin border on three sides and a thick
+     bottom strip (room to write on), so the frame is built from padding
+     around a separately-ratioed photo area rather than forcing the whole
+     card into one fixed aspect-ratio. */
+  .mhp-fan{position:relative; width:100%; aspect-ratio:5/7;}
+  .mhp-barrel-slide{
+    position:absolute; top:50%; left:50%; width:78%; box-sizing:border-box;
+    background:#FFFDF7; border-radius:1px; padding:4px 4px 13px; box-shadow:0 5px 13px rgba(0,0,0,0.24);
   }
-  .mhp-fan-card img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  .mhp-barrel-slide .polaroid-photo{
+    width:100%; aspect-ratio:3/4; position:relative; overflow:hidden; border-radius:1px;
+    background:linear-gradient(145deg, rgba(223,214,193,0.9), rgba(199,190,170,0.6));
+  }
+  .mhp-barrel-slide .polaroid-photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
   /* label sits ABOVE the fan (not below it) so it doesn't collide with the
      map artwork's own printed city-name labels, which sit just beside/below
      the waypoint marker itself */
@@ -486,20 +493,26 @@
      neighbours recede in depth (rotateY + translateZ), scaled down and
      softly blurred. Navigating rotates the whole barrel rather than sliding
      a flat strip. */
-  .carousel-viewport{position:relative; width:100%; aspect-ratio:4/5; perspective:1100px; touch-action:pan-y;}
+  .carousel-viewport{position:relative; width:100%; aspect-ratio:5/7; perspective:1100px; touch-action:pan-y;}
   .carousel-track{position:relative; width:100%; height:100%; transform-style:preserve-3d; cursor:grab;}
   .carousel-track.dragging{cursor:grabbing;}
   .carousel-track.dragging .carousel-slide{transition:none;}
+  /* real Polaroid proportions: thin border on three sides, thick bottom strip,
+     built from padding around a separately-ratioed 3:4 photo area rather than
+     forcing the whole card into one fixed aspect-ratio */
   .carousel-slide{
-    position:absolute; inset:0; margin:auto; width:76%; height:100%; box-sizing:border-box;
-    border-radius:2px; overflow:hidden; border:5px solid #FFFDF7; border-bottom-width:13px;
-    background:linear-gradient(145deg, rgba(223,214,193,0.9), rgba(199,190,170,0.6));
+    position:absolute; top:50%; left:50%; width:78%; box-sizing:border-box;
+    background:#FFFDF7; border-radius:2px; padding:7px 7px 26px;
     box-shadow:0 16px 36px rgba(0,0,0,0.28);
-    display:flex; align-items:center; justify-content:center; color:rgba(44,47,34,0.5);
-    font-family:var(--label); font-size:0.68rem; text-align:center; padding:1rem; line-height:1.55;
     cursor:pointer; transition:transform 420ms cubic-bezier(0.22,0.8,0.32,1), opacity 420ms ease, filter 420ms ease;
   }
-  .carousel-slide img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none; -webkit-user-drag:none;}
+  .carousel-slide .polaroid-photo{
+    width:100%; aspect-ratio:3/4; position:relative; overflow:hidden; border-radius:1px;
+    background:linear-gradient(145deg, rgba(223,214,193,0.9), rgba(199,190,170,0.6));
+    display:flex; align-items:center; justify-content:center; color:rgba(44,47,34,0.5);
+    font-family:var(--label); font-size:0.68rem; text-align:center; padding:1rem; line-height:1.55;
+  }
+  .carousel-slide .polaroid-photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none; -webkit-user-drag:none;}
   .carousel-arrow{
     position:absolute; top:50%; transform:translateY(-50%); width:36px; height:36px; border-radius:50%;
     background:rgba(255,253,247,0.88); border:1px solid var(--olive); color:var(--olive-deep);
@@ -1239,6 +1252,13 @@
   }
   function beep(freq, dur, type, vol, delay){
     if(!soundOn) return;
+    // the retro 8-bit blips are a pixel-world thing -- once the top controls
+    // have switched to the elegant/"vogue" look (the same one-way trigger
+    // that restyles them), every synthesized click/select sound routes
+    // through here, so gating it in this one place silences all of them at
+    // once instead of hunting down each individual sndX() call site.
+    var topControls = document.getElementById('topControls');
+    if(topControls && topControls.classList.contains('elegant')) return;
     var ctx = getCtx(); if(!ctx) return;
     if(ctx.state === 'suspended'){ ctx.resume(); }
     var t0 = ctx.currentTime + (delay||0);
@@ -1710,31 +1730,33 @@
     });
   }
 
-  // builds a small static fan of every resolved photo (or one placeholder
-  // card) inside `container` -- shared by the hover preview and reused at a
-  // smaller scale there, so hovering actually previews the whole set instead
-  // of only the first photo.
+  // fixed jitter pattern (not randomized per-hover, for visual stability) --
+  // a tight, tossed-looking pile rather than an evenly spread fan, per the
+  // reference photo. Photo 1 sits on top of the pile.
+  var STACK_JITTER = [
+    {angle:-7, x:-2}, {angle:9, x:5}, {angle:-12, x:-6}, {angle:4, x:3}, {angle:-4, x:7}
+  ];
   function buildMiniFan(container, photos, initials){
     container.innerHTML = '';
     var n = photos.length || 1;
-    var spread = n === 1 ? 0 : Math.min(8 * (n - 1), 36);
     for(var i = 0; i < n; i++){
       var card = document.createElement('div');
-      card.className = 'mhp-fan-card';
-      var angle = n === 1 ? 0 : (-spread/2 + (spread/(n-1)) * i);
-      var offsetX = (i - (n-1)/2) * 16;
-      card.style.setProperty('--angle', angle.toFixed(1) + 'deg');
-      card.style.setProperty('--offsetx', offsetX.toFixed(0) + 'px');
-      card.style.zIndex = i + 1;
+      card.className = 'mhp-barrel-slide';
+      var j = STACK_JITTER[i % STACK_JITTER.length];
+      card.style.transform = 'translate(-50%,-50%) translateX(' + j.x + 'px) rotate(' + j.angle + 'deg)';
+      card.style.zIndex = n - i; // first photo sits on top of the pile
+      var photoWrap = document.createElement('div');
+      photoWrap.className = 'polaroid-photo';
       if(photos.length){
         var img = document.createElement('img');
         img.src = photos[i]; img.alt = '';
-        card.appendChild(img);
+        photoWrap.appendChild(img);
       } else if(i === n - 1){
-        card.style.display = 'flex'; card.style.alignItems = 'center'; card.style.justifyContent = 'center';
-        card.style.fontFamily = 'var(--label)'; card.style.color = 'rgba(44,47,34,0.4)';
-        card.textContent = initials;
+        photoWrap.style.display = 'flex'; photoWrap.style.alignItems = 'center'; photoWrap.style.justifyContent = 'center';
+        photoWrap.style.fontFamily = 'var(--label)'; photoWrap.style.color = 'rgba(44,47,34,0.4)';
+        photoWrap.textContent = initials;
       }
+      card.appendChild(photoWrap);
       container.appendChild(card);
     }
   }
@@ -1814,13 +1836,16 @@
     for(var i = 0; i < n; i++){
       var slide = document.createElement('div');
       slide.className = 'carousel-slide';
+      var photoWrap = document.createElement('div');
+      photoWrap.className = 'polaroid-photo';
       if(photos.length){
         var img = document.createElement('img');
         img.src = photos[i]; img.alt = '';
-        slide.appendChild(img);
+        photoWrap.appendChild(img);
       } else {
-        slide.textContent = strs.expedComingSoonLong;
+        photoWrap.textContent = strs.expedComingSoonLong;
       }
+      slide.appendChild(photoWrap);
       (function(i){
         slide.addEventListener('click', function(){
           // tapping a receded neighbour jumps straight to it; the active
@@ -1851,7 +1876,7 @@
       var blur = abs * 2.4; // px
       var opacity = visible ? Math.max(0, 1 - abs * 0.38) : 0;
       slide.style.transition = instant ? 'none' : '';
-      slide.style.transform = 'translateX(' + translateX.toFixed(1) + '%) translateZ(' + translateZ.toFixed(0) + 'px) rotateY(' + rotateY.toFixed(1) + 'deg) scale(' + scale.toFixed(3) + ')';
+      slide.style.transform = 'translate(-50%,-50%) translateX(' + translateX.toFixed(1) + '%) translateZ(' + translateZ.toFixed(0) + 'px) rotateY(' + rotateY.toFixed(1) + 'deg) scale(' + scale.toFixed(3) + ')';
       slide.style.filter = blur > 0.05 ? 'blur(' + blur.toFixed(2) + 'px)' : 'none';
       slide.style.opacity = opacity.toFixed(2);
       slide.style.zIndex = Math.round(100 - Math.abs(offset) * 10);
