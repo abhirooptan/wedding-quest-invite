@@ -18,6 +18,12 @@ marker opens a fanned hand of photos for that place (like holding a poker
 hand — hover over one to bring it forward). Portrait or square photos work
 best (roughly 4:5).
 
+**Note:** this folder currently has generated placeholder images (2–5 per
+destination, clearly labeled "placeholder") just so the fan/hover effect is
+visible on the live site before real photos exist. Delete/overwrite them
+with real photos whenever you're ready — same filenames, they'll just
+replace the placeholders directly.
+
 **Naming:** `{Destination}{number}.jpg` — e.g. `Malta1.jpg`, `Malta2.jpg`,
 `Malta3.jpg`. Use **1 to 5 photos** per destination (that's the max the fan
 is designed for). Numbers don't need to be consecutive, and `.jpg`/`.jpeg`/
