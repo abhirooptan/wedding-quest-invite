@@ -66,27 +66,27 @@ window.LOCALE_CZ = {
     bride: {
       sprite: 'sprite-paty',
       act1Label: '~ PRAHA — ZLATÉ MĚSTO ~',
-      act1Dialog1: '<span class="speaker">PAT\'A CROFT:</span>Narozená v Trnavě, zrozená v Praze. Znám každý hrad, každou zahradu, každé tajné schodiště tohoto zlatého města... poslední dobou mi ale i ty nejkrásnější výhledy připadají, jako by jim někdo chyběl.',
-      act1Dialog2: '<span class="speaker">PAT\'A CROFT:</span>Zvláštní. Město dnes večer působí jinak — jako by stálo na prahu dobrodružství. A co tu dělá tohle?',
-      act1Loot: '<span class="speaker">NAŠLA JSI:</span>CESTOVATELŮV KLOBOUK &#127913;<br><br><span class="speaker">PAT\'A CROFT:</span>Čerstvě ztracený — vítr ho musel přenést přes zeď. Značka výrobce říká... LUCKNOW? Jeho majitel je někde v mém městě. Dnes večer. Schovám si ho v bezpečí.',
-      act2Dialog1: '<span class="speaker">VYPRAVĚČ:</span>Té samé noci — zatímco jistý cestovatel slavil něčí narozeniny někde v Praze — se na staré vývěsce objevil tajemný svitek...',
-      act2Dialog2: '<span class="speaker">PAT\'A CROFT:</span>Oznámení? Tady? Tuhle nástěnku nikdo nepoužil od starého království...',
-      act2Loot: '<span class="speaker">SVITEK PRAVÍ:</span>HLEDÁ SE — knírkatý dobrodruh ze zlatých kupolí Lucknow. Velkolepé příběhy. Laskavé oči. Naposledy viděn na narozeninové oslavě v tomto městě. POKUD NAJDETE: PIŠTE.<br><br><span class="speaker">PAT\'A CROFT:</span>...Tak jsem napsala.',
-      act2Dialog3: '<span class="speaker">VYPRAVĚČ:</span>Jeho výprava ho už volala domů, přes moře. Ale dopis za dopisem — každý jeden den, téměř CELÝ ROK — dokud se dva cizinci neznali nazpaměť.<br><br><span class="speaker">PAT\'A CROFT:</span>NOVÝ ÚKOL PŘIJAT: dostat ho zpátky do Prahy.',
-      act3Dialog1: '<span class="speaker">VYPRAVĚČ:</span>ZÁŘÍ 2023. Přes moře a půl kontinentu se vrátil do Prahy — tentokrát ne kvůli narozeninám. Kvůli ní.'
+      act1Dialog1: '<span class="speaker">PAT\'A CROFT:</span>Narodila jsem se v Trnavě, ale Praha je moje město. Znám tu každý hrad, každou zahradu, každé skryté schodiště tohoto zlatého města... a přece mi poslední dobou i ty nejkrásnější výhledy připadají nějak prázdné. Jako by v nich někdo chyběl.',
+      act1Dialog2: '<span class="speaker">PAT\'A CROFT:</span>Zvláštní. Město dnes večer jako by dýchalo jinak — jako by stálo na prahu nějakého dobrodružství. A co to tu jen máme?',
+      act1Loot: '<span class="speaker">NAŠLA JSI:</span>CESTOVATELŮV KLOBOUK &#127913;<br><br><span class="speaker">PAT\'A CROFT:</span>Docela čerstvě ztracený — vítr ho musel přenést přes hradní zeď. A na štítku výrobce stojí... LUCKNOW? Jeho majitel je tedy někde tady, v mém městě. Dnes večer. Radši si ho schovám do bezpečí.',
+      act2Dialog1: '<span class="speaker">VYPRAVĚČ:</span>Té samé noci — zatímco jistý cestovatel kdesi v Praze slavil narozeniny svého přítele — se na staré vývěsce tajemně objevil svitek...',
+      act2Dialog2: '<span class="speaker">PAT\'A CROFT:</span>Oznámení? Tady? Vždyť tuhle nástěnku nikdo nepoužil od starého království...',
+      act2Loot: '<span class="speaker">SVITEK PRAVÍ:</span>HLEDÁ SE — knírkatý dobrodruh ze zlatých kupolí Lucknow. Vypráví velkolepé příběhy a má laskavé oči. Naposledy viděn na narozeninové oslavě v tomto městě. POKUD HO NAJDETE, PIŠTE.<br><br><span class="speaker">PAT\'A CROFT:</span>...Tak jsem napsala.',
+      act2Dialog3: '<span class="speaker">VYPRAVĚČ:</span>Jeho vlastní výprava ho volala domů, přes moře. Ale dopis za dopisem — den co den, téměř celý rok — se ze dvou cizinců stali dva lidé, kteří se znali téměř nazpaměť.<br><br><span class="speaker">PAT\'A CROFT:</span>NOVÝ ÚKOL PŘIJAT: dostat ho zpátky do Prahy.',
+      act3Dialog1: '<span class="speaker">VYPRAVĚČ:</span>ZÁŘÍ 2023. Přes moře a půl kontinentu se vrátil do Prahy — tentokrát ne kvůli oslavě narozenin. Kvůli ní.'
     },
     groom: {
       sprite: 'sprite-abhi',
       act1Label: '~ PRAHA — CIZINEC VE ZLATÉM MĚSTĚ ~',
-      act1Dialog1: '<span class="speaker">ABHI JONES:</span>Ze zlatých kupolí Lucknow, přes dublinské sály... a dnes večer Praha — kvůli narozeninové výpravě přítele. Tyhle hrady jsou nádherné. Skoro až rozptylující.',
-      act1Dialog2: '<span class="speaker">ABHI JONES:</span>Sakra — ten vítr! Můj šťastný klobouk, pryč přes hradní zeď... Počkat. Čerstvé stopy pochodně na těchto starých zdech. Někdo zná tohle město tak, jak já znám své chrámy... a nechal tu TOHLE.',
+      act1Dialog1: '<span class="speaker">ABHI JONES:</span>Ze zlatých kupolí Lucknow, přes rušné dublinské ulice... a dnes večer konečně Praha — kvůli narozeninové oslavě kamaráda. Tyhle hrady jsou nádherné. Až příliš, dokonce mě trochu rozptylují.',
+      act1Dialog2: '<span class="speaker">ABHI JONES:</span>Sakra — ten vítr! Můj šťastný klobouk, pryč přes hradní zeď... Počkat. Čerstvé stopy po pochodni na těchto starých zdech. Někdo zná tohle město tak, jak já znám své chrámy... a nechal tu TOHLE.',
       act1Loot: '<span class="speaker">NAŠEL JSI:</span>BADATELOVU POCHODEŇ &#128294;<br><br><span class="speaker">ABHI JONES:</span>Ještě teplá. Kdo takhle rozzáří tohle město... přešel bych kvůli ní celé kontinenty.',
-      act2Dialog1: '<span class="speaker">VYPRAVĚČ:</span>Té samé noci — mezi přípitky na oslavě — se mu do brašny tajemně dostal svitek...',
-      act2Dialog2: '<span class="speaker">ABHI JONES:</span>Zvláštní. Tohle tu před hodinou nebylo...',
-      act2Loot: '<span class="speaker">SVITEK PRAVÍ:</span>HLEDÁ SE — nebojácná zlatovlasá badatelka, která zná každý hrad tohoto města. Úsměv jako skrytý poklad. POKUD NAJDETE: PIŠTE.<br><br><span class="speaker">ABHI JONES:</span>...Tak jsem napsal.',
-      act2Dialog3: '<span class="speaker">VYPRAVĚČ:</span>Domov ho volal přes moře. Ale dopis za dopisem — každý jeden den, téměř CELÝ ROK — dokud se dva cizinci neznali nazpaměť.<br><br><span class="speaker">ABHI JONES:</span>NOVÝ ÚKOL PŘIJAT: přeplout moře. Vrátit se do Prahy. Potkat ji. Doopravdy.',
-      act3Dialog1: '<span class="speaker">VYPRAVĚČ:</span>ZÁŘÍ 2023. Přes moře a půl kontinentu se vrátil do Prahy — tentokrát ne kvůli narozeninám. Kvůli ní.'
+      act2Dialog1: '<span class="speaker">VYPRAVĚČ:</span>Té samé noci — kdesi mezi přípitky na oslavě — se mu tajemně do kapsy dostal svitek...',
+      act2Dialog2: '<span class="speaker">ABHI JONES:</span>Zvláštní. Tohle v kapse před hodinou určitě nebylo...',
+      act2Loot: '<span class="speaker">SVITEK PRAVÍ:</span>HLEDÁ SE — nebojácná zlatovlasá badatelka, která zná každý hrad tohoto města nazpaměť. Úsměv jako skrytý poklad. POKUD JI NAJDETE, PIŠTE.<br><br><span class="speaker">ABHI JONES:</span>...Tak jsem napsal.',
+      act2Dialog3: '<span class="speaker">VYPRAVĚČ:</span>Jeho vlastní domov ho volal zpět, přes moře. Ale dopis za dopisem — den co den, téměř celý rok — se ze dvou cizinců stali dva lidé, kteří se znali téměř nazpaměť.<br><br><span class="speaker">ABHI JONES:</span>NOVÝ ÚKOL PŘIJAT: přeplout moře, vrátit se do Prahy a konečně ji potkat. Doopravdy.',
+      act3Dialog1: '<span class="speaker">VYPRAVĚČ:</span>ZÁŘÍ 2023. Přes moře a půl kontinentu se vrátil do Prahy — tentokrát ne kvůli oslavě narozenin. Kvůli ní.'
     }
   },
-  meetDialog: '<span class="speaker">PAT\'A CROFT:</span>365 dní dopisů... a ty jsi tady doopravdy.<br><br><span class="speaker">ABHI JONES:</span>Nejlepší dobrodružství mého života.<br><br><span class="speaker">PAT\'A CROFT:</span>Ach — a věřím, že tohle je tvoje. &#127913; Celý rok jsem ho opatrovala.<br><br><span class="speaker">ABHI JONES:</span>...Ty jsi celou tu dobu měla můj klobouk?'
+  meetDialog: '<span class="speaker">PAT\'A CROFT:</span>365 dní dopisů... a ty tu doopravdy stojíš.<br><br><span class="speaker">ABHI JONES:</span>Nejkrásnější dobrodružství mého života.<br><br><span class="speaker">PAT\'A CROFT:</span>Ach — a myslím, že tohle patří tobě. &#127913; Celý rok jsem ho opatrovala.<br><br><span class="speaker">ABHI JONES:</span>...Ty jsi měla celou tu dobu můj klobouk?'
 };
