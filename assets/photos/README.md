@@ -13,32 +13,35 @@ the site and translate them into Slovak/Czech.
 
 ## 1. `expeditions/` — photos for the interactive expedition map
 
-The Expeditions section is now the illustrated map — hovering/clicking a
-destination marker opens a little photo deck for that place. Portrait or
-square photos work best (roughly 4:5).
+The Expeditions section is now the illustrated map — clicking a destination
+marker opens a fanned hand of photos for that place (like holding a poker
+hand — hover over one to bring it forward). Portrait or square photos work
+best (roughly 4:5).
 
-**One photo:** just use the plain filename below.
-**Multiple photos for the same place:** add `-2`, `-3`, etc. — e.g.
-`ireland.jpg`, `ireland-2.jpg`, `ireland-3.jpg` (up to 12 per destination,
-in any combination of `.jpg`/`.jpeg`/`.png`, numbers don't need to be
-consecutive). They'll show up as a swipeable deck in that order.
+**Naming:** `{Destination}{number}.jpg` — e.g. `Malta1.jpg`, `Malta2.jpg`,
+`Malta3.jpg`. Use **1 to 5 photos** per destination (that's the max the fan
+is designed for). Numbers don't need to be consecutive, and `.jpg`/`.jpeg`/
+`.png` all work. Lowercase filenames (`malta1.jpg`) also work as a fallback,
+but the capitalized form below is the intended one.
 
 | Filename base | Destination |
 |---|---|
-| `ireland` | Ireland |
-| `london` | London |
-| `belgium` | Belgium |
-| `poland` | Poland |
-| `czech-republic` | Czech Republic |
-| `slovakia` | Slovakia |
-| `new-york` | New York |
-| `adriatic-sea` | Adriatic Sea |
-| `portugal` | Portugal |
-| `spain` | Spain |
-| `mallorca` | Mallorca |
-| `malta` | Malta |
-| `santorini` | Santorini |
-| `india` | India |
+| `Ireland` | Ireland |
+| `London` | London |
+| `Belgium` | Belgium |
+| `Poland` | Poland |
+| `CzechRepublic` | Czech Republic |
+| `Slovakia` | Slovakia |
+| `NewYork` | New York |
+| `AdriaticSea` | Adriatic Sea |
+| `Portugal` | Portugal |
+| `Spain` | Spain |
+| `Mallorca` | Mallorca |
+| `Malta` | Malta |
+| `Santorini` | Santorini |
+| `India` | India |
+
+So Malta with 3 photos would be `Malta1.jpg`, `Malta2.jpg`, `Malta3.jpg`.
 
 Only have photos for some destinations? That's fine — upload whichever ones
 you have; the rest keep showing "Photographs from this chapter will be added

@@ -453,41 +453,44 @@
   }
   .polaroid-deck.open{opacity:1; visibility:visible;}
   .polaroid-card{
-    background:var(--cream); border-radius:2px; max-width:420px; width:100%; padding:1.9rem 1.7rem 1.7rem;
+    background:var(--cream); border-radius:2px; max-width:540px; width:100%; padding:2rem 1.7rem 1.8rem;
     position:relative; box-shadow:0 24px 64px rgba(0,0,0,0.32);
     transform:translateY(16px); opacity:0; transition:transform 0.35s ease, opacity 0.35s ease;
   }
   .polaroid-deck.open .polaroid-card{transform:translateY(0); opacity:1;}
   .polaroid-close{
     position:absolute; top:0.5rem; right:0.5rem; width:34px; height:34px; border:none; background:transparent;
-    cursor:pointer; color:var(--olive-deep); display:flex; align-items:center; justify-content:center; opacity:0.6;
+    cursor:pointer; color:var(--olive-deep); display:flex; align-items:center; justify-content:center; opacity:0.6; z-index:60;
   }
   .polaroid-close:hover{opacity:1;}
   .polaroid-close svg{width:18px; height:18px;}
-  .polaroid-photo-stage{position:relative; width:100%; aspect-ratio:4/5;}
-  .polaroid-photo{
-    position:absolute; inset:0; border-radius:2px; overflow:hidden;
+  /* fanned hand of Polaroids -- like holding a poker hand: each card overlaps
+     the next at a slight rotation, and hovering (or tapping, on touch) lifts
+     it up, straightens it and brings it to the front of the fan. */
+  .polaroid-fan{position:relative; height:230px; margin:0.4rem auto 0.6rem; display:flex; align-items:center; justify-content:center;}
+  .fan-card{
+    position:absolute; width:132px; aspect-ratio:4/5; border-radius:3px; overflow:hidden;
     background:linear-gradient(145deg, rgba(223,214,193,0.85), rgba(199,190,170,0.55));
-    display:flex; align-items:center; justify-content:center; color:rgba(44,47,34,0.5);
-    font-family:var(--label); font-size:0.72rem; text-align:center; padding:1.2rem; line-height:1.6;
-    transition:opacity 0.4s ease, transform 0.4s ease;
+    border:5px solid #FFFDF7; box-shadow:0 6px 16px rgba(0,0,0,0.22); cursor:pointer; outline:none;
+    transform:translateX(var(--offsetx,0)) rotate(var(--angle,0deg));
+    transition:transform 260ms cubic-bezier(0.22,0.8,0.32,1), box-shadow 260ms ease;
   }
-  .polaroid-photo.swap{opacity:0; transform:translateY(10px);}
-  .polaroid-photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
-  .polaroid-caption{margin-top:1.1rem; text-align:center;}
+  .fan-card:hover, .fan-card:focus-visible, .fan-card.front{
+    transform:translateX(var(--offsetx,0)) translateY(-28px) rotate(0deg) scale(1.14);
+    box-shadow:0 20px 38px rgba(0,0,0,0.32);
+    z-index:50 !important;
+  }
+  .fan-card img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  .fan-card-note{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    padding:0.7rem; text-align:center; font-family:var(--label); font-size:0.58rem; line-height:1.5; color:rgba(44,47,34,0.45);
+  }
+  @media (max-width:640px){ .fan-card{width:104px;} .polaroid-fan{height:190px;} }
+  .polaroid-caption{margin-top:1.3rem; text-align:center;}
   .polaroid-caption .p-label{font-family:var(--label); font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--olive-deep);}
   .polaroid-caption .p-memory{margin-top:0.5rem; font-style:italic; opacity:0.8; font-size:0.98rem; line-height:1.55;}
-  .polaroid-nav{display:flex; align-items:center; justify-content:center; gap:1.4rem; margin-top:1.3rem;}
-  .polaroid-nav button{
-    background:none; border:1px solid var(--olive); color:var(--olive-deep); width:34px; height:34px;
-    border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;
-  }
-  .polaroid-nav button:hover:not(:disabled){background:var(--gold-light); border-color:var(--gold);}
-  .polaroid-nav button:disabled{opacity:0.25; cursor:default;}
-  .polaroid-nav button svg{width:16px; height:16px;}
-  .polaroid-counter{font-family:var(--label); font-size:0.7rem; letter-spacing:0.08em; color:var(--gold); min-width:3.6rem; text-align:center;}
   @media (prefers-reduced-motion: reduce){
-    .polaroid-deck, .polaroid-card, .polaroid-photo{transition-duration:1ms;}
+    .polaroid-deck, .polaroid-card, .fan-card{transition-duration:1ms;}
   }
   .expedition-note{text-align:center; margin-top:2.4rem; font-style:italic; opacity:0.7; font-size:1.05rem;}
 
@@ -1002,17 +1005,10 @@
       <button type="button" class="polaroid-close" id="polaroidClose" aria-label="Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
       </button>
-      <div class="polaroid-photo-stage">
-        <div class="polaroid-photo" id="polaroidPhoto"><img id="polaroidPhotoImg" alt="" style="display:none;"><span id="polaroidPhotoNote"></span></div>
-      </div>
+      <div class="polaroid-fan" id="polaroidFan"></div>
       <div class="polaroid-caption">
         <p class="p-label" id="polaroidLabel"></p>
         <p class="p-memory" id="polaroidMemory"></p>
-      </div>
-      <div class="polaroid-nav">
-        <button type="button" id="polaroidPrev" aria-label="Previous photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-        <span class="polaroid-counter" id="polaroidCounter"></span>
-        <button type="button" id="polaroidNext" aria-label="Next photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
       </div>
     </div>
   </div>
@@ -1562,57 +1558,61 @@
   // Expeditions_Map_Implementation_Spec.md. Location names/routes are baked
   // into the artwork itself -- these buttons are the accessible interactive
   // layer on top of it, not a decorative background.
-  // `id` doubles as the filename slug under assets/photos/expeditions/:
-  // <id>.jpg is photo 1, <id>-2.jpg / <id>-3.jpg ... up to <id>-12.jpg are
-  // additional deck photos, all optional and resolved lazily on first open.
+  // `photoBase` is the filename base under assets/photos/expeditions/:
+  // Malta1.jpg, Malta2.jpg ... Malta5.jpg (up to MAX_DECK_PHOTOS, gaps
+  // allowed, all optional) become that destination's fanned photo deck,
+  // resolved lazily on first open. See assets/photos/README.md.
   // coordinates re-measured directly against the updated map artwork (colour-
   // thresholded marker detection, not eyeballed) after the image update added
   // real markers at New York + Adriatic Sea and removed a stray unlabeled
   // waypoint that used to sit between Poland and Czech Republic.
   var EXPEDITIONS = [
-    {id:'ireland', key:'destIreland', x:11.2, y:21.4},
-    {id:'london', key:'destLondon', x:18.8, y:21.2},
-    {id:'belgium', key:'destBelgium', x:29.0, y:22.8},
-    {id:'poland', key:'destPoland', x:43.5, y:19.6},
-    {id:'czech-republic', key:'destCzechRepublic', x:40.2, y:36.7},
-    {id:'slovakia', key:'destSlovakia', x:48.8, y:40.9},
-    {id:'new-york', key:'destNewYork', x:13.2, y:49.6},
-    {id:'adriatic-sea', key:'destAdriaticSea', x:54.0, y:50.7},
-    {id:'portugal', key:'destPortugal', x:14.0, y:57.8},
-    {id:'spain', key:'destSpain', x:20.4, y:54.3},
-    {id:'mallorca', key:'destMallorca', x:29.5, y:52.6},
-    {id:'malta', key:'destMalta', x:46.1, y:74.1},
-    {id:'santorini', key:'destSantorini', x:60.9, y:85.4},
-    {id:'india', key:'destIndia', x:75.9, y:65.9}
+    {id:'ireland', photoBase:'Ireland', key:'destIreland', x:11.2, y:21.4},
+    {id:'london', photoBase:'London', key:'destLondon', x:18.8, y:21.2},
+    {id:'belgium', photoBase:'Belgium', key:'destBelgium', x:29.0, y:22.8},
+    {id:'poland', photoBase:'Poland', key:'destPoland', x:43.5, y:19.6},
+    {id:'czech-republic', photoBase:'CzechRepublic', key:'destCzechRepublic', x:40.2, y:36.7},
+    {id:'slovakia', photoBase:'Slovakia', key:'destSlovakia', x:48.8, y:40.9},
+    {id:'new-york', photoBase:'NewYork', key:'destNewYork', x:13.2, y:49.6},
+    {id:'adriatic-sea', photoBase:'AdriaticSea', key:'destAdriaticSea', x:54.0, y:50.7},
+    {id:'portugal', photoBase:'Portugal', key:'destPortugal', x:14.0, y:57.8},
+    {id:'spain', photoBase:'Spain', key:'destSpain', x:20.4, y:54.3},
+    {id:'mallorca', photoBase:'Mallorca', key:'destMallorca', x:29.5, y:52.6},
+    {id:'malta', photoBase:'Malta', key:'destMalta', x:46.1, y:74.1},
+    {id:'santorini', photoBase:'Santorini', key:'destSantorini', x:60.9, y:85.4},
+    {id:'india', photoBase:'India', key:'destIndia', x:75.9, y:65.9}
   ];
-  var MAX_DECK_PHOTOS = 12;
+  var MAX_DECK_PHOTOS = 5;
   var expeditionPhotoCache = {};
-  // probes <id>[-n].{jpg,jpeg,png} for n=1..MAX_DECK_PHOTOS in parallel and
-  // caches whichever ones actually resolve -- lets a destination go from zero
-  // photos to a full deck just by dropping numbered files in, no code changes,
-  // and doesn't require the numbers to be contiguous.
-  function resolveExpeditionPhotos(id, cb){
-    if(expeditionPhotoCache[id]){ cb(expeditionPhotoCache[id]); return; }
+  // probes {PhotoBase}{n}.{jpg,jpeg,png} for n=1..MAX_DECK_PHOTOS in parallel
+  // (e.g. Malta1.jpg, Malta2.jpg...) and caches whichever ones actually
+  // resolve -- lets a destination go from zero photos to a full fanned deck
+  // just by dropping numbered files in, no code changes, gaps allowed. Tries
+  // the lowercase filename too since GitHub Pages hosting is case-sensitive
+  // and it's an easy typo to make.
+  function resolveExpeditionPhotos(ex, cb){
+    if(expeditionPhotoCache[ex.id]){ cb(expeditionPhotoCache[ex.id]); return; }
     var found = new Array(MAX_DECK_PHOTOS);
     var pending = MAX_DECK_PHOTOS;
     function finish(){
       var list = found.filter(function(u){ return !!u; });
-      expeditionPhotoCache[id] = list;
+      expeditionPhotoCache[ex.id] = list;
       cb(list);
     }
     for(var n = 1; n <= MAX_DECK_PHOTOS; n++){
       (function(n){
-        var base = 'assets/photos/expeditions/' + id + (n === 1 ? '' : ('-' + n));
+        var bases = ['assets/photos/expeditions/' + ex.photoBase + n, 'assets/photos/expeditions/' + ex.photoBase.toLowerCase() + n];
         var exts = ['.jpg','.jpeg','.png'];
-        var ei = 0;
+        var bi = 0, ei = 0;
         var probe = new Image();
-        function tryExt(){
-          if(ei >= exts.length){ pending--; if(pending === 0){ finish(); } return; }
-          probe.onload = function(){ found[n-1] = base + exts[ei]; pending--; if(pending === 0){ finish(); } };
-          probe.onerror = function(){ ei++; tryExt(); };
-          probe.src = base + exts[ei];
+        function tryNext(){
+          if(bi >= bases.length){ pending--; if(pending === 0){ finish(); } return; }
+          if(ei >= exts.length){ bi++; ei = 0; tryNext(); return; }
+          probe.onload = (function(url){ return function(){ found[n-1] = url; pending--; if(pending === 0){ finish(); } }; })(bases[bi] + exts[ei]);
+          probe.onerror = function(){ ei++; tryNext(); };
+          probe.src = bases[bi] + exts[ei];
         }
-        tryExt();
+        tryNext();
       })(n);
     }
   }
@@ -1682,7 +1682,7 @@
     var countEl = document.getElementById('mhpCount');
     photoEl.innerHTML = '';
     countEl.textContent = '';
-    resolveExpeditionPhotos(ex.id, function(photos){
+    resolveExpeditionPhotos(ex, function(photos){
       countEl.textContent = photos.length ? strs.expedMemoryCountTemplate.replace('{n}', photos.length) : strs.expedComingSoon;
       if(photos.length){
         var img = document.createElement('img');
@@ -1700,7 +1700,7 @@
   }
 
   // ---- Polaroid deck: previous/next, keyboard arrows, Escape, touch swipe ----
-  var deckState = {idx:null, photos:[], photoIdx:0, triggerBtn:null};
+  var deckState = {idx:null, photos:[], triggerBtn:null};
   function openPolaroidDeck(idx){
     var ex = EXPEDITIONS[idx];
     var strs = UI[currentLang];
@@ -1712,10 +1712,9 @@
     deckState.triggerBtn = waypointBtns[idx];
     document.getElementById('polaroidLabel').textContent = strs[ex.key];
     document.getElementById('polaroidDeck').setAttribute('aria-label', strs[ex.key] + ' memories');
-    resolveExpeditionPhotos(ex.id, function(photos){
+    resolveExpeditionPhotos(ex, function(photos){
       deckState.photos = photos;
-      deckState.photoIdx = 0;
-      renderPolaroidPhoto(true);
+      renderPolaroidFan();
       document.getElementById('polaroidDeck').classList.add('open');
       document.getElementById('polaroidClose').focus();
       document.removeEventListener('keydown', onDeckKeydown);
@@ -1732,59 +1731,49 @@
   }
   function onDeckKeydown(e){
     if(e.key === 'Escape'){ closePolaroidDeck(); }
-    else if(e.key === 'ArrowLeft'){ stepPolaroid(-1); }
-    else if(e.key === 'ArrowRight'){ stepPolaroid(1); }
   }
-  function stepPolaroid(dir){
-    var total = deckState.photos.length || 1;
-    var next = deckState.photoIdx + dir;
-    if(next < 0 || next >= total) return;
-    deckState.photoIdx = next;
-    renderPolaroidPhoto(false);
-  }
-  function renderPolaroidPhoto(instant){
+  // fanned hand of Polaroids -- every photo shown at once, slightly rotated
+  // and overlapping like a poker hand; hovering/focusing (or tapping, on
+  // touch, via the .front toggle) lifts a card up and brings it to the front.
+  function renderPolaroidFan(){
     var strs = UI[currentLang];
-    var photoEl = document.getElementById('polaroidPhoto');
-    var render = function(){
-      var img = document.getElementById('polaroidPhotoImg');
-      var note = document.getElementById('polaroidPhotoNote');
-      if(deckState.photos.length){
-        img.src = deckState.photos[deckState.photoIdx];
-        img.style.display = ''; note.style.display = 'none';
+    var ex = EXPEDITIONS[deckState.idx];
+    var fan = document.getElementById('polaroidFan');
+    fan.innerHTML = '';
+    var photos = deckState.photos;
+    var n = photos.length || 1;
+    var spread = Math.min(9 * (n - 1), 42); // total degrees across the whole fan, capped so 5 cards don't over-rotate
+    for(var i = 0; i < n; i++){
+      var card = document.createElement('div');
+      card.className = 'fan-card';
+      card.tabIndex = 0;
+      var angle = n === 1 ? 0 : (-spread/2 + (spread/(n-1)) * i);
+      var offsetX = (i - (n-1)/2) * 36;
+      card.style.setProperty('--angle', angle.toFixed(1) + 'deg');
+      card.style.setProperty('--offsetx', offsetX.toFixed(0) + 'px');
+      card.style.zIndex = i + 1;
+      if(photos.length){
+        var img = document.createElement('img');
+        img.src = photos[i]; img.alt = '';
+        card.appendChild(img);
       } else {
-        img.style.display = 'none'; note.style.display = '';
+        var note = document.createElement('span');
+        note.className = 'fan-card-note';
         note.textContent = strs.expedComingSoonLong;
+        card.appendChild(note);
       }
-      // per-destination memory line: once real captions exist, add locale keys
-      // named "memory_<id>" (e.g. memory_ireland) and they'll be picked up
-      // automatically here -- falls back to the generic placeholder until then
-      var ex = EXPEDITIONS[deckState.idx];
-      document.getElementById('polaroidMemory').textContent = strs['memory_' + ex.id] || strs.expedPlaceholderMemory;
-      var total = deckState.photos.length || 1;
-      document.getElementById('polaroidCounter').textContent = (deckState.photoIdx+1) + ' / ' + total;
-      document.getElementById('polaroidPrev').disabled = deckState.photoIdx <= 0;
-      document.getElementById('polaroidNext').disabled = deckState.photoIdx >= total - 1;
-      photoEl.classList.remove('swap');
-    };
-    if(instant){ render(); return; }
-    photoEl.classList.add('swap');
-    setTimeout(render, 180);
+      // touch devices have no hover -- tapping a card toggles it to the front instead
+      card.addEventListener('click', function(){
+        var wasFront = this.classList.contains('front');
+        fan.querySelectorAll('.fan-card').forEach(function(c){ c.classList.remove('front'); });
+        if(!wasFront){ this.classList.add('front'); }
+      });
+      fan.appendChild(card);
+    }
+    document.getElementById('polaroidMemory').textContent = strs['memory_' + ex.id] || strs.expedPlaceholderMemory;
   }
   document.getElementById('polaroidClose').addEventListener('click', closePolaroidDeck);
-  document.getElementById('polaroidPrev').addEventListener('click', function(){ stepPolaroid(-1); });
-  document.getElementById('polaroidNext').addEventListener('click', function(){ stepPolaroid(1); });
   document.getElementById('polaroidDeck').addEventListener('click', function(e){ if(e.target === this){ closePolaroidDeck(); } });
-  (function(){
-    var startX = null;
-    var stage = document.querySelector('.polaroid-photo-stage');
-    stage.addEventListener('touchstart', function(e){ startX = e.touches[0].clientX; }, {passive:true});
-    stage.addEventListener('touchend', function(e){
-      if(startX === null) return;
-      var dx = e.changedTouches[0].clientX - startX;
-      if(Math.abs(dx) > 40){ stepPolaroid(dx < 0 ? 1 : -1); }
-      startX = null;
-    }, {passive:true});
-  })();
 
   // The per-side story dialogue (act1Dialog1, act2Loot, etc) isn't part of UI --
   // it's set once, per side, at startQuest() time from STORY[lang][side], keyed
