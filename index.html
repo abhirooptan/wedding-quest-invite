@@ -460,22 +460,26 @@
      browsers without backdrop-filter support. */
   .polaroid-deck{
     position:fixed; inset:0; z-index:700; display:flex; align-items:center; justify-content:center;
-    padding:1.5rem; background:rgba(232,228,212,0.55);
-    -webkit-backdrop-filter:blur(14px) saturate(1.1); backdrop-filter:blur(14px) saturate(1.1);
+    padding:1.5rem; background:rgba(24,21,15,0.55);
+    -webkit-backdrop-filter:blur(16px) saturate(1.1); backdrop-filter:blur(16px) saturate(1.1);
     opacity:0; visibility:hidden; transition:opacity 0.3s ease, visibility 0.3s;
   }
   .polaroid-deck.open{opacity:1; visibility:visible;}
+  /* no card panel of its own -- the barrel of Polaroids floats directly on
+     the blurred, darkened backdrop so the photos pop against it instead of
+     sitting inside another rectangle */
   .polaroid-card{
-    background:var(--cream); border-radius:2px; max-width:520px; width:100%; padding:1.9rem 1.5rem 1.7rem;
-    position:relative; box-shadow:0 24px 64px rgba(0,0,0,0.32);
+    background:none; max-width:520px; width:100%; padding:1.9rem 1.5rem 1.7rem;
+    position:relative;
     transform:translateY(16px) scale(0.96); opacity:0; transition:transform 0.35s ease, opacity 0.35s ease;
   }
   .polaroid-deck.open .polaroid-card{transform:translateY(0) scale(1); opacity:1;}
   .polaroid-close{
-    position:absolute; top:0.5rem; right:0.5rem; width:34px; height:34px; border:none; background:transparent;
-    cursor:pointer; color:var(--olive-deep); display:flex; align-items:center; justify-content:center; opacity:0.6; z-index:60;
+    position:absolute; top:0.2rem; right:0.2rem; width:34px; height:34px; border:none;
+    background:rgba(0,0,0,0.28); border-radius:50%;
+    cursor:pointer; color:var(--cream); display:flex; align-items:center; justify-content:center; opacity:0.8; z-index:60;
   }
-  .polaroid-close:hover{opacity:1;}
+  .polaroid-close:hover{opacity:1; background:rgba(0,0,0,0.42);}
   .polaroid-close svg{width:18px; height:18px;}
   /* barrel/coverflow carousel: every photo is a Polaroid arranged around an
      implied cylinder -- the active one faces forward, sharp and centred;
@@ -511,8 +515,14 @@
     font-family:var(--label); font-size:0.64rem; letter-spacing:0.06em; color:var(--olive-deep);
   }
   .polaroid-caption{margin-top:1.2rem; text-align:center;}
-  .polaroid-caption .p-label{font-family:var(--label); font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--olive-deep);}
-  .polaroid-caption .p-memory{margin-top:0.5rem; font-style:italic; opacity:0.8; font-size:0.98rem; line-height:1.55;}
+  .polaroid-caption .p-label{
+    font-family:var(--label); font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-light);
+    text-shadow:0 1px 4px rgba(0,0,0,0.5);
+  }
+  .polaroid-caption .p-memory{
+    margin-top:0.5rem; font-style:italic; font-size:0.98rem; line-height:1.55; color:var(--cream); opacity:0.92;
+    text-shadow:0 1px 4px rgba(0,0,0,0.5);
+  }
   @media (prefers-reduced-motion: reduce){
     .polaroid-deck, .polaroid-card, .carousel-slide{transition-duration:1ms;}
   }
