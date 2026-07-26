@@ -423,26 +423,35 @@
     .map-waypoint{width:44px; height:44px;} /* fixed touch target on mobile regardless of the clamp() above */
   }
 
-  /* hover/focus preview: one shared floating card, repositioned per waypoint
-     (desktop pointer devices only -- mobile has no hover state to rely on).
-     Shows a small STATIC fan of every photo (not just the first one) so the
-     preview actually reads as "there are several photos here". */
+  /* hover/focus preview: no card/background of its own -- just the fanned
+     Polaroids floating directly over the map, opening upward from the
+     waypoint (desktop pointer devices only -- mobile has no hover to rely on). */
   .map-hover-preview{
-    position:absolute; z-index:5; width:clamp(150px,16vw,210px); pointer-events:none;
-    opacity:0; transform:translateY(6px); transition:opacity 0.2s ease, transform 0.2s ease;
-    background:#FFFDF7; border-radius:2px; box-shadow:0 10px 26px rgba(0,0,0,0.2); padding:0.6rem 0.6rem 0.7rem;
+    position:absolute; z-index:5; width:clamp(160px,17vw,220px); pointer-events:none;
+    opacity:0; transform:translate(-50%, calc(-100% - 14px)) translateY(6px);
+    transition:opacity 0.2s ease, transform 0.2s ease;
   }
-  .map-hover-preview.show{opacity:1; transform:translateY(0);}
+  .map-hover-preview.show{opacity:1; transform:translate(-50%, calc(-100% - 14px)) translateY(0);}
   .mhp-fan{position:relative; width:100%; aspect-ratio:4/5;}
   .mhp-fan-card{
-    position:absolute; top:0; left:50%; width:74%; height:100%; margin-left:-37%; border-radius:1px; overflow:hidden;
-    background:linear-gradient(145deg, rgba(223,214,193,0.85), rgba(199,190,170,0.55));
-    border:2px solid #FFFDF7; box-shadow:0 3px 8px rgba(0,0,0,0.18);
+    position:absolute; top:0; left:50%; width:70%; height:100%; margin-left:-35%;
+    box-sizing:border-box; border-radius:1px; overflow:hidden;
+    background:linear-gradient(145deg, rgba(223,214,193,0.9), rgba(199,190,170,0.6));
+    border:3px solid #FFFDF7; border-bottom-width:8px; box-shadow:0 4px 12px rgba(0,0,0,0.22);
     transform:translateX(var(--offsetx,0)) rotate(var(--angle,0deg));
   }
   .mhp-fan-card img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
-  .map-hover-preview .mhp-label{margin-top:0.5rem; font-family:var(--label); font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--olive-deep); text-align:center;}
-  .map-hover-preview .mhp-count{font-size:0.6rem; opacity:0.55; text-align:center; margin-top:0.15rem; font-family:var(--label); letter-spacing:0.05em;}
+  /* label sits ABOVE the fan (not below it) so it doesn't collide with the
+     map artwork's own printed city-name labels, which sit just beside/below
+     the waypoint marker itself */
+  .map-hover-preview .mhp-label{
+    margin-bottom:0.2rem; font-family:var(--label); font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--olive-deep); text-align:center; text-shadow:0 0 6px var(--cream), 0 0 12px var(--cream), 0 1px 2px var(--cream);
+  }
+  .map-hover-preview .mhp-count{
+    font-size:0.6rem; opacity:0.75; text-align:center; margin-bottom:0.5rem; font-family:var(--label); letter-spacing:0.05em;
+    text-shadow:0 0 6px var(--cream), 0 0 12px var(--cream);
+  }
   @media (max-width:768px){ .map-hover-preview{display:none;} }
 
   /* Polaroid popup: frosted-glass overlay -- the site stays visible behind
@@ -457,7 +466,7 @@
   }
   .polaroid-deck.open{opacity:1; visibility:visible;}
   .polaroid-card{
-    background:var(--cream); border-radius:2px; max-width:460px; width:100%; padding:1.9rem 1.7rem 1.7rem;
+    background:var(--cream); border-radius:2px; max-width:520px; width:100%; padding:1.9rem 1.5rem 1.7rem;
     position:relative; box-shadow:0 24px 64px rgba(0,0,0,0.32);
     transform:translateY(16px) scale(0.96); opacity:0; transition:transform 0.35s ease, opacity 0.35s ease;
   }
@@ -468,29 +477,36 @@
   }
   .polaroid-close:hover{opacity:1;}
   .polaroid-close svg{width:18px; height:18px;}
-  /* sliding carousel: one photo at a time, navigated by arrow buttons,
-     keyboard, or dragging/swiping the track directly */
-  .carousel-viewport{position:relative; width:100%; aspect-ratio:4/5; border-radius:3px; overflow:hidden; touch-action:pan-y;}
-  .carousel-track{display:flex; width:100%; height:100%; transition:transform 380ms cubic-bezier(0.22,0.8,0.32,1); cursor:grab;}
-  .carousel-track.dragging{transition:none; cursor:grabbing;}
+  /* barrel/coverflow carousel: every photo is a Polaroid arranged around an
+     implied cylinder -- the active one faces forward, sharp and centred;
+     neighbours recede in depth (rotateY + translateZ), scaled down and
+     softly blurred. Navigating rotates the whole barrel rather than sliding
+     a flat strip. */
+  .carousel-viewport{position:relative; width:100%; aspect-ratio:4/5; perspective:1100px; touch-action:pan-y;}
+  .carousel-track{position:relative; width:100%; height:100%; transform-style:preserve-3d; cursor:grab;}
+  .carousel-track.dragging{cursor:grabbing;}
+  .carousel-track.dragging .carousel-slide{transition:none;}
   .carousel-slide{
-    flex:0 0 100%; height:100%; position:relative;
-    background:linear-gradient(145deg, rgba(223,214,193,0.85), rgba(199,190,170,0.55));
+    position:absolute; inset:0; margin:auto; width:76%; height:100%; box-sizing:border-box;
+    border-radius:2px; overflow:hidden; border:5px solid #FFFDF7; border-bottom-width:13px;
+    background:linear-gradient(145deg, rgba(223,214,193,0.9), rgba(199,190,170,0.6));
+    box-shadow:0 16px 36px rgba(0,0,0,0.28);
     display:flex; align-items:center; justify-content:center; color:rgba(44,47,34,0.5);
-    font-family:var(--label); font-size:0.72rem; text-align:center; padding:1.2rem; line-height:1.6;
+    font-family:var(--label); font-size:0.68rem; text-align:center; padding:1rem; line-height:1.55;
+    cursor:pointer; transition:transform 420ms cubic-bezier(0.22,0.8,0.32,1), opacity 420ms ease, filter 420ms ease;
   }
   .carousel-slide img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none; -webkit-user-drag:none;}
   .carousel-arrow{
     position:absolute; top:50%; transform:translateY(-50%); width:36px; height:36px; border-radius:50%;
     background:rgba(255,253,247,0.88); border:1px solid var(--olive); color:var(--olive-deep);
-    cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:20; transition:opacity 0.2s ease;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:200; transition:opacity 0.2s ease;
   }
   .carousel-arrow:hover:not(:disabled){background:var(--gold-light); border-color:var(--gold);}
   .carousel-arrow:disabled{opacity:0; pointer-events:none;}
   .carousel-arrow svg{width:16px; height:16px;}
-  .carousel-arrow-prev{left:10px;} .carousel-arrow-next{right:10px;}
+  .carousel-arrow-prev{left:-4px;} .carousel-arrow-next{right:-4px;}
   .carousel-counter{
-    position:absolute; bottom:10px; left:50%; transform:translateX(-50%); z-index:20;
+    position:absolute; bottom:10px; left:50%; transform:translateX(-50%); z-index:200;
     background:rgba(255,253,247,0.88); border-radius:20px; padding:0.2rem 0.7rem;
     font-family:var(--label); font-size:0.64rem; letter-spacing:0.06em; color:var(--olive-deep);
   }
@@ -498,7 +514,7 @@
   .polaroid-caption .p-label{font-family:var(--label); font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--olive-deep);}
   .polaroid-caption .p-memory{margin-top:0.5rem; font-style:italic; opacity:0.8; font-size:0.98rem; line-height:1.55;}
   @media (prefers-reduced-motion: reduce){
-    .polaroid-deck, .polaroid-card, .carousel-track{transition-duration:1ms;}
+    .polaroid-deck, .polaroid-card, .carousel-slide{transition-duration:1ms;}
   }
   .expedition-note{text-align:center; margin-top:2.4rem; font-style:italic; opacity:0.7; font-size:1.05rem;}
 
@@ -998,9 +1014,9 @@
             <img src="assets/images/expeditions-map.png" alt="Illustrated map of Patricia and Abhiroop's shared expeditions, from Ireland and London through mainland Europe to Malta, Santorini and India" id="expeditionsMapImg">
             <div class="map-waypoints" id="mapWaypoints"></div>
             <div class="map-hover-preview" id="mapHoverPreview" aria-hidden="true">
-              <div class="mhp-fan" id="mhpFan"></div>
               <p class="mhp-label" id="mhpLabel"></p>
               <p class="mhp-count" id="mhpCount"></p>
+              <div class="mhp-fan" id="mhpFan"></div>
             </div>
           </div>
         </div>
@@ -1718,10 +1734,10 @@
     var preview = document.getElementById('mapHoverPreview');
     preview.style.left = ex.x + '%';
     preview.style.top = ex.y + '%';
-    // flip to the other side near the map's edges so the preview never runs off it
-    var xOffset = ex.x > 62 ? '-108%' : '18px';
-    var yOffset = ex.y > 65 ? 'calc(-100% - 18px)' : '-50%';
-    preview.style.transform = 'translate(' + xOffset + ',' + yOffset + ')';
+    // always opens upward, centred on the waypoint (base transform in CSS
+    // handles the -50%/-100% positioning; if a marker sits very close to the
+    // map's own top edge there's little room above it, but the map has
+    // generous top margin everywhere per the artwork so this stays on-screen)
     document.getElementById('mhpLabel').textContent = strs[ex.key];
     var fanEl = document.getElementById('mhpFan');
     var countEl = document.getElementById('mhpCount');
@@ -1754,7 +1770,7 @@
       deckState.photos = photos;
       deckState.index = 0;
       renderCarouselSlides();
-      positionCarouselTrack(true);
+      positionSlides(0, true);
       document.getElementById('polaroidDeck').classList.add('open');
       document.getElementById('polaroidClose').focus();
       document.removeEventListener('keydown', onDeckKeydown);
@@ -1774,9 +1790,10 @@
     else if(e.key === 'ArrowLeft'){ stepCarousel(-1); }
     else if(e.key === 'ArrowRight'){ stepCarousel(1); }
   }
-  // sliding carousel: every photo laid out side by side in a flex track;
-  // navigating just translates the track by one viewport-width, whether
-  // triggered by the arrow buttons, keyboard, or a drag/swipe gesture.
+  // barrel/coverflow carousel: every photo is an absolutely-positioned,
+  // individually 3D-transformed Polaroid; navigating repositions ALL of them
+  // at once so the whole barrel appears to rotate, rather than a flat strip
+  // sliding sideways.
   function renderCarouselSlides(){
     var strs = UI[currentLang];
     var ex = EXPEDITIONS[deckState.idx];
@@ -1794,46 +1811,74 @@
       } else {
         slide.textContent = strs.expedComingSoonLong;
       }
+      (function(i){
+        slide.addEventListener('click', function(){
+          // tapping a receded neighbour jumps straight to it; the active
+          // (front-facing) slide itself has nothing further to do on click
+          if(i !== deckState.index){ deckState.index = i; positionSlides(deckState.index, false); }
+        });
+      })(i);
       track.appendChild(slide);
     }
     document.getElementById('polaroidMemory').textContent = strs['memory_' + ex.id] || strs.expedPlaceholderMemory;
   }
-  function positionCarouselTrack(instant){
+  // `active` may be fractional (mid-drag) -- every slide's depth/rotation/
+  // blur is a continuous function of its distance from that value, which is
+  // what makes the barrel rotate smoothly under a dragging finger instead of
+  // only ever snapping between two fixed states.
+  function positionSlides(active, instant){
     var track = document.getElementById('carouselTrack');
-    var viewport = document.getElementById('carouselViewport');
-    var total = deckState.photos.length || 1;
-    track.style.transition = instant ? 'none' : '';
-    track.style.transform = 'translateX(' + (-deckState.index * viewport.clientWidth) + 'px)';
-    if(instant){ void track.offsetWidth; track.style.transition = ''; }
-    document.getElementById('carouselCounter').textContent = (deckState.index + 1) + ' / ' + total;
-    document.getElementById('carouselPrev').disabled = deckState.index <= 0;
-    document.getElementById('carouselNext').disabled = deckState.index >= total - 1;
+    var slides = track.querySelectorAll('.carousel-slide');
+    var total = slides.length;
+    slides.forEach(function(slide, i){
+      var offset = i - active;
+      var abs = Math.min(Math.abs(offset), 3);
+      var visible = Math.abs(offset) < 2.5;
+      var translateX = offset * 62; // % of the slide's own width
+      var translateZ = -abs * 90; // px, pushes neighbours back into the barrel
+      var rotateY = Math.max(-58, Math.min(58, offset * -32)); // deg
+      var scale = 1 - abs * 0.16;
+      var blur = abs * 2.4; // px
+      var opacity = visible ? Math.max(0, 1 - abs * 0.38) : 0;
+      slide.style.transition = instant ? 'none' : '';
+      slide.style.transform = 'translateX(' + translateX.toFixed(1) + '%) translateZ(' + translateZ.toFixed(0) + 'px) rotateY(' + rotateY.toFixed(1) + 'deg) scale(' + scale.toFixed(3) + ')';
+      slide.style.filter = blur > 0.05 ? 'blur(' + blur.toFixed(2) + 'px)' : 'none';
+      slide.style.opacity = opacity.toFixed(2);
+      slide.style.zIndex = Math.round(100 - Math.abs(offset) * 10);
+      slide.style.pointerEvents = visible ? 'auto' : 'none';
+      slide.style.cursor = (i === Math.round(active)) ? 'default' : 'pointer';
+    });
+    if(instant){ void track.offsetWidth; slides.forEach(function(s){ s.style.transition = ''; }); }
+    var roundedActive = Math.max(0, Math.min(total - 1, Math.round(active)));
+    document.getElementById('carouselCounter').textContent = (roundedActive + 1) + ' / ' + (total || 1);
+    document.getElementById('carouselPrev').disabled = roundedActive <= 0;
+    document.getElementById('carouselNext').disabled = roundedActive >= total - 1;
   }
   function stepCarousel(dir){
     var total = deckState.photos.length || 1;
     var next = deckState.index + dir;
     if(next < 0 || next >= total) return;
     deckState.index = next;
-    positionCarouselTrack(false);
+    positionSlides(deckState.index, false);
   }
   document.getElementById('polaroidClose').addEventListener('click', closePolaroidDeck);
   document.getElementById('polaroidDeck').addEventListener('click', function(e){ if(e.target === this){ closePolaroidDeck(); } });
   document.getElementById('carouselPrev').addEventListener('click', function(){ stepCarousel(-1); });
   document.getElementById('carouselNext').addEventListener('click', function(){ stepCarousel(1); });
   // drag/swipe: pointer events unify mouse-drag and touch-swipe in one
-  // handler; the track follows the pointer 1:1 while dragging, then snaps to
-  // the nearest slide (or back, if the drag didn't clear the 18% threshold)
+  // handler; the barrel rotates continuously under the pointer (fractional
+  // active index), then snaps to the nearest whole photo on release.
   (function(){
-    var track = document.getElementById('carouselTrack');
     var viewport = document.getElementById('carouselViewport');
-    var dragging = false, startX = 0, baseX = 0, moved = false;
+    var track = document.getElementById('carouselTrack');
+    var dragging = false, startX = 0, baseIndex = 0, moved = false;
     viewport.addEventListener('pointerdown', function(e){
       // don't hijack the arrow buttons -- setPointerCapture on the viewport
       // would steal the click event they need to fire their own handler
       if(e.target.closest('.carousel-arrow')) return;
       dragging = true; moved = false;
       startX = e.clientX;
-      baseX = -deckState.index * viewport.clientWidth;
+      baseIndex = deckState.index;
       track.classList.add('dragging');
       viewport.setPointerCapture(e.pointerId);
     });
@@ -1841,28 +1886,27 @@
       if(!dragging) return;
       var dx = e.clientX - startX;
       if(Math.abs(dx) > 4){ moved = true; }
-      track.style.transform = 'translateX(' + (baseX + dx) + 'px)';
+      var fractional = baseIndex - dx / viewport.clientWidth;
+      var total = deckState.photos.length || 1;
+      fractional = Math.max(-0.4, Math.min(total - 0.6, fractional));
+      positionSlides(fractional, true);
     });
     function endDrag(e){
       if(!dragging) return;
       dragging = false;
       track.classList.remove('dragging');
+      var total = deckState.photos.length || 1;
       var dx = e.clientX - startX;
-      if(Math.abs(dx) > viewport.clientWidth * 0.18){
-        stepCarousel(dx < 0 ? 1 : -1);
-      } else {
-        positionCarouselTrack(false);
-      }
+      var fractional = baseIndex - dx / viewport.clientWidth;
+      deckState.index = Math.max(0, Math.min(total - 1, Math.round(fractional)));
+      positionSlides(deckState.index, false);
     }
     viewport.addEventListener('pointerup', endDrag);
     viewport.addEventListener('pointercancel', endDrag);
-    // a drag that moved the track shouldn't also register as a click-to-close
+    // a drag that moved the barrel shouldn't also register as a click-to-close
     // on the backdrop if the pointer happens to release outside the card
     viewport.addEventListener('click', function(e){ if(moved){ e.stopPropagation(); } });
   })();
-  window.addEventListener('resize', function(){
-    if(document.getElementById('polaroidDeck').classList.contains('open')){ positionCarouselTrack(true); }
-  });
 
   // The per-side story dialogue (act1Dialog1, act2Loot, etc) isn't part of UI --
   // it's set once, per side, at startQuest() time from STORY[lang][side], keyed
