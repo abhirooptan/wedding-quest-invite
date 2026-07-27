@@ -463,10 +463,11 @@
     text-shadow:0 0 6px var(--cream), 0 0 12px var(--cream);
   }
   @media (max-width:768px){ .map-hover-preview{display:none;} }
-  /* mobile has no hover, so a small always-visible stack sits at every
-     waypoint instead of only revealing on interaction -- kept deliberately
-     tiny (just a glance, not a full preview) so 14 of them at once don't
-     overwhelm the map */
+  /* mobile has no hover, so a small stack sits at every waypoint instead of
+     only revealing on interaction -- but showing all 14 at once overwhelms
+     the map, so only whichever ones are currently near the viewport are
+     "popped up"; the rest stay dissolved back into their waypoint. Kept
+     deliberately tiny -- just a glance, not a full preview. */
   .map-mini-stack{
     display:none; position:absolute; z-index:4; width:38px;
     transform:translate(-50%, calc(-100% - 6px)); cursor:pointer; /* static positioning -- never animated */
@@ -474,16 +475,19 @@
   @media (max-width:768px){
     .map-mini-stack{display:block;}
   }
-  /* entrance (scroll into view) + a gentle idle bob once settled -- lives on
-     an INNER wrapper so it doesn't fight the outer element's static
-     positioning transform above */
+  /* pops up out of the waypoint (scale from near-zero, anchored at the
+     bottom edge nearest the marker) as it scrolls into view, and dissolves
+     back down into the same point as it scrolls out -- toggled both ways by
+     a bidirectional IntersectionObserver, not a one-shot reveal. Lives on an
+     INNER wrapper so it doesn't fight the outer element's static
+     positioning transform above. */
   .mini-stack-idle{
-    opacity:0; transform:translateY(10px) scale(0.82);
-    transition:opacity 0.45s ease, transform 0.45s ease;
+    opacity:0; transform:scale(0.12); transform-origin:50% 100%;
+    transition:opacity 0.5s cubic-bezier(0.22,0.8,0.32,1), transform 0.5s cubic-bezier(0.22,0.8,0.32,1);
   }
   .map-mini-stack.is-visible .mini-stack-idle{
-    opacity:1; transform:translateY(0) scale(1);
-    animation:miniStackBob 3.6s ease-in-out 0.5s infinite;
+    opacity:1; transform:scale(1);
+    animation:miniStackBob 3.6s ease-in-out 0.55s infinite;
   }
   @keyframes miniStackBob{
     0%,100%{transform:translateY(0) rotate(0deg);}
@@ -1778,17 +1782,20 @@
       observeMobileMiniStacks();
     }
   }
-  // each mini-stack fades/settles into view as the guest scrolls to it,
-  // then plays a gentle idle bob for as long as it stays revealed (once
-  // triggered it stays revealed, matching the .reveal pattern used
-  // elsewhere on the site rather than re-hiding on scroll-away)
+  // bidirectional (unlike the one-shot .reveal pattern used elsewhere on the
+  // site): each mini-stack pops up out of its waypoint as it scrolls near
+  // the viewport and dissolves back down into it as it scrolls away, so only
+  // a handful are ever "up" at once instead of all 14 crowding the map.
+  // rootMargin shrinks the effective trigger zone a little on both edges so
+  // the pop/dissolve has room to play out before a stack is fully clipped
+  // by the top or bottom of the screen.
   function observeMobileMiniStacks(){
     var stacks = document.querySelectorAll('.map-mini-stack');
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(e){
-        if(e.isIntersecting){ e.target.classList.add('is-visible'); }
+        e.target.classList.toggle('is-visible', e.isIntersecting);
       });
-    }, {threshold:0.3});
+    }, {threshold:0.15, rootMargin:'-10% 0px -10% 0px'});
     stacks.forEach(function(s){ io.observe(s); });
   }
   function populateMobileMiniStacks(lang){
