@@ -394,7 +394,11 @@
   .expeditions-section{background:var(--cream);}
   .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
   .expeditions-map-scroll{margin-top:2.8rem;}
-  .expeditions-map-wrap{position:relative; width:min(100%,1500px); margin-inline:auto;}
+  /* the map artwork is now a tall vertical scroll (portrait), not a wide
+     horizontal one -- capped narrower on desktop so it doesn't render at an
+     enormous height, and no longer needs the old mobile horizontal-pan
+     workaround since a portrait map already fits a phone screen naturally */
+  .expeditions-map-wrap{position:relative; width:min(100%,560px); margin-inline:auto;}
   .expeditions-map{position:relative; width:100%; opacity:0; transition:opacity 0.7s ease;}
   .expeditions-map.is-visible{opacity:1;}
   .expeditions-map img{display:block; width:100%; height:auto;}
@@ -418,8 +422,7 @@
     .map-waypoint, .expeditions-map{transition:none;}
   }
   @media (max-width:768px){
-    .expeditions-map-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:0.7rem;}
-    .expeditions-map-wrap{width:1100px; max-width:none;}
+    .expeditions-map-wrap{width:100%; max-width:420px;}
     .map-waypoint{width:44px; height:44px;} /* fixed touch target on mobile regardless of the clamp() above */
   }
 
@@ -460,6 +463,35 @@
     text-shadow:0 0 6px var(--cream), 0 0 12px var(--cream);
   }
   @media (max-width:768px){ .map-hover-preview{display:none;} }
+  /* mobile has no hover, so a small always-visible stack sits at every
+     waypoint instead of only revealing on interaction -- kept deliberately
+     tiny (just a glance, not a full preview) so 14 of them at once don't
+     overwhelm the map */
+  .map-mini-stack{
+    display:none; position:absolute; z-index:4; width:38px;
+    transform:translate(-50%, calc(-100% - 6px)); cursor:pointer; /* static positioning -- never animated */
+  }
+  @media (max-width:768px){
+    .map-mini-stack{display:block;}
+  }
+  /* entrance (scroll into view) + a gentle idle bob once settled -- lives on
+     an INNER wrapper so it doesn't fight the outer element's static
+     positioning transform above */
+  .mini-stack-idle{
+    opacity:0; transform:translateY(10px) scale(0.82);
+    transition:opacity 0.45s ease, transform 0.45s ease;
+  }
+  .map-mini-stack.is-visible .mini-stack-idle{
+    opacity:1; transform:translateY(0) scale(1);
+    animation:miniStackBob 3.6s ease-in-out 0.5s infinite;
+  }
+  @keyframes miniStackBob{
+    0%,100%{transform:translateY(0) rotate(0deg);}
+    50%{transform:translateY(-3px) rotate(1.5deg);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .mini-stack-idle{transition-duration:1ms; animation:none !important;}
+  }
 
   /* Polaroid popup: frosted-glass overlay -- the site stays visible behind
      it, blurred, rather than a flat dark scrim (Task2 spec "transparent
@@ -1625,25 +1657,25 @@
   // Malta1.jpg, Malta2.jpg ... Malta5.jpg (up to MAX_DECK_PHOTOS, gaps
   // allowed, all optional) become that destination's fanned photo deck,
   // resolved lazily on first open. See assets/photos/README.md.
-  // coordinates re-measured directly against the updated map artwork (colour-
-  // thresholded marker detection, not eyeballed) after the image update added
-  // real markers at New York + Adriatic Sea and removed a stray unlabeled
-  // waypoint that used to sit between Poland and Czech Republic.
+  // coordinates re-measured directly against the vertical/portrait map
+  // artwork (colour-thresholded marker detection, not eyeballed) after the
+  // image was swapped from a wide horizontal scroll to a tall vertical one --
+  // the old map didn't work well on mobile, the new one reads top-to-bottom.
   var EXPEDITIONS = [
-    {id:'ireland', photoBase:'Ireland', key:'destIreland', x:11.2, y:21.4},
-    {id:'london', photoBase:'London', key:'destLondon', x:18.8, y:21.2},
-    {id:'belgium', photoBase:'Belgium', key:'destBelgium', x:29.0, y:22.8},
-    {id:'poland', photoBase:'Poland', key:'destPoland', x:43.5, y:19.6},
-    {id:'czech-republic', photoBase:'CzechRepublic', key:'destCzechRepublic', x:40.2, y:36.7},
-    {id:'slovakia', photoBase:'Slovakia', key:'destSlovakia', x:48.8, y:40.9},
-    {id:'new-york', photoBase:'NewYork', key:'destNewYork', x:13.2, y:49.6},
-    {id:'adriatic-sea', photoBase:'AdriaticSea', key:'destAdriaticSea', x:54.0, y:50.7},
-    {id:'portugal', photoBase:'Portugal', key:'destPortugal', x:14.0, y:57.8},
-    {id:'spain', photoBase:'Spain', key:'destSpain', x:20.4, y:54.3},
-    {id:'mallorca', photoBase:'Mallorca', key:'destMallorca', x:29.5, y:52.6},
-    {id:'malta', photoBase:'Malta', key:'destMalta', x:46.1, y:74.1},
-    {id:'santorini', photoBase:'Santorini', key:'destSantorini', x:60.9, y:85.4},
-    {id:'india', photoBase:'India', key:'destIndia', x:75.9, y:65.9}
+    {id:'ireland', photoBase:'Ireland', key:'destIreland', x:28.7, y:24.7},
+    {id:'london', photoBase:'London', key:'destLondon', x:42.8, y:28.7},
+    {id:'poland', photoBase:'Poland', key:'destPoland', x:62.8, y:25.5},
+    {id:'new-york', photoBase:'NewYork', key:'destNewYork', x:24.0, y:40.9},
+    {id:'belgium', photoBase:'Belgium', key:'destBelgium', x:44.8, y:36.0},
+    {id:'czech-republic', photoBase:'CzechRepublic', key:'destCzechRepublic', x:58.0, y:38.3},
+    {id:'portugal', photoBase:'Portugal', key:'destPortugal', x:26.0, y:48.7},
+    {id:'spain', photoBase:'Spain', key:'destSpain', x:39.8, y:44.8},
+    {id:'slovakia', photoBase:'Slovakia', key:'destSlovakia', x:67.4, y:45.2},
+    {id:'adriatic-sea', photoBase:'AdriaticSea', key:'destAdriaticSea', x:65.2, y:54.8},
+    {id:'mallorca', photoBase:'Mallorca', key:'destMallorca', x:26.9, y:68.0},
+    {id:'malta', photoBase:'Malta', key:'destMalta', x:47.9, y:63.5},
+    {id:'india', photoBase:'India', key:'destIndia', x:72.2, y:74.0},
+    {id:'santorini', photoBase:'Santorini', key:'destSantorini', x:50.8, y:83.3}
   ];
   var MAX_DECK_PHOTOS = 5;
   var expeditionPhotoCache = {};
@@ -1724,9 +1756,49 @@
       btn.addEventListener('click', function(){ openPolaroidDeck(idx); });
       wrap.appendChild(btn);
 
+      // mobile has no hover state to reveal the stack with, so a small
+      // always-visible preview sits at each waypoint instead (populated
+      // lazily -- see populateMobileMiniStacks -- only on narrow viewports,
+      // so desktop doesn't pay for 14 upfront photo-resolution calls it
+      // doesn't need)
+      var mini = document.createElement('div');
+      mini.className = 'map-mini-stack';
+      mini.style.left = ex.x + '%';
+      mini.style.top = ex.y + '%';
+      mini.innerHTML = '<div class="mini-stack-idle"><div class="mhp-fan"></div></div>';
+      mini.addEventListener('click', function(){ openPolaroidDeck(idx); });
+      wrap.appendChild(mini);
+
       var li = document.createElement('li');
       li.textContent = strs[ex.key];
       srList.appendChild(li);
+    });
+    if(window.innerWidth <= 768){
+      populateMobileMiniStacks(lang);
+      observeMobileMiniStacks();
+    }
+  }
+  // each mini-stack fades/settles into view as the guest scrolls to it,
+  // then plays a gentle idle bob for as long as it stays revealed (once
+  // triggered it stays revealed, matching the .reveal pattern used
+  // elsewhere on the site rather than re-hiding on scroll-away)
+  function observeMobileMiniStacks(){
+    var stacks = document.querySelectorAll('.map-mini-stack');
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('is-visible'); }
+      });
+    }, {threshold:0.3});
+    stacks.forEach(function(s){ io.observe(s); });
+  }
+  function populateMobileMiniStacks(lang){
+    var strs = UI[lang];
+    document.querySelectorAll('.map-mini-stack').forEach(function(mini, idx){
+      var ex = EXPEDITIONS[idx];
+      var fanEl = mini.querySelector('.mhp-fan');
+      resolveExpeditionPhotos(ex, function(photos){
+        buildMiniFan(fanEl, photos, destinationInitials(strs[ex.key]));
+      });
     });
   }
 
