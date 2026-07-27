@@ -426,15 +426,9 @@
     .map-waypoint{width:44px; height:44px;} /* fixed touch target on mobile regardless of the clamp() above */
   }
 
-  /* hover/focus preview: no card/background of its own -- just the fanned
-     Polaroids floating directly over the map, opening upward from the
-     waypoint (desktop pointer devices only -- mobile has no hover to rely on). */
-  .map-hover-preview{
-    position:absolute; z-index:5; width:clamp(120px,13vw,165px); pointer-events:none;
-    opacity:0; transform:translate(-50%, calc(-100% - 12px)) translateY(6px);
-    transition:opacity 0.2s ease, transform 0.2s ease;
-  }
-  .map-hover-preview.show{opacity:1; transform:translate(-50%, calc(-100% - 12px)) translateY(0);}
+  /* retired: the scroll-driven mini-stack below now handles every screen
+     size (desktop included), so the old hover-only preview never shows */
+  .map-hover-preview{display:none;}
   /* small STATIC pile of Polaroids (tight overlap, slight rotation jitter --
      like a stack tossed on a table, not a spread-out fan). Real Polaroid
      proportions: a 3:4 photo with a thin border on three sides and a thick
@@ -462,18 +456,14 @@
     font-size:0.6rem; opacity:0.75; text-align:center; margin-bottom:0.5rem; font-family:var(--label); letter-spacing:0.05em;
     text-shadow:0 0 6px var(--cream), 0 0 12px var(--cream);
   }
-  @media (max-width:768px){ .map-hover-preview{display:none;} }
-  /* mobile has no hover, so a small stack sits at every waypoint instead of
-     only revealing on interaction -- but showing all 14 at once overwhelms
-     the map, so only whichever ones are currently near the viewport are
-     "popped up"; the rest stay dissolved back into their waypoint. Kept
-     deliberately tiny -- just a glance, not a full preview. */
+  /* same scroll-driven stack on every screen size (desktop included) --
+     showing all 14 at once would overwhelm the map, so only whichever ones
+     are currently near the viewport's middle third are "popped up"; the
+     rest stay dissolved back into their waypoint. Kept deliberately tiny --
+     just a glance, not a full preview. */
   .map-mini-stack{
-    display:none; position:absolute; z-index:4; width:38px;
+    display:block; position:absolute; z-index:4; width:38px;
     transform:translate(-50%, calc(-100% - 6px)); cursor:pointer; /* static positioning -- never animated */
-  }
-  @media (max-width:768px){
-    .map-mini-stack{display:block;}
   }
   /* pops up out of the waypoint (scale from near-zero, anchored at the
      bottom edge nearest the marker) as it scrolls into view, and dissolves
@@ -1756,18 +1746,11 @@
       btn.style.top = ex.y + '%';
       btn.setAttribute('aria-label', strs.expedOpenLabel.replace('{name}', strs[ex.key]));
       btn.setAttribute('aria-haspopup', 'dialog');
-      btn.addEventListener('mouseenter', function(){ showMapHoverPreview(idx); });
-      btn.addEventListener('mouseleave', hideMapHoverPreview);
-      btn.addEventListener('focus', function(){ showMapHoverPreview(idx); });
-      btn.addEventListener('blur', hideMapHoverPreview);
       btn.addEventListener('click', function(){ openPolaroidDeck(idx); });
       wrap.appendChild(btn);
 
-      // mobile has no hover state to reveal the stack with, so a small
-      // always-visible preview sits at each waypoint instead (populated
-      // lazily -- see populateMobileMiniStacks -- only on narrow viewports,
-      // so desktop doesn't pay for 14 upfront photo-resolution calls it
-      // doesn't need)
+      // same scroll-driven mini-stack on every screen size (desktop
+      // included) -- see populateMiniStacks/observeMiniStacks
       var mini = document.createElement('div');
       mini.className = 'map-mini-stack';
       mini.style.left = ex.x + '%';
@@ -1780,29 +1763,27 @@
       li.textContent = strs[ex.key];
       srList.appendChild(li);
     });
-    if(window.innerWidth <= 768){
-      populateMobileMiniStacks(lang);
-      observeMobileMiniStacks();
-    }
+    populateMiniStacks(lang);
+    observeMiniStacks();
   }
   // bidirectional (unlike the one-shot .reveal pattern used elsewhere on the
   // site): each mini-stack pops up out of its waypoint as it scrolls near
   // the viewport and dissolves back down into it as it scrolls away, so only
   // a handful are ever "up" at once instead of all 14 crowding the map.
-  // rootMargin's bottom value is pulled up to the screen's own vertical
-  // midpoint (-50%), not the bottom edge, so a waypoint dissolves as soon as
-  // it crosses into the lower half of the viewport rather than lingering
+  // the screen is effectively divided into thirds -- a stack is only "up"
+  // while its waypoint sits in the middle third, dissolving as soon as it
+  // crosses into the top OR bottom third, symmetric on both edges.
   // almost all the way to the bottom before disappearing.
-  function observeMobileMiniStacks(){
+  function observeMiniStacks(){
     var stacks = document.querySelectorAll('.map-mini-stack');
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(e){
         e.target.classList.toggle('is-visible', e.isIntersecting);
       });
-    }, {threshold:0, rootMargin:'-5% 0px -50% 0px'});
+    }, {threshold:0, rootMargin:'-33.33% 0px -33.33% 0px'});
     stacks.forEach(function(s){ io.observe(s); });
   }
-  function populateMobileMiniStacks(lang){
+  function populateMiniStacks(lang){
     var strs = UI[lang];
     document.querySelectorAll('.map-mini-stack').forEach(function(mini, idx){
       var ex = EXPEDITIONS[idx];
