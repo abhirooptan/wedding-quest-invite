@@ -398,7 +398,7 @@
      horizontal one -- capped narrower on desktop so it doesn't render at an
      enormous height, and no longer needs the old mobile horizontal-pan
      workaround since a portrait map already fits a phone screen naturally */
-  .expeditions-map-wrap{position:relative; width:min(100%,560px); margin-inline:auto;}
+  .expeditions-map-wrap{position:relative; width:min(100%,640px); margin-inline:auto;}
   .expeditions-map{position:relative; width:100%; opacity:0; transition:opacity 0.7s ease;}
   .expeditions-map.is-visible{opacity:1;}
   .expeditions-map img{display:block; width:100%; height:auto;}
@@ -422,7 +422,7 @@
     .map-waypoint, .expeditions-map{transition:none;}
   }
   @media (max-width:768px){
-    .expeditions-map-wrap{width:100%; max-width:420px;}
+    .expeditions-map-wrap{width:100%; max-width:460px;}
     .map-waypoint{width:44px; height:44px;} /* fixed touch target on mobile regardless of the clamp() above */
   }
 
@@ -478,23 +478,27 @@
   /* pops up out of the waypoint (scale from near-zero, anchored at the
      bottom edge nearest the marker) as it scrolls into view, and dissolves
      back down into the same point as it scrolls out -- toggled both ways by
-     a bidirectional IntersectionObserver, not a one-shot reveal. Lives on an
-     INNER wrapper so it doesn't fight the outer element's static
-     positioning transform above. */
-  .mini-stack-idle{
+     a bidirectional IntersectionObserver, not a one-shot reveal.
+     Two nested layers, each owning its own `transform` so they never
+     interrupt each other: .mini-stack-pop does ONLY the enter/exit
+     scale+opacity (a plain transition, so exit is an exact mirror of
+     enter); .mini-stack-idle does ONLY the continuous bob once popped up
+     (a separate `animation` on a different element, rather than the same
+     property -- letting a CSS animation get interrupted mid-cycle by a
+     class removal is what made the old dissolve look broken). */
+  .mini-stack-pop{
     opacity:0; transform:scale(0.12); transform-origin:50% 100%;
     transition:opacity 0.5s cubic-bezier(0.22,0.8,0.32,1), transform 0.5s cubic-bezier(0.22,0.8,0.32,1);
   }
-  .map-mini-stack.is-visible .mini-stack-idle{
-    opacity:1; transform:scale(1);
-    animation:miniStackBob 3.6s ease-in-out 0.55s infinite;
-  }
+  .map-mini-stack.is-visible .mini-stack-pop{opacity:1; transform:scale(1);}
+  .map-mini-stack.is-visible .mini-stack-idle{animation:miniStackBob 3.6s ease-in-out 0.55s infinite;}
   @keyframes miniStackBob{
     0%,100%{transform:translateY(0) rotate(0deg);}
     50%{transform:translateY(-3px) rotate(1.5deg);}
   }
   @media (prefers-reduced-motion: reduce){
-    .mini-stack-idle{transition-duration:1ms; animation:none !important;}
+    .mini-stack-pop{transition-duration:1ms;}
+    .mini-stack-idle{animation:none !important;}
   }
 
   /* Polaroid popup: frosted-glass overlay -- the site stays visible behind
@@ -1062,8 +1066,7 @@
   <section class="expeditions-section">
     <div class="section-inner">
       <p class="eyebrow center reveal" id="expedEyebrow">And the trips never stopped</p>
-      <h2 class="center reveal" id="expedHeading">The Expeditions</h2>
-      <p class="expedition-note reveal" id="expedNote" style="margin-top:0.8rem;">Ten countries, two passports, one shared map — every trip another chapter.</p>
+      <p class="expedition-note reveal" id="expedNote" style="margin-top:0.6rem;">Ten countries, two passports, one shared map — every trip another chapter.</p>
 
       <ul class="sr-only" id="expedSrList" aria-label="Expedition destinations"></ul>
 
@@ -1769,7 +1772,7 @@
       mini.className = 'map-mini-stack';
       mini.style.left = ex.x + '%';
       mini.style.top = ex.y + '%';
-      mini.innerHTML = '<div class="mini-stack-idle"><div class="mhp-fan"></div></div>';
+      mini.innerHTML = '<div class="mini-stack-pop"><div class="mini-stack-idle"><div class="mhp-fan"></div></div></div>';
       mini.addEventListener('click', function(){ openPolaroidDeck(idx); });
       wrap.appendChild(mini);
 
@@ -1786,16 +1789,17 @@
   // site): each mini-stack pops up out of its waypoint as it scrolls near
   // the viewport and dissolves back down into it as it scrolls away, so only
   // a handful are ever "up" at once instead of all 14 crowding the map.
-  // rootMargin shrinks the effective trigger zone a little on both edges so
-  // the pop/dissolve has room to play out before a stack is fully clipped
-  // by the top or bottom of the screen.
+  // rootMargin's bottom value is pulled up to the screen's own vertical
+  // midpoint (-50%), not the bottom edge, so a waypoint dissolves as soon as
+  // it crosses into the lower half of the viewport rather than lingering
+  // almost all the way to the bottom before disappearing.
   function observeMobileMiniStacks(){
     var stacks = document.querySelectorAll('.map-mini-stack');
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(e){
         e.target.classList.toggle('is-visible', e.isIntersecting);
       });
-    }, {threshold:0.15, rootMargin:'-10% 0px -10% 0px'});
+    }, {threshold:0, rootMargin:'-5% 0px -50% 0px'});
     stacks.forEach(function(s){ io.observe(s); });
   }
   function populateMobileMiniStacks(lang){
