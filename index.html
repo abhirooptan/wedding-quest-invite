@@ -462,8 +462,11 @@
      rest stay dissolved back into their waypoint. Kept deliberately tiny --
      just a glance, not a full preview. */
   .map-mini-stack{
-    display:block; position:absolute; z-index:4; width:38px;
+    display:block; position:absolute; z-index:4; width:50px;
     transform:translate(-50%, calc(-100% - 6px)); cursor:pointer; /* static positioning -- never animated */
+  }
+  @media (max-width:768px){
+    .map-mini-stack{width:34px;} /* slightly smaller than the desktop/laptop size above */
   }
   /* pops up out of the waypoint (scale from near-zero, anchored at the
      bottom edge nearest the marker) as it scrolls into view, and dissolves
@@ -1654,25 +1657,26 @@
   // Malta1.jpg, Malta2.jpg ... Malta5.jpg (up to MAX_DECK_PHOTOS, gaps
   // allowed, all optional) become that destination's fanned photo deck,
   // resolved lazily on first open. See assets/photos/README.md.
-  // coordinates re-measured directly against the vertical/portrait map
-  // artwork (colour-thresholded marker detection, not eyeballed) after the
-  // image was swapped from a wide horizontal scroll to a tall vertical one --
-  // the old map didn't work well on mobile, the new one reads top-to-bottom.
+  // coordinates re-measured against the latest map artwork (evenly
+  // re-distributed markers, still vertical/portrait) via colour-thresholded
+  // marker detection, verified by drawing them back onto the image. Watch
+  // for Slovakia/Adriatic Sea specifically -- their markers sit close
+  // together and got swapped once already when re-measuring blind.
   var EXPEDITIONS = [
-    {id:'ireland', photoBase:'Ireland', key:'destIreland', x:28.7, y:24.7},
-    {id:'london', photoBase:'London', key:'destLondon', x:42.8, y:28.7},
-    {id:'poland', photoBase:'Poland', key:'destPoland', x:62.8, y:25.5},
-    {id:'new-york', photoBase:'NewYork', key:'destNewYork', x:24.0, y:40.9},
-    {id:'belgium', photoBase:'Belgium', key:'destBelgium', x:44.8, y:36.0},
-    {id:'czech-republic', photoBase:'CzechRepublic', key:'destCzechRepublic', x:58.0, y:38.3},
-    {id:'portugal', photoBase:'Portugal', key:'destPortugal', x:26.0, y:48.7},
-    {id:'spain', photoBase:'Spain', key:'destSpain', x:39.8, y:44.8},
-    {id:'slovakia', photoBase:'Slovakia', key:'destSlovakia', x:67.4, y:45.2},
-    {id:'adriatic-sea', photoBase:'AdriaticSea', key:'destAdriaticSea', x:65.2, y:54.8},
-    {id:'mallorca', photoBase:'Mallorca', key:'destMallorca', x:26.9, y:68.0},
-    {id:'malta', photoBase:'Malta', key:'destMalta', x:47.9, y:63.5},
-    {id:'india', photoBase:'India', key:'destIndia', x:72.2, y:74.0},
-    {id:'santorini', photoBase:'Santorini', key:'destSantorini', x:50.8, y:83.3}
+    {id:'ireland', photoBase:'Ireland', key:'destIreland', x:27.0, y:26.3},
+    {id:'london', photoBase:'London', key:'destLondon', x:42.1, y:31.1},
+    {id:'poland', photoBase:'Poland', key:'destPoland', x:69.9, y:27.1},
+    {id:'new-york', photoBase:'NewYork', key:'destNewYork', x:24.9, y:46.4},
+    {id:'belgium', photoBase:'Belgium', key:'destBelgium', x:49.6, y:40.4},
+    {id:'czech-republic', photoBase:'CzechRepublic', key:'destCzechRepublic', x:70.0, y:41.9},
+    {id:'portugal', photoBase:'Portugal', key:'destPortugal', x:25.7, y:58.5},
+    {id:'spain', photoBase:'Spain', key:'destSpain', x:45.3, y:58.6},
+    {id:'slovakia', photoBase:'Slovakia', key:'destSlovakia', x:72.7, y:51.0},
+    {id:'adriatic-sea', photoBase:'AdriaticSea', key:'destAdriaticSea', x:69.5, y:64.2},
+    {id:'mallorca', photoBase:'Mallorca', key:'destMallorca', x:28.6, y:74.1},
+    {id:'malta', photoBase:'Malta', key:'destMalta', x:46.5, y:70.6},
+    {id:'india', photoBase:'India', key:'destIndia', x:71.2, y:82.0},
+    {id:'santorini', photoBase:'Santorini', key:'destSantorini', x:51.0, y:89.0}
   ];
   var MAX_DECK_PHOTOS = 5;
   var expeditionPhotoCache = {};
