@@ -1886,6 +1886,7 @@
     document.getElementById('polaroidLabel').textContent = strs[ex.key];
     document.getElementById('polaroidDeck').setAttribute('aria-label', strs[ex.key] + ' memories');
     resolveExpeditionPhotos(ex, function(photos){
+      if(deckState.idx !== idx){ return; } // stale callback from a since-abandoned destination
       deckState.photos = photos;
       deckState.index = 0;
       renderCarouselSlides();
