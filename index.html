@@ -21,7 +21,13 @@
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html{scroll-behavior:smooth; overflow-x:hidden;}
-  body{background:var(--px-night); color:var(--px-text); font-family:var(--serif); overflow-x:hidden;}
+  /* overflow-x:hidden lives on <html> only (below) -- declaring it on body
+     too made body its own independent scroll container (both html and body
+     had a non-visible overflow-x, so both independently computed
+     overflow-y:auto), which silently breaks position:sticky for any
+     descendant: sticky then resolves against body's own (never-moving)
+     scroll offset instead of the real page scroll. */
+  body{background:var(--px-night); color:var(--px-text); font-family:var(--serif);}
   body.locked{overflow:hidden;}
   img{max-width:100%;display:block;}
   svg.px{shape-rendering:crispEdges;}
@@ -184,6 +190,15 @@
     border:1px solid var(--gold); box-shadow:none;
   }
   .top-controls.elegant .mute-toggle:hover{background:var(--gold-light);}
+  /* the ivory box reads harsh over the sunset/olive sections -- swap to a
+     translucent dark chip there instead (toggled by scroll position, see
+     initDarkControls) while ivory sections keep the light style above */
+  .top-controls.elegant.dark-controls .lang-select,
+  .top-controls.elegant.dark-controls .mute-toggle{
+    color:#F4EEDF; background:rgba(37,40,31,0.38); border-color:rgba(211,184,119,0.65);
+    -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  }
+  .top-controls.elegant.dark-controls .mute-toggle:hover{background:rgba(37,40,31,0.55);}
 
   /* language selector (entry modal only now -- the landing page uses .lang-select above) */
   .lang-row{display:flex; gap:0.6rem; justify-content:center; margin-bottom:1.6rem;}
@@ -391,7 +406,58 @@
      (percentage coordinates), not a decorative background with unrelated
      buttons on top. Clicking opens a centred Polaroid deck; the map dims
      behind it. See Expeditions_Map_Implementation_Spec.md. */
-  .expeditions-section{background:var(--cream);}
+  /* eases toward the sunset's own starting colour well before the section
+     ends, so the ivory sides either side of the map (where its illustrated
+     parchment doesn't cover) have already darkened into dusk by the time
+     the actual overlap with the sunset scene happens -- no separate
+     scroll-driven patch needed, just one static background */
+  /* the transition needs to be a fixed length (not a %), because a % that
+     starts darkening partway down the section was still solid cream behind
+     most of the map (correct) but ALSO already deep into darkening behind
+     the map's own final destinations (Mallorca/Malta/India/Santorini) --
+     since the parchment illustration is fully opaque and unaffected by
+     what's behind it, that mismatch (still-daylight map content sitting on
+     an already-near-black background) read as a hard cut, not a fade. This
+     keeps the whole section cream until the last ~14rem, concentrating the
+     darkening on just the final overlap with the sunset, regardless of how
+     tall the map itself renders at a given viewport width. Fades to the
+     SAME golden-hour tone .proposal-scene itself starts at, matching the
+     intended time-of-day story: ivory daylight eases into golden hour here,
+     then the sunset scene carries that gold through sunset-orange into
+     dusk purple, ending in olive for Wedding Details -- one continuous,
+     monotonically-darkening arc with no colour reversal anywhere (verified
+     against perceptual luminance, not just eyeballed), which is what
+     actually avoids the visible-band problem earlier attempts kept hitting. */
+  /* the sun's own glow can never bleed above the map: .expeditions-map sets
+     position:relative + z-index:2, but its parent (.expeditions-section)
+     has no position/z-index of its own, so that z-index "escapes" straight
+     up to the root stacking context and gets compared directly against
+     .proposal-scroll's z-index:1 -- 2 beats 1, so the map (which is a mostly
+     -opaque aged-parchment graphic, not just its inked illustrations --
+     only the rolled edges have real alpha cutouts) paints over the glow
+     wherever their boxes overlap, cutting it off in a flat line exactly at
+     the map's own bounding edge. Rather than fight that stacking order (the
+     map needs to stay above the REST of the scene, for the "parchment
+     floats above the sunset" overlap effect), bake a matching warm glow
+     directly into the section's own background instead, positioned where
+     the sun will actually appear (70% across, same as .proposal-sun) --
+     it's naturally visible beside/around the map without needing to out-
+     rank its z-index, since it's simply part of what's already behind it. */
+  .expeditions-section{
+    /* explicit radius, not the "farthest-corner" default -- on a section
+       this tall, farthest-corner sizing computes a huge radius dominated by
+       the vertical distance, and since the glow is off-centre (70%, near
+       the sun), the two sides end up wildly unequal fractions of that same
+       huge radius: the right edge (~430px away) barely reaches the first
+       colour stop and stays almost fully saturated right up to the edge,
+       while the left edge (~1000px away) actually passes through the fade
+       -- same gradient, but reading as strong-and-flat on the right,
+       gradual on the left. A fixed radius makes both sides fall off the
+       same way regardless of the section's actual height. */
+    background:
+      radial-gradient(circle 650px at 70% 100%, rgba(247,199,105,0.4), rgba(247,199,105,0.16) 35%, transparent 72%),
+      linear-gradient(180deg, var(--cream) 0%, var(--cream) calc(100% - 14rem), #E8B771 100%);
+  }
   .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
   .expeditions-map-scroll{margin-top:2.8rem;}
   /* the map artwork is now a tall vertical scroll (portrait), not a wide
@@ -399,7 +465,11 @@
      enormous height, and no longer needs the old mobile horizontal-pan
      workaround since a portrait map already fits a phone screen naturally */
   .expeditions-map-wrap{position:relative; width:min(100%,640px); margin-inline:auto;}
-  .expeditions-map{position:relative; width:100%; opacity:0; transition:opacity 0.7s ease;}
+  /* z-index+negative margin let the parchment (a PNG with transparent
+     scroll-edge padding) physically overlap the top of the sunset scene
+     below, instead of leaving an ivory gap between the two sections --
+     the sunset gradient peeks through the transparent edges around it */
+  .expeditions-map{position:relative; width:100%; opacity:0; transition:opacity 0.7s ease; z-index:2; margin-bottom:-6.5rem;}
   .expeditions-map.is-visible{opacity:1;}
   .expeditions-map img{display:block; width:100%; height:auto;}
   .expeditions-map.dimmed::after{
@@ -418,6 +488,12 @@
   }
   .map-waypoint:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
   .map-waypoint.active{box-shadow:0 0 0 3px rgba(196,166,97,0.9);}
+  /* Santorini (the route's final stop) gains a warm glow as it nears the top
+     of the viewport and is about to scroll away -- a cue that the journey
+     is handing off into the sunset next, not a literal morph (Transition
+     Review §3.3) */
+  .map-waypoint-finale{transition:box-shadow 0.6s ease;}
+  .map-waypoint-finale.finale-glow{box-shadow:0 0 0 4px rgba(247,199,90,0.45), 0 0 26px 10px rgba(247,199,90,0.35);}
   @media (prefers-reduced-motion: reduce){
     .map-waypoint, .expeditions-map{transition:none;}
   }
@@ -574,56 +650,185 @@
   }
   .expedition-note{text-align:center; margin-top:2.4rem; font-style:italic; opacity:0.7; font-size:1.05rem;}
 
-  /* proposal: santorini sunset -- the emotional climax before practical wedding
-     info begins. Copy reveals sequentially (not all at once) per Task3's
-     motion choreography, and the gradient darkens toward olive at the very
-     bottom so the handoff into Wedding Details reads as "daylight becoming
-     evening" rather than a hard section cut. */
-  .proposal-section{
-    background:linear-gradient(180deg,#2C3550 0%, #6E4A5E 40%, #C97B4A 75%, #E8C170 92%, var(--olive-deep) 100%);
-    color:var(--cream); text-align:center; position:relative; overflow:hidden;
+  /* proposal: santorini sunset -- a pinned cinematic scene (not a static block
+     the guest scrolls past). .proposal-scroll provides the extra scroll
+     distance; .proposal-scene stays pinned to the viewport while a 0-1
+     scroll-progress value (computed in JS, see updateProposalProgress) drives
+     the sun's descent behind Skaros Rock, the copy's staged fade in/out, and
+     an olive wash rising from the bottom -- so "she said yes" causally becomes
+     "the final level unlocks" instead of the page just moving to the next
+     section. The final gradient stop matches Wedding Details' own background
+     exactly so there is no seam once the pin releases. */
+  /* override .elegant-world section's default padding -- it would eat into
+     the sticky scene's own scroll math (top+bottom padding shrinks the
+     range .proposal-scene is allowed to stay pinned for, causing it to
+     un-stick early); the scene positions its own content via vw offsets */
+  .elegant-world .proposal-scroll{padding:0;}
+  .proposal-scroll{min-height:148vh; position:relative; z-index:1;}
+  /* .expeditions-section and .proposal-scene are two separately-rendered
+     elements, each fading to/from the same #E8B771 -- in theory that meets
+     with zero seam, but in practice two independent gradients don't quite
+     sub-pixel-align at their shared edge (a few units' difference,
+     strongest near the sun's x-position). Rather than chase that precision
+     further, mask it directly: a thin band centred exactly on the seam,
+     using the same colour, fading to TRUE transparent on both its own
+     edges (linear, not radial, so unlike the glow bridge this used to be,
+     it can't leave a hard edge of its own). Only meant to smooth the area
+     outside the map -- within the map's own width it's simply hidden behind
+     the opaque parchment, which already provides continuity there. */
+  .proposal-scroll::before{
+    content:''; position:absolute; left:0; right:0; top:0; height:70px; z-index:2;
+    transform:translateY(-50%); pointer-events:none;
+    background:linear-gradient(180deg, transparent 0%, rgba(232,183,113,0.55) 50%, transparent 100%);
   }
-  .proposal-section .section-inner{position:relative; z-index:1;}
-  .proposal-section h2{color:var(--cream);}
-  .proposal-section .eyebrow{color:#F2DA8C;}
-  .proposal-line{font-style:italic; font-size:clamp(1.2rem,3vw,1.55rem); line-height:1.7; max-width:600px; margin:1.8rem auto 0;}
-  .proposal-script{font-family:var(--script); font-size:clamp(2.6rem,8vw,4rem); color:#FFF3D6; margin-top:1.6rem; text-shadow:0 2px 18px rgba(0,0,0,0.25);}
-  .proposal-date{font-family:var(--label); letter-spacing:0.22em; font-size:0.85rem; text-transform:uppercase; color:#F2DA8C; margin-top:1.2rem;}
-  .proposal-sun{
-    width:70px; height:70px; margin:0 auto 1.4rem; border-radius:50%;
-    background:radial-gradient(circle, #FFF3D6 0%, #F2C744 55%, rgba(242,199,68,0) 72%);
-    transition:transform 1.8s ease, filter 1.8s ease;
+  /* removed: a separate blurred "twilight glow" bridge used to live here.
+     It was a fixed-size (14rem), hard-edged box with filter:blur(24px) --
+     its own radial-gradient's origin sat AT its bottom edge (strongest
+     there, not faded), so IT had its own visible boundary where it ended,
+     independent of (and sometimes visually doubling with) the sun's own
+     glow. That's one of the "sections not matching" -- three separate
+     overlapping background sources (this bridge, the map-section fade, the
+     scene's own gradient) each with their own edges to potentially clash.
+     Now there are only two, already verified colour-matched and monotonic:
+     .expeditions-section's fade and .proposal-scene's own gradient, plus
+     the sun's own un-clipped glow bleeding through naturally. */
+  .proposal-scene{
+    /* no overflow:hidden -- the scene isn't yet filling the full viewport in
+       the brief moment right before its sticky pin engages (still easing up
+       from the map's overlap above it), so clipping here cut the sun's own
+       glow off hard exactly at the scene's top edge, right where the map's
+       roll sits. Letting it bleed upward is what makes the glow feel
+       continuous with the map above instead of stopping dead at a boundary. */
+    position:sticky; top:0; min-height:100vh; color:var(--cream);
+    /* time-of-day story: golden hour (matching the map's own fade) eases
+       into a deeper sunset orange as the sun sinks, then dusk purple, then
+       olive for the Wedding handoff -- a single continuous darkening, not
+       the earlier "dark sky/bright middle/dark ground" composition, which
+       needed a brightening bump that kept reappearing as a visible band
+       wherever it landed. Perceptual luminance (0.299R+0.587G+0.114B):
+       #E8B771=189.7 -> #CB6E4A=133.7 -> #8B5169=101.1 -> #4F3D5C=69.9 ->
+       olive-deep=66.3 -- monotonically decreasing end to end, verified, not
+       just eyeballed. Keep it that way: any new stop must sit strictly
+       between its neighbours' luminance values, never brighter than what
+       comes before it.
+       No separate ambient radial glow here on purpose -- there used to be
+       one (circle at 72% 30%), independent of .expeditions-section's own
+       glow just above (different centre, different radius, default
+       farthest-corner sizing). Two independently-formulated radial
+       gradients meeting at a shared edge only produce identical values by
+       coincidence, and these didn't: a small but measurable step showed up
+       right at the seam, strongest near the sun's own x-position where both
+       glows were contributing most. The sun's own (JS-positioned, already
+       verified smooth) glow plus this linear gradient's golden-hour start
+       are enough warmth on their own -- one fewer overlapping gradient
+       source is one fewer place for a seam to reappear. */
+    background:
+      linear-gradient(180deg, #E8B771 0%, #CB6E4A 28%, #8B5169 58%, #4F3D5C 82%, var(--olive-deep) 100%);
   }
-  .proposal-section.play .proposal-sun{transform:translateY(28px); filter:brightness(1.1);}
-  /* reserved photography layer -- future engagement photo fades into the
-     lower third under the gradient; a warm-grey placeholder holds the space
-     and correct proportions until it exists (Task3 "Proposal Photograph") */
-  .proposal-photo-placeholder{
-    position:absolute; left:0; right:0; bottom:0; height:38%; z-index:0; pointer-events:none;
-    display:flex; align-items:flex-end; justify-content:center; padding-bottom:1.3rem;
+  @media (prefers-reduced-motion: reduce){
+    .proposal-scroll{min-height:auto;}
+    .proposal-scene{position:relative; min-height:100vh;}
   }
-  .proposal-photo-placeholder img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  .proposal-grain{
+    position:absolute; inset:0; z-index:4; pointer-events:none; opacity:0.03; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .proposal-photo-layer{position:absolute; inset:0; z-index:0;}
+  .proposal-photo-layer img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
   /* the darkening gradient is its own layer so it still reads as a moody vignette
      whether or not a real photo has been dropped in underneath it yet */
   .proposal-photo-scrim{
-    position:absolute; inset:0;
-    background:linear-gradient(180deg, rgba(44,53,80,0) 0%, rgba(35,24,16,0.5) 55%, rgba(20,14,10,0.72) 100%);
+    position:absolute; inset:0; z-index:1;
+    background:linear-gradient(180deg, rgba(30,20,35,0) 45%, rgba(20,14,18,0.35) 75%, rgba(12,10,10,0.55) 100%);
   }
-  .proposal-photo-placeholder span{
-    position:relative; font-family:var(--label); font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; color:rgba(255,255,255,0.5);
+  /* two-layer vector silhouette (a softer distant island behind an irregular
+     foreground ridge) standing in for a future engagement photo -- legible
+     on closer inspection only, not a detailed illustration */
+  .proposal-silhouette{
+    position:absolute; left:0; right:0; bottom:0; height:clamp(120px,22vh,240px); z-index:3;
   }
-  /* sequential reveal: each element gets its own delay off .proposal-section.play
-     instead of every line fading in together (Task3 §"Motion Choreography") */
-  .proposal-section .p-seq{opacity:0; transform:translateY(16px); transition:opacity 0.9s ease, transform 0.9s ease;}
-  .proposal-section.play #propEyebrow{transition-delay:0.5s;}
-  .proposal-section.play #propHeading{transition-delay:0.7s;}
-  .proposal-section.play #propLine1{transition-delay:1.1s;}
-  .proposal-section.play #propScript{transition-delay:1.8s;}
-  .proposal-section.play #propDate{transition-delay:2.3s;}
-  .proposal-section.play #propLine2{transition-delay:2.6s;}
-  .proposal-section.play .p-seq{opacity:1; transform:translateY(0);}
+  .proposal-silhouette svg{width:100%; height:100%; display:block;}
+  .proposal-sea{
+    position:absolute; left:0; right:0; bottom:0; height:13vh; z-index:2;
+    background:linear-gradient(to bottom, rgba(43,42,55,0.35), #282739);
+  }
+  /* replaces a hard-edged rising rectangle: a feathered wash that slides up
+     from fully transparent to solid olive over a soft ~20vh gradient band,
+     so the colour evolves out of the sunset instead of covering it. Taller
+     than the scene itself (160vh, anchored to the bottom) so that once
+     fully risen, the gradient's own feathered/transparent top portion has
+     been pushed entirely above the fold -- otherwise that transparent edge
+     would sit permanently in view and the sunset gradient would keep
+     bleeding through at the top even at full progress. */
+  .proposal-wedding-wash{
+    position:absolute; left:0; right:0; bottom:0; height:160vh; z-index:5; pointer-events:none;
+    background:linear-gradient(to top, var(--olive-deep) 0%, var(--olive-deep) 63%, rgba(59,74,46,0.9) 75%, rgba(59,74,46,0.35) 88%, transparent 100%);
+    transform:translateY(100%);
+  }
+  /* teaser: a copy of the Wedding heading living inside the pinned scene so
+     it can start appearing while the transition is still resolving (progress
+     0.75-0.92) instead of leaving a blank olive interval -- by the time it
+     fades in, the proposal copy has already fully faded out (0.55), so the
+     two headings are never visible together. Once the scroll wrapper's
+     extra height is exhausted the pin releases and the real .details-section
+     heading (identical copy/styling) takes over seamlessly. */
+  .proposal-teaser{
+    position:absolute; inset:0; z-index:6; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:0 6vw; text-align:center; pointer-events:none;
+  }
+  .proposal-teaser .p-seq{opacity:0;}
+  /* .elegant-world h2's default olive-deep color (meant for ivory sections)
+     would be nearly invisible against the risen olive wash behind it */
+  .proposal-teaser h2{color:var(--cream);}
+  .proposal-sun{
+    position:absolute; left:70%; top:18vh; width:clamp(72px,6vw,96px); height:clamp(72px,6vw,96px); z-index:2;
+    border-radius:50%; transform:translate(-50%,-50%); background:#F4DB82;
+  }
+  /* a box-shadow blur has a finite radius, so at low opacity its outer edge
+     still ends somewhere -- against a gradient backdrop that boundary shows
+     up as a visible ring. A wide radial-gradient with several stops fading
+     alllll the way to fully transparent well inside its own box has no such
+     edge to reveal. Negative z-index (safe here since .proposal-sun is
+     itself a stacking context via position+z-index) keeps the halo behind
+     the solid disc rather than washing it out. */
+  .proposal-sun::before{
+    content:''; position:absolute; z-index:-1; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:clamp(260px,22vw,380px); height:clamp(260px,22vw,380px); border-radius:50%; pointer-events:none;
+    background:radial-gradient(circle,
+      rgba(250,224,133,0.55) 0%,
+      rgba(247,199,105,0.3) 20%,
+      rgba(226,176,100,0.14) 40%,
+      rgba(215,157,89,0.05) 60%,
+      rgba(215,157,89,0) 80%);
+  }
+  /* asymmetric editorial composition on desktop -- the site's one deliberate
+     break from centred layouts, signalling this is the emotional climax */
+  .proposal-content{
+    position:absolute; left:11vw; top:50%; transform:translateY(-50%);
+    max-width:min(620px,42vw); z-index:7; text-align:left;
+  }
+  .proposal-content .eyebrow{color:#F2DA8C;}
+  .proposal-content h2{color:var(--cream); text-align:left; font-size:clamp(2.4rem,5vw,3.6rem);}
+  .proposal-line{font-style:italic; font-size:clamp(1.15rem,2.3vw,1.4rem); line-height:1.65; margin-top:1.6rem;}
+  .proposal-script{font-family:var(--script); font-size:clamp(2.6rem,6vw,4rem); color:#FFF3D6; margin-top:1.5rem; text-shadow:0 2px 18px rgba(0,0,0,0.25);}
+  .proposal-date{font-family:var(--label); letter-spacing:0.22em; font-size:0.85rem; text-transform:uppercase; color:rgba(246,220,155,0.88); margin-top:1.1rem;}
+  /* opacity is driven per-frame from JS (updateProposalProgress) while
+     motion is allowed, so no transition here -- would fight the rAF updates */
+  .proposal-scene .p-seq{opacity:0;}
+  @media (max-width:860px){
+    .proposal-content{left:50%; top:50%; transform:translate(-50%,-50%); max-width:88vw; text-align:center;}
+    .proposal-content h2{text-align:center;}
+    .proposal-sun{left:50%; top:8vh;}
+  }
   @media (prefers-reduced-motion: reduce){
-    .proposal-sun, .proposal-section .p-seq{transition:none;}
+    /* the real .details-section already follows immediately once the scene
+       stops being sticky (min-height:auto above), so the teaser would just
+       be a redundant, simultaneously-visible second heading here */
+    .proposal-teaser{display:none;}
+    .proposal-scene .p-seq{transition:opacity 0.3s ease;}
+    .proposal-scene.play .p-seq{opacity:1;}
+    .proposal-scene.play .proposal-sun{top:60vh; transition:top 0.3s ease;}
+    .proposal-scene.play .proposal-wedding-wash{transform:translateY(0); transition:transform 0.3s ease;}
   }
 
   /* details -- editorial chapters, not dashboard cards (Task4): information is
@@ -632,15 +837,30 @@
   .details-section{background:linear-gradient(180deg,var(--olive-deep),var(--olive-deepest)); color:var(--cream);}
   .details-section h2{color:var(--cream);}
   .details-intro{max-width:480px; margin:1.1rem auto 0; font-style:italic; opacity:0.75; font-size:1.05rem; text-align:center;}
+  /* motion-enabled guests already saw this heading once, inside
+     .proposal-teaser -- only reduced-motion guests (where the teaser stays
+     hidden, see .proposal-teaser's reduced-motion rule) see it here instead */
+  .wedding-intro-reduced{display:none;}
+  @media (prefers-reduced-motion: reduce){
+    .wedding-intro-reduced{display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 1.5rem 0.5rem; text-align:center;}
+  }
+  /* compact side-by-side planning layout for now -- no big empty image
+     slots dominating the section (Transition Review §15/§16). Each chapter
+     swaps to its own differentiated photographed composition automatically
+     once a real image resolves (wireImageWithFallbacks adds .has-photo) */
+  .details-grid{display:grid; grid-template-columns:1fr; gap:3rem;}
+  @media (min-width:760px){
+    .details-grid{grid-template-columns:1fr 1fr; gap:3rem; align-items:start;}
+  }
   .detail-chapter{max-width:600px; margin:0 auto; text-align:center;}
   .detail-chapter-media{
-    position:relative; overflow:hidden; width:100%; border-radius:2px; margin-bottom:1.5rem; border:1px solid rgba(196,166,97,0.25);
+    display:none; position:relative; overflow:hidden; width:100%; border-radius:2px; margin-bottom:1.5rem; border:1px solid rgba(196,166,97,0.25);
     background:linear-gradient(150deg, rgba(196,166,97,0.14), rgba(196,166,97,0.05));
-    display:flex; align-items:center; justify-content:center; padding:1rem; text-align:center;
-    color:rgba(248,245,234,0.45); font-family:var(--label); font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase;
   }
+  .detail-chapter.has-photo .detail-chapter-media{display:block;}
   .detail-chapter-media img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
   .detail-media-169{aspect-ratio:16/9;}
+  .detail-media-45{aspect-ratio:4/5;}
   .detail-chapter h3{font-weight:500; font-size:1.5rem; margin-bottom:0.5rem;}
   .detail-chapter p{opacity:0.75; line-height:1.6;}
   .detail-map-link{
@@ -648,12 +868,23 @@
     color:var(--gold-light); text-decoration:none; border-bottom:1px solid rgba(224,202,152,0.4);
   }
   .detail-map-link:hover{color:var(--cream);}
+  /* Celebration sits beside its image once one exists, instead of repeating
+     Ceremony's stacked composition -- the two chapters shouldn't look
+     identical (Transition Review §16) */
+  @media (min-width:760px){
+    .detail-chapter-celebration.has-photo{
+      max-width:none; display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; align-items:center; text-align:left;
+    }
+    .detail-chapter-celebration.has-photo .detail-chapter-media{margin-bottom:0;}
+  }
   .detail-divider{width:44px; height:1px; background:rgba(196,166,97,0.4); margin:3.2rem auto;}
-  .detail-support-row{display:flex; justify-content:center; gap:2.6rem; flex-wrap:wrap; margin-top:0.4rem;}
-  .detail-support-item{text-align:center; font-family:var(--label); font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; opacity:0.85;}
-  .detail-support-item small{display:block; margin-top:0.4rem; font-family:var(--serif); font-style:italic; text-transform:none; letter-spacing:0; font-size:0.85rem; opacity:0.55;}
+  .detail-support-row{display:flex; justify-content:center; gap:3.5rem; flex-wrap:wrap; margin-top:0.4rem;}
+  .detail-support-item{text-align:center; font-family:var(--label); font-size:0.9rem; letter-spacing:0.12em; text-transform:uppercase; opacity:0.95;}
+  .detail-support-item small{display:block; margin-top:0.5rem; font-family:var(--serif); font-style:italic; text-transform:none; letter-spacing:0; font-size:0.95rem; opacity:0.7;}
   .detail-time{font-family:var(--label); letter-spacing:0.12em; font-size:0.82rem; color:var(--gold-light); margin-top:0.8rem; display:block;}
-  .quest-line{font-family:var(--pixel); font-size:0.5rem; color:var(--gold-light); opacity:0.65; text-align:center; margin-top:3rem; line-height:2;}
+  /* quieter than the practical info above it, not competing with it
+     (Transition Review §17) */
+  .quest-line{font-family:var(--pixel); font-size:0.46rem; color:var(--gold-light); opacity:0.4; text-align:center; margin-top:3rem; line-height:2;}
 
   /* sticky RSVP: appears once the guest reaches Wedding Details' first chapter,
      hides again once the RSVP section itself is on screen (Task4 "Mobile") */
@@ -1101,44 +1332,65 @@
     </div>
   </div>
 
-  <section class="proposal-section" id="proposalSection">
-    <div class="proposal-photo-placeholder">
-      <img id="proposalPhotoImg" alt="" style="display:none;">
+  <section class="proposal-scroll" id="proposalScroll">
+    <div class="proposal-scene" id="proposalScene">
+      <div class="proposal-photo-layer">
+        <img id="proposalPhotoImg" alt="" style="display:none;">
+      </div>
       <div class="proposal-photo-scrim"></div>
-      <span id="propPhotoNote">Engagement photograph coming soon</span>
-    </div>
-    <div class="section-inner">
-      <div class="proposal-sun"></div>
-      <p class="eyebrow center p-seq" id="propEyebrow">Santorini &middot; Skaros Rock</p>
-      <h2 class="center p-seq" id="propHeading">The Sunset That Changed Everything</h2>
-      <p class="proposal-line p-seq" id="propLine1">As the sun sank into the Aegean, one explorer got down on one knee — and the greatest treasure hunt of all came to an end.</p>
-      <p class="proposal-script p-seq" id="propScript">She said yes</p>
-      <p class="proposal-date p-seq" id="propDate">29 March 2026</p>
-      <p class="proposal-line p-seq" id="propLine2" style="font-size:1.05rem; opacity:0.85;">New York celebrated with us that spring. And now... the final adventure is being planned.</p>
+      <div class="proposal-sun" id="proposalSun"></div>
+      <div class="proposal-silhouette" aria-hidden="true">
+        <svg viewBox="0 0 1200 300" preserveAspectRatio="none">
+          <path fill="#3B3350" opacity="0.55" d="M540,300 L540,182 L610,168 L680,150 L760,143 L850,140 L930,150 L1010,146 L1090,156 L1200,162 L1200,300 Z"/>
+          <path fill="#241B2E" opacity="0.92" d="M0,300 L0,176 L55,158 L100,122 L140,96 L175,62 L210,30 L245,47 L272,76 L300,112 L332,142 L368,148 L412,151 L480,149 L1200,149 L1200,300 Z"/>
+        </svg>
+      </div>
+      <div class="proposal-sea" aria-hidden="true"></div>
+      <div class="proposal-grain" aria-hidden="true"></div>
+      <div class="proposal-wedding-wash" id="proposalWeddingWash" aria-hidden="true"></div>
+      <div class="proposal-teaser" id="proposalTeaser">
+        <p class="eyebrow center p-seq" id="teaserEyebrow" style="color:var(--gold-light);">The final level</p>
+        <h2 class="center p-seq" id="teaserHeading">The Wedding</h2>
+        <p class="details-intro center p-seq" id="teaserIntro">The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.</p>
+      </div>
+      <div class="proposal-content">
+        <p class="eyebrow p-seq" id="propEyebrow">Santorini &middot; Skaros Rock</p>
+        <h2 class="p-seq" id="propHeading">The Sunset That Changed Everything</h2>
+        <p class="proposal-line p-seq" id="propLine1">As the sun slipped into the Aegean, one adventure became forever.</p>
+        <p class="proposal-script p-seq" id="propScript">She said yes</p>
+        <p class="proposal-date p-seq" id="propDate">29 March 2026</p>
+      </div>
     </div>
   </section>
 
   <section class="details-section" id="detailsSection">
-    <div class="section-inner">
+    <!-- for everyone else, "THE FINAL LEVEL / The Wedding" already appears
+         once, inside .proposal-teaser at the tail of the pinned sunset scene
+         -- repeating it here read as two separate Wedding sections back to
+         back. This block only renders under reduced motion, where the
+         teaser is hidden instead (no pinned scene to fade it in from), so
+         it's still shown exactly once either way. -->
+    <div class="wedding-intro-reduced">
       <p class="eyebrow center reveal" id="detEyebrow" style="color:var(--gold-light);">The final level</p>
       <h2 class="center reveal" id="detHeading">The Wedding</h2>
-      <p class="details-intro reveal" id="detIntro">The next part of the story is still being planned. Everything you need will appear here.</p>
+      <p class="details-intro reveal" id="detIntro">The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.</p>
+    </div>
+    <div class="section-inner">
+      <div class="details-grid reveal">
+        <div class="detail-chapter detail-chapter-ceremony" id="chapterCeremony">
+          <div class="detail-chapter-media detail-media-169"><img id="ceremonyPhotoImg" alt="" style="display:none;"></div>
+          <h3 id="ceremonyTitle">Ceremony</h3>
+          <p id="ceremonyDesc">Venue scouting expedition<br>currently underway</p>
+          <span class="detail-time" id="ceremonyTime">Date &amp; place to be revealed</span>
+          <a class="detail-map-link" id="ceremonyMapLink" href="#" style="display:none;">Open in Maps &rarr;</a>
+        </div>
 
-      <div class="detail-chapter reveal" id="chapterCeremony">
-        <div class="detail-chapter-media detail-media-169"><img id="ceremonyPhotoImg" alt="" style="display:none;"><span id="ceremonyPhotoNote">Venue photograph coming soon</span></div>
-        <h3 id="ceremonyTitle">Ceremony</h3>
-        <p id="ceremonyDesc">Venue scouting expedition<br>currently underway</p>
-        <span class="detail-time" id="ceremonyTime">Date &amp; place to be revealed</span>
-        <a class="detail-map-link" id="ceremonyMapLink" href="#" style="display:none;">Open in Maps &rarr;</a>
-      </div>
-
-      <div class="detail-divider" aria-hidden="true"></div>
-
-      <div class="detail-chapter reveal" id="chapterCelebration">
-        <div class="detail-chapter-media detail-media-169"><img id="receptionPhotoImg" alt="" style="display:none;"><span id="receptionPhotoNote">Celebration photograph coming soon</span></div>
-        <h3 id="receptionTitle">Celebration</h3>
-        <p id="receptionDesc">One legendary party<br>details coming soon</p>
-        <span class="detail-time" id="receptionTime">Watch this space</span>
+        <div class="detail-chapter detail-chapter-celebration" id="chapterCelebration">
+          <div class="detail-chapter-media detail-media-45"><img id="receptionPhotoImg" alt="" style="display:none;"></div>
+          <h3 id="receptionTitle">Celebration</h3>
+          <p id="receptionDesc">One legendary party<br>details coming soon</p>
+          <span class="detail-time" id="receptionTime">Watch this space</span>
+        </div>
       </div>
 
       <div class="detail-divider" aria-hidden="true"></div>
@@ -1719,14 +1971,17 @@
   // the user to rename anything); falls back to the placeholder note if none
   // of them exist yet -- this is what lets photo uploads "just work" with no
   // further code changes once dropped into assets/photos/.
-  function wireImageWithFallbacks(img, note, basePath){
+  // chapterEl (optional) gets .has-photo toggled on load -- swaps a Wedding
+  // Details chapter from its compact "planning" layout to its full
+  // photographed composition automatically, no code change needed later
+  function wireImageWithFallbacks(img, note, basePath, chapterEl){
     var candidates = [basePath + '.jpg', basePath + '.jpeg', basePath + '.png'];
     var i = 0;
-    img.onload = function(){ img.style.display = ''; if(note) note.style.display = 'none'; };
+    img.onload = function(){ img.style.display = ''; if(note) note.style.display = 'none'; if(chapterEl) chapterEl.classList.add('has-photo'); };
     img.onerror = function(){
       i++;
       if(i < candidates.length){ img.src = candidates[i]; }
-      else { img.style.display = 'none'; if(note) note.style.display = ''; }
+      else { img.style.display = 'none'; if(note) note.style.display = ''; if(chapterEl) chapterEl.classList.remove('has-photo'); }
     };
     img.style.display = 'none';
     if(note) note.style.display = '';
@@ -1753,6 +2008,7 @@
       btn.style.top = ex.y + '%';
       btn.setAttribute('aria-label', strs.expedOpenLabel.replace('{name}', strs[ex.key]));
       btn.setAttribute('aria-haspopup', 'dialog');
+      if(ex.id === 'santorini'){ btn.classList.add('map-waypoint-finale'); }
       btn.addEventListener('click', function(){ openPolaroidDeck(idx); });
       wrap.appendChild(btn);
 
@@ -1771,6 +2027,7 @@
       srList.appendChild(li);
     });
     observeMiniStacks();
+    observeFinaleGlow();
     // photo resolution now probes up to MAX_DECK_PHOTOS (24) slots per
     // destination instead of 5, so doing this eagerly for all 14 on every
     // page load/language switch would fire an excessive burst of requests
@@ -1800,6 +2057,17 @@
       });
     }, {threshold:0, rootMargin:'-33.33% 0px -33.33% 0px'});
     stacks.forEach(function(s){ io.observe(s); });
+  }
+  // glows only while Santorini sits in the top 40% of the viewport -- i.e.
+  // right as it's about to scroll away -- rather than for its whole dwell
+  // in the middle of the screen
+  function observeFinaleGlow(){
+    var el = document.querySelector('.map-waypoint-finale');
+    if(!el) return;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ el.classList.toggle('finale-glow', e.isIntersecting); });
+    }, {threshold:0, rootMargin:'0px 0px -60% 0px'});
+    io.observe(el);
   }
   function populateMiniStacks(lang){
     var strs = UI[lang];
@@ -2441,9 +2709,127 @@
     });
   }
 
+  // Sunset scene: scroll-progress (0-1) computed from .proposalScroll's
+  // position. Checkpoints follow the Implementation Review's exact table
+  // (§11): proposal title fully gone by 0.55, "she said yes" begins fading
+  // at 0.62, sun reaches the horizon at 0.72, the wedding-wash begins at
+  // 0.67, and the in-scene teaser ("THE FINAL LEVEL" / "The Wedding") starts
+  // appearing at 0.75/0.79/0.84 -- entirely inside the pin, well after the
+  // proposal copy has already faded out, so there's no blank interval and
+  // the two headings are never visible together.
+  function initProposalScene(){
+    var scroll = document.getElementById('proposalScroll');
+    var scene = document.getElementById('proposalScene');
+    if(!scroll || !scene) return;
+    var sun = document.getElementById('proposalSun');
+    var wash = document.getElementById('proposalWeddingWash');
+    var eyebrow = document.getElementById('propEyebrow');
+    var heading = document.getElementById('propHeading');
+    var line1 = document.getElementById('propLine1');
+    var scriptEl = document.getElementById('propScript');
+    var dateEl = document.getElementById('propDate');
+    var teaserEyebrow = document.getElementById('teaserEyebrow');
+    var teaserHeading = document.getElementById('teaserHeading');
+    var teaserIntro = document.getElementById('teaserIntro');
+
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduceMotion){
+      var propIO = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if(e.isIntersecting){
+            scene.classList.add('play');
+            propIO.disconnect();
+          }
+        });
+      }, {threshold:0.3});
+      propIO.observe(scene);
+      return;
+    }
+
+    function clamp01(n){ return Math.min(1, Math.max(0, n)); }
+    function stage(p, start, end){ return clamp01((p - start) / (end - start)); }
+    function ease(t){ return t * t * (3 - 2 * t); } // smoothstep
+    // fades in over [inStart,inEnd], holds, fades out over [outStart,outEnd];
+    // also returns the entrance-only fraction so callers can drive a small
+    // translateY that doesn't reverse on the way out
+    function fadeInOut(p, inStart, inEnd, outStart, outEnd){
+      var into = stage(p, inStart, inEnd);
+      var out = 1 - stage(p, outStart, outEnd);
+      return {opacity: into * out, entrance: into};
+    }
+
+    var ticking = false;
+    function update(){
+      ticking = false;
+      var available = scroll.offsetHeight - window.innerHeight;
+      var progress = available > 0 ? clamp01(-scroll.getBoundingClientRect().top / available) : 0;
+
+      // sun reaches/disappears behind the horizon by 0.72 -- travel and
+      // fade both resolve by then instead of continuing for the whole scroll
+      var sunStage = ease(stage(progress, 0, 0.72));
+      // shorter base position + travel than desktop so it clears the
+      // centred text block entirely rather than passing behind it
+      var sunTravel = window.innerWidth <= 860 ? 8 : 62;
+      sun.style.transform = 'translate(-50%,-50%) translateY(' + (sunStage * sunTravel).toFixed(2) + 'vh)';
+      sun.style.opacity = (1 - stage(progress, 0.62, 0.74)).toFixed(3);
+
+      var eyebrowF = fadeInOut(progress, 0, 0.08, 0.42, 0.55);
+      var headingF = fadeInOut(progress, 0.03, 0.12, 0.42, 0.55);
+      var line1F = fadeInOut(progress, 0.11, 0.20, 0.42, 0.55);
+      var scriptF = fadeInOut(progress, 0.20, 0.30, 0.62, 0.72);
+      var dateF = fadeInOut(progress, 0.28, 0.38, 0.62, 0.72);
+      eyebrow.style.opacity = eyebrowF.opacity; eyebrow.style.transform = 'translateY(' + ((1 - eyebrowF.entrance) * 12).toFixed(1) + 'px)';
+      heading.style.opacity = headingF.opacity; heading.style.transform = 'translateY(' + ((1 - headingF.entrance) * 12).toFixed(1) + 'px)';
+      line1.style.opacity = line1F.opacity; line1.style.transform = 'translateY(' + ((1 - line1F.entrance) * 12).toFixed(1) + 'px)';
+      scriptEl.style.opacity = scriptF.opacity;
+      dateEl.style.opacity = dateF.opacity;
+
+      // once the main title's gone, nudge the signature slightly toward
+      // centre -- a subtle acknowledgement that it's now the sole focus
+      var signatureProgress = stage(progress, 0.42, 0.62);
+      scriptEl.style.transform = 'translateX(' + (signatureProgress * 3).toFixed(2) + 'vw) translateY(' + (signatureProgress * -2).toFixed(2) + 'vh)';
+
+      // opacity stays fixed at 1 (set in CSS) -- coverage is entirely a
+      // function of how far the (taller-than-viewport) wash has slid up
+      var washProgress = stage(progress, 0.67, 0.92);
+      wash.style.transform = 'translateY(' + ((1 - washProgress) * 100).toFixed(2) + '%)';
+
+      teaserEyebrow.style.opacity = stage(progress, 0.75, 0.82);
+      teaserHeading.style.opacity = stage(progress, 0.79, 0.86);
+      teaserIntro.style.opacity = stage(progress, 0.84, 0.91);
+
+      scene.style.setProperty('--proposal-progress', progress.toFixed(4));
+    }
+    function onScroll(){
+      if(!ticking){ ticking = true; requestAnimationFrame(update); }
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll);
+    update();
+  }
+
+  // toggles .dark-controls on #topControls while any dark-background section
+  // (sunset, wedding details, footer) occupies the top strip of the
+  // viewport where the controls actually sit -- ivory sections keep the
+  // light .elegant style, no class needed (Transition Review §18)
+  function initDarkControls(){
+    var topControls = document.getElementById('topControls');
+    var darkSections = document.querySelectorAll('.proposal-scroll, .details-section, .footer');
+    if(!topControls || !darkSections.length) return;
+    var active = new Set();
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ active.add(e.target); } else { active.delete(e.target); }
+      });
+      topControls.classList.toggle('dark-controls', active.size > 0);
+    }, {threshold:0, rootMargin:'0px 0px -95% 0px'});
+    darkSections.forEach(function(s){ io.observe(s); });
+  }
+
   function initObservers(){
     if(observersInited){ return; }
     observersInited = true;
+    initDarkControls();
     var pxIO = new IntersectionObserver(function(entries){
       entries.forEach(function(e){
         if(e.isIntersecting && !e.target.classList.contains('is-visible')){
@@ -2481,21 +2867,11 @@
       }, {threshold:0.2});
       expedIO.observe(expedMap);
     }
-    // proposal section: sequential typography reveal + sun drift, one-shot
-    // (Task3's motion choreography needs its own play class, not the generic
-    // per-element .reveal used elsewhere -- see the .proposal-section.play rules)
-    var proposalSection = document.getElementById('proposalSection');
-    if(proposalSection){
-      var propIO = new IntersectionObserver(function(entries){
-        entries.forEach(function(e){
-          if(e.isIntersecting){
-            proposalSection.classList.add('play');
-            propIO.disconnect();
-          }
-        });
-      }, {threshold:0.3});
-      propIO.observe(proposalSection);
-    }
+    // proposal (sunset) scene: pinned scroll-driven cinematic sequence.
+    // Reduced motion gets the old one-shot fade-in instead of the rAF-driven
+    // progress system (the .proposal-scene stays position:relative in that
+    // case -- see the prefers-reduced-motion CSS block).
+    initProposalScene();
     // sticky RSVP button: appears once the first Wedding Details chapter is
     // reached, hides again once the real RSVP form is on screen (Task4 spec)
     var stickyRsvp = document.getElementById('stickyRsvp');
@@ -2724,9 +3100,13 @@
 
   // ============ STATIC PHOTO SLOTS (proposal + wedding venue) ============
   // language-independent, so these just get wired once rather than per applyLanguage()
-  wireImageWithFallbacks(document.getElementById('proposalPhotoImg'), document.getElementById('propPhotoNote'), 'assets/photos/proposal/sunset');
-  wireImageWithFallbacks(document.getElementById('ceremonyPhotoImg'), document.getElementById('ceremonyPhotoNote'), 'assets/photos/wedding/ceremony');
-  wireImageWithFallbacks(document.getElementById('receptionPhotoImg'), document.getElementById('receptionPhotoNote'), 'assets/photos/wedding/celebration');
+  // no visible "coming soon" note on any of these -- the fallback state is
+  // the silhouette/gradient (proposal) or the abstract olive texture
+  // (ceremony/celebration) already sitting behind the <img>, not a text label
+  // describing a missing asset (Transition Review §2.4/§8.2)
+  wireImageWithFallbacks(document.getElementById('proposalPhotoImg'), null, 'assets/photos/proposal/sunset');
+  wireImageWithFallbacks(document.getElementById('ceremonyPhotoImg'), null, 'assets/photos/wedding/ceremony', document.getElementById('chapterCeremony'));
+  wireImageWithFallbacks(document.getElementById('receptionPhotoImg'), null, 'assets/photos/wedding/celebration', document.getElementById('chapterCelebration'));
 
   // ============ INITIAL LANGUAGE APPLICATION ============
   applyLanguage(currentLang);
