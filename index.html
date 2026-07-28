@@ -2104,6 +2104,7 @@
       photoWrap.className = 'polaroid-photo';
       if(displayPhotos.length){
         var img = document.createElement('img');
+        img.loading = 'lazy'; img.decoding = 'async';
         img.src = displayPhotos[i]; img.alt = '';
         photoWrap.appendChild(img);
       } else if(i === n - 1){
@@ -2196,6 +2197,11 @@
       photoWrap.className = 'polaroid-photo';
       if(photos.length){
         var img = document.createElement('img');
+        // the active slide (index 0 -- always what's front-facing when the
+        // deck first opens) loads eagerly so it's sharp immediately; the
+        // rest of the barrel can load as bandwidth allows
+        img.loading = i === 0 ? 'eager' : 'lazy';
+        img.decoding = 'async';
         img.src = photos[i]; img.alt = '';
         photoWrap.appendChild(img);
       } else {
