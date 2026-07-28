@@ -36,16 +36,17 @@ window.LOCALE_EN = {
     expedComingSoonLong: 'Photographs from this chapter will be added soon.',
     expedPlaceholderMemory: "This memory is still being written — check back closer to the big day.",
     propEyebrow: 'Santorini &middot; Skaros Rock', propHeading: 'The Sunset That Changed Everything',
-    propLine1: 'As the sun sank into the Aegean, one explorer got down on one knee — and the greatest treasure hunt of all came to an end.',
+    propLine1: 'As the sun slipped into the Aegean, one adventure became forever.',
     propScript: 'She said yes', propDate: '29 March 2026',
-    propLine2: 'New York celebrated with us that spring. And now... the final adventure is being planned.',
-    propPhotoNote: 'Engagement photograph coming soon',
+    // det* (.wedding-intro-reduced) and teaser* (.proposal-teaser) are the
+    // same copy, shown in exactly one of the two places depending on
+    // prefers-reduced-motion -- see initProposalScene / .wedding-intro-reduced
     detEyebrow: 'The final level', detHeading: 'The Wedding',
-    detIntro: 'The next part of the story is still being planned. Everything you need will appear here.',
+    detIntro: "The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.",
+    teaserEyebrow: 'The final level', teaserHeading: 'The Wedding',
+    teaserIntro: "The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.",
     ceremonyTitle: 'Ceremony', ceremonyDesc: 'Venue scouting expedition<br>currently underway', ceremonyTime: 'Date &amp; place to be revealed',
-    ceremonyPhotoNote: 'Venue photograph coming soon',
     receptionTitle: 'Celebration', receptionDesc: 'One legendary party<br>details coming soon', receptionTime: 'Watch this space',
-    receptionPhotoNote: 'Celebration photograph coming soon',
     supportTravel: 'Travel', supportTravelNote: "We're putting the finishing touches on this chapter.",
     supportStay: 'Accommodation', supportStayNote: "We're putting the finishing touches on this chapter.",
     supportFaq: 'FAQ', supportFaqNote: "We're putting the finishing touches on this chapter.",
