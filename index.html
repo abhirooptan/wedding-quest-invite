@@ -1654,9 +1654,9 @@
   // into the artwork itself -- these buttons are the accessible interactive
   // layer on top of it, not a decorative background.
   // `photoBase` is the filename base under assets/photos/expeditions/:
-  // Malta1.jpg, Malta2.jpg ... Malta5.jpg (up to MAX_DECK_PHOTOS, gaps
-  // allowed, all optional) become that destination's fanned photo deck,
-  // resolved lazily on first open. See assets/photos/README.md.
+  // Malta1.jpg, Malta2.jpg ... Malta{MAX_DECK_PHOTOS}.jpg (gaps allowed, all
+  // optional) become that destination's fanned photo deck, resolved lazily
+  // on first open. See assets/photos/README.md.
   // coordinates re-measured against the latest map artwork (evenly
   // re-distributed markers, still vertical/portrait) via colour-thresholded
   // marker detection, verified by drawing them back onto the image. Watch
@@ -1678,7 +1678,10 @@
     {id:'india', photoBase:'India', key:'destIndia', x:71.2, y:82.0},
     {id:'santorini', photoBase:'Santorini', key:'destSantorini', x:51.0, y:89.0}
   ];
-  var MAX_DECK_PHOTOS = 5;
+  // raised from 5 -- real photo counts per destination now range from 0 (a
+  // few still placeholder) up to 24 (Ireland), so the cap needs to cover the
+  // largest rather than the originally-designed "up to 5"
+  var MAX_DECK_PHOTOS = 24;
   var expeditionPhotoCache = {};
   // probes {PhotoBase}{n}.{jpg,jpeg,png} for n=1..MAX_DECK_PHOTOS in parallel
   // (e.g. Malta1.jpg, Malta2.jpg...) and caches whichever ones actually
@@ -1767,8 +1770,19 @@
       li.textContent = strs[ex.key];
       srList.appendChild(li);
     });
-    populateMiniStacks(lang);
     observeMiniStacks();
+    // photo resolution now probes up to MAX_DECK_PHOTOS (24) slots per
+    // destination instead of 5, so doing this eagerly for all 14 on every
+    // page load/language switch would fire an excessive burst of requests
+    // whether or not the guest ever scrolls to this section. Deferred to
+    // the map's own IntersectionObserver in initObservers() -- except when
+    // the map has ALREADY been scrolled past once (e.g. this re-render was
+    // triggered by a language switch after that point), in which case
+    // there's no "first scroll" left to hook and we populate immediately.
+    var expedMapEl = document.getElementById('expeditionsMap');
+    if(expedMapEl && expedMapEl.classList.contains('is-visible')){
+      populateMiniStacks(lang);
+    }
   }
   // bidirectional (unlike the one-shot .reveal pattern used elsewhere on the
   // site): each mini-stack pops up out of its waypoint as it scrolls near
@@ -1806,7 +1820,12 @@
   ];
   function buildMiniFan(container, photos, initials){
     container.innerHTML = '';
-    var n = photos.length || 1;
+    // the pile is a decorative "there are photos here" glance, not a full
+    // listing -- cap it to a handful of cards regardless of how many photos
+    // a destination actually has (Ireland alone has 24); the real count is
+    // only ever browsed inside the full carousel after opening the deck.
+    var displayPhotos = photos.slice(0, STACK_JITTER.length);
+    var n = displayPhotos.length || 1;
     for(var i = 0; i < n; i++){
       var card = document.createElement('div');
       card.className = 'mhp-barrel-slide';
@@ -1815,9 +1834,9 @@
       card.style.zIndex = n - i; // first photo sits on top of the pile
       var photoWrap = document.createElement('div');
       photoWrap.className = 'polaroid-photo';
-      if(photos.length){
+      if(displayPhotos.length){
         var img = document.createElement('img');
-        img.src = photos[i]; img.alt = '';
+        img.src = displayPhotos[i]; img.alt = '';
         photoWrap.appendChild(img);
       } else if(i === n - 1){
         photoWrap.style.display = 'flex'; photoWrap.style.alignItems = 'center'; photoWrap.style.justifyContent = 'center';
@@ -2452,7 +2471,11 @@
     if(expedMap){
       var expedIO = new IntersectionObserver(function(entries){
         entries.forEach(function(e){
-          if(e.isIntersecting){ expedMap.classList.add('is-visible'); expedIO.disconnect(); }
+          if(e.isIntersecting){
+            expedMap.classList.add('is-visible');
+            populateMiniStacks(currentLang); // first scroll-to -- see the comment in renderExpeditionWaypoints
+            expedIO.disconnect();
+          }
         });
       }, {threshold:0.2});
       expedIO.observe(expedMap);

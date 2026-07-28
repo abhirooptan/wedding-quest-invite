@@ -18,17 +18,16 @@ marker opens a fanned hand of photos for that place (like holding a poker
 hand — hover over one to bring it forward). Portrait or square photos work
 best (roughly 4:5).
 
-**Note:** this folder currently has generated placeholder images (2–5 per
-destination, clearly labeled "placeholder") just so the fan/hover effect is
-visible on the live site before real photos exist. Delete/overwrite them
-with real photos whenever you're ready — same filenames, they'll just
-replace the placeholders directly.
-
 **Naming:** `{Destination}{number}.jpg` — e.g. `Malta1.jpg`, `Malta2.jpg`,
-`Malta3.jpg`. Use **1 to 5 photos** per destination (that's the max the fan
-is designed for). Numbers don't need to be consecutive, and `.jpg`/`.jpeg`/
-`.png` all work. Lowercase filenames (`malta1.jpg`) also work as a fallback,
-but the capitalized form below is the intended one.
+`Malta3.jpg`. Numbers don't need to be consecutive, and `.jpg`/`.jpeg`/`.png`
+all work — but **the file actually has to be one of those formats**. A
+couple of the real uploads turned out to be HEIC (iPhone's format) saved
+with a `.jpg` name, which looks fine in Finder/Explorer but won't display in
+a browser — I converted those, but worth knowing if you add more later.
+Lowercase filenames (`malta1.jpg`) also work as a fallback, but the
+capitalized form below is the intended one. No fixed limit on how many
+photos per destination (Ireland currently has 24) — the carousel handles
+any number.
 
 | Filename base | Destination |
 |---|---|
