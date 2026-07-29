@@ -763,52 +763,24 @@
     position:absolute; inset:0; z-index:1;
     background:linear-gradient(180deg, rgba(30,20,35,0) 45%, rgba(20,14,18,0.35) 75%, rgba(12,10,10,0.55) 100%);
   }
-  /* generated Santorini cliffs/architecture/sea illustration -- grounded
-     foreground and middle-distance scene. Previous pass stacked too many
-     treatments at once (low opacity + heavy desaturation/darkening + a deep
-     mask + parallax) and the result was simply hard to see, not "subtle"
-     (Regression Fix Plan §1) -- cleaner baseline here: mild softening only,
-     no mask (the source asset's own alpha already handles the sky edge),
-     no parallax (removed per §3; the sun is the one thing that moves).
-     Opacity is a function of --proposal-progress and reaches exactly 0
-     well before Wedding Details begins (§4) rather than just relying on
-     normal scroll position to carry it off-screen -- belt-and-braces
-     against any fragment surviving into the next section. Same z-index as
-     the sun (2); DOM order (this element comes after) puts it in front. */
-  .proposal-santorini-vector{
-    position:absolute; left:0; right:0; bottom:0; width:100%; z-index:2; pointer-events:none;
-    height:clamp(320px,46vh,520px);
-    /* zoomed slightly past "cover" width so background-position-x actually
-       has room to move -- at exact cover width there's zero horizontal
-       slack and shifting position does nothing. Pushed toward the right
-       side of the source image so the architecture (on the image's left)
-       moves mostly out of the text's column instead of its rooflines
-       crossing directly through "She said yes" / the date. */
-    background:url("assets/images/santorini-foreground-v2.webp") 78% bottom / 132% auto no-repeat;
-    /* full opacity (not the Plan's suggested 0.9) -- at 0.9, ~10% of the
-       sun's brightness bled through wherever it happens to descend over a
-       lighter part of the image (the water's own reflection tones), a
-       clearly visible pale "ghost" disc that reintroduces exactly the
-       problem Critical Review #4 already fixed once. The filter above
-       (not opacity) is what keeps the vector's colour muted -- full
-       opacity here doesn't make it "muddy" again, it just means the sun
-       is genuinely fully hidden once behind it. */
-    opacity:clamp(0, 1 - ((var(--proposal-progress, 0) - 0.76) * 6), 1);
-    filter:saturate(0.82) contrast(0.98) brightness(0.94);
+  /* back to a traced SVG silhouette instead of a photographic vector layer
+     (reverted per direct feedback -- the raster vector's architecture kept
+     competing with the proposal text no matter how it was filtered/
+     repositioned, and a flat dark silhouette doesn't have that problem:
+     it's just a shape, not a detailed, eye-catching image sitting behind
+     the words). Traced from resources/santorini vector sunseet2.png this
+     time (alpha-channel skyline scan, cloud band excluded by starting the
+     per-column scan below y=400, then downsampled to 70 points) rather
+     than hand-drawn, so it's still the real reference art's cliffside/
+     village/dome skyline. Two layers for depth, same technique as before:
+     a softer/smoothed distant echo behind a sharper foreground line. */
+  .proposal-silhouette{
+    position:absolute; left:0; right:0; bottom:0; height:clamp(120px,22vh,240px); z-index:3;
   }
-  @media (max-width:767px){
-    /* mobile text is centred (see .proposal-content media rule below), so
-       the same "push architecture toward the image's right side" logic
-       applies -- keeps it out from directly behind the centred text block */
-    .proposal-santorini-vector{height:clamp(260px,38vh,400px); background-position:85% bottom;}
-  }
-  /* the vector shouldn't sit directly behind the proposal text at full
-     contrast -- a subtle left-side darkening improves legibility without
-     dimming the whole vector (Regression Fix Plan §10). Sits above the
-     vector (z:2) but below the text itself (.proposal-content is z:7). */
-  .proposal-scene::after{
-    content:''; position:absolute; inset:0; z-index:3; pointer-events:none;
-    background:linear-gradient(to right, rgba(44,34,53,0.32) 0%, rgba(44,34,53,0.14) 36%, transparent 62%);
+  .proposal-silhouette svg{width:100%; height:100%; display:block;}
+  .proposal-sea{
+    position:absolute; left:0; right:0; bottom:0; height:13vh; z-index:4;
+    background:linear-gradient(to bottom, rgba(30,28,38,0.6), #282739);
   }
   /* replaces a hard-edged rising rectangle: a feathered wash that slides up
      from fully transparent to solid olive over a soft ~20vh gradient band,
@@ -1474,15 +1446,20 @@
       </div>
       <div class="proposal-photo-scrim"></div>
       <div class="proposal-sun" id="proposalSun"></div>
-      <!-- generated Santorini cliffs/architecture/sea asset (resources/
-           santorini vector sunseet.png, already supplied with a transparent
-           sky and no baked-in sun) replaces the old hand-traced low-poly
-           ridge SVG as the main foreground/middle-distance landscape. The
-           separate .proposal-sea strip from the previous pass was removed
-           entirely (Regression Fix Plan §5) -- the vector already contains
-           its own sea, and keeping a second dark strip layered on top was
-           part of what made the scene read as "muddy." -->
-      <div class="proposal-santorini-vector" aria-hidden="true"></div>
+      <!-- traced from resources/santorini vector sunseet2.png (alpha-channel
+           skyline scan, cloud band excluded, downsampled to 70 points -- see
+           the design-doc conversation for the extraction script) rather
+           than hand-drawn or a photographic layer, so the silhouette is the
+           real reference art's cliffside/village/dome skyline without the
+           detailed architecture competing with the proposal text the way
+           the raster vector attempts did. -->
+      <div class="proposal-silhouette" aria-hidden="true">
+        <svg viewBox="0 0 1200 300" preserveAspectRatio="none">
+          <path fill="#3B3350" opacity="0.88" d="M0,300 L0,52.7 L17.2,53.7 L34.4,54.9 L51.6,56.4 L68.8,57.8 L86.8,59.9 L104.0,63.0 L121.2,66.6 L138.4,69.8 L156.4,73.2 L173.6,76.9 L190.7,80.6 L207.9,83.9 L225.9,96.7 L243.1,108.6 L260.3,119.9 L277.5,130.4 L295.5,140.1 L312.7,149.4 L329.9,158.6 L347.1,157.3 L365.1,155.6 L382.3,154.3 L399.5,152.9 L416.7,151.6 L434.7,150.3 L451.9,148.2 L469.1,145.5 L486.3,143.4 L504.2,141.1 L521.4,138.6 L538.6,135.9 L555.8,132.8 L573.8,130.6 L591.0,129.1 L608.2,118.4 L625.4,107.9 L643.4,97.5 L660.6,87.7 L677.8,78.8 L695.0,69.8 L713.0,60.7 L730.2,60.4 L747.4,60.2 L764.6,60.2 L782.5,60.1 L799.7,59.8 L816.9,59.7 L834.1,59.7 L852.1,63.7 L869.3,67.7 L886.5,71.4 L903.7,75.0 L921.7,76.6 L938.9,77.8 L956.1,78.5 L973.3,74.9 L991.3,71.3 L1008.5,67.4 L1025.7,63.4 L1042.9,60.7 L1060.8,57.8 L1078.0,55.0 L1095.2,52.7 L1112.4,50.3 L1130.4,47.9 L1147.6,45.9 L1164.8,44.7 L1182.0,43.7 L1200.0,43.2 L1200,300 Z"/>
+          <path fill="#241B2E" opacity="0.92" d="M0,300 L0,38.6 L17.2,37.5 L34.4,39.1 L51.6,40.1 L68.8,45.4 L86.8,47.0 L104.0,49.1 L121.2,48.6 L138.4,51.8 L156.4,60.7 L173.6,65.5 L190.7,67.6 L207.9,71.3 L225.9,74.5 L243.1,75.0 L260.3,75.0 L277.5,150.0 L295.5,148.9 L312.7,146.8 L329.9,144.7 L347.1,142.1 L365.1,140.0 L382.3,140.0 L399.5,140.5 L416.7,137.3 L434.7,137.3 L451.9,135.2 L469.1,133.1 L486.3,130.5 L504.2,125.7 L521.4,121.5 L538.6,122.5 L555.8,121.0 L573.8,118.3 L591.0,114.1 L608.2,108.8 L625.4,109.9 L643.4,110.9 L660.6,48.1 L677.8,47.0 L695.0,46.0 L713.0,45.4 L730.2,46.5 L747.4,47.0 L764.6,47.0 L782.5,46.0 L799.7,45.4 L816.9,46.0 L834.1,44.9 L852.1,44.4 L869.3,46.5 L886.5,46.5 L903.7,74.5 L921.7,72.9 L938.9,72.4 L956.1,69.7 L973.3,55.5 L991.3,55.5 L1008.5,51.2 L1025.7,49.1 L1042.9,47.5 L1060.8,45.4 L1078.0,41.7 L1095.2,36.5 L1112.4,35.4 L1130.4,31.2 L1147.6,33.3 L1164.8,30.6 L1182.0,28.5 L1200.0,28.0 L1200,300 Z"/>
+        </svg>
+      </div>
+      <div class="proposal-sea" aria-hidden="true"></div>
       <div class="proposal-grain" aria-hidden="true"></div>
       <div class="proposal-wedding-wash" id="proposalWeddingWash" aria-hidden="true"></div>
       <div class="proposal-teaser" id="proposalTeaser">
@@ -2950,11 +2927,10 @@
       // sun reaches/disappears behind the horizon by 0.72 -- travel and
       // fade both resolve by then instead of continuing for the whole scroll.
       // Desktop travel goes deep enough (78vh added to the 18vh start) that
-      // the disc is genuinely behind .proposal-santorini-vector by the end
-      // of its descent (still at full opacity then -- its own fade doesn't
-      // start until 0.76) -- opacity only trims the last sliver (0.69-0.72)
-      // instead of fading a still-mostly-visible disc into a grey ghost,
-      // which is what a real sunset never does (Critical Review #4).
+      // the disc is genuinely behind .proposal-silhouette/.proposal-sea by
+      // the end of its descent -- opacity only trims the last sliver
+      // (0.69-0.72) instead of fading a still-mostly-visible disc into a grey
+      // ghost, which is what a real sunset never does (Critical Review #4).
       var sunStage = ease(stage(progress, 0, 0.72));
       // shorter base position + travel than desktop so it clears the
       // centred text block entirely rather than passing behind it
