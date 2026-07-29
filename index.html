@@ -839,11 +839,32 @@
   .details-intro{max-width:480px; margin:1.1rem auto 0; font-style:italic; opacity:0.75; font-size:1.05rem; text-align:center;}
   /* motion-enabled guests already saw this heading once, inside
      .proposal-teaser -- only reduced-motion guests (where the teaser stays
-     hidden, see .proposal-teaser's reduced-motion rule) see it here instead */
+     hidden, see .proposal-teaser's reduced-motion rule, and #detailsPinnedHeader
+     below also stays off, see initDetailsPinnedHeader) see it here instead.
+     (position:sticky was tried three times for a pinned version of this exact
+     bar -- always requires a full extra viewport-height of scroll for the
+     sticky bar to travel up from below before it catches at top:0, reading as
+     "the heading vanished, then a different one appeared in the wrong place."
+     #detailsPinnedHeader below replaces that approach with a JS-driven catch.) */
   .wedding-intro-reduced{display:none;}
   @media (prefers-reduced-motion: reduce){
     .wedding-intro-reduced{display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 1.5rem 0.5rem; text-align:center;}
   }
+  /* catches the sunset scene's teaser heading the instant it scrolls to the
+     top of the screen (instead of letting it disappear off-screen), holds it
+     pinned across Ceremony/Celebration/Travel/Accommodation/FAQ, then slides
+     away in sync with scroll once the section is ending -- see
+     initDetailsPinnedHeader for the show/hide + slide math. display starts
+     'none' (not just opacity:0) so it never occupies layout or paints before
+     JS decides it should. */
+  .details-pinned-header{
+    display:none; position:fixed; top:0; left:0; right:0; z-index:400;
+    flex-direction:column; align-items:center; justify-content:center;
+    padding:1.6rem 1.5rem 1rem; text-align:center;
+    background:var(--olive-deep); color:var(--cream);
+  }
+  .details-pinned-header h2{color:var(--cream);}
+  @media (prefers-reduced-motion: reduce){ .details-pinned-header{display:none !important;} }
   /* compact side-by-side planning layout for now -- no big empty image
      slots dominating the section (Transition Review §15/§16). Each chapter
      swaps to its own differentiated photographed composition automatically
@@ -1339,10 +1360,16 @@
       </div>
       <div class="proposal-photo-scrim"></div>
       <div class="proposal-sun" id="proposalSun"></div>
+      <!-- traced from resources/santorini vector.avif (colour-threshold +
+           connected-component sky detection, then a per-column skyline
+           scan -- see the design-doc conversation for the extraction
+           script) rather than hand-drawn, so the silhouette is the actual
+           reference illustration's cliffside/village/rock skyline instead
+           of an invented shape -->
       <div class="proposal-silhouette" aria-hidden="true">
         <svg viewBox="0 0 1200 300" preserveAspectRatio="none">
-          <path fill="#3B3350" opacity="0.55" d="M540,300 L540,182 L610,168 L680,150 L760,143 L850,140 L930,150 L1010,146 L1090,156 L1200,162 L1200,300 Z"/>
-          <path fill="#241B2E" opacity="0.92" d="M0,300 L0,176 L55,158 L100,122 L140,96 L175,62 L210,30 L245,47 L272,76 L300,112 L332,142 L368,148 L412,151 L480,149 L1200,149 L1200,300 Z"/>
+          <path fill="#3B3350" opacity="0.6" d="M0,300 L0,37.7 L28.8,40.4 L57.6,44.5 L88.3,74.2 L117.1,40.4 L145.9,72.8 L174.7,67.4 L205.4,85.0 L234.2,85.0 L263.0,95.8 L291.8,37.7 L322.6,101.2 L351.4,112.1 L380.2,112.1 L409.0,118.8 L439.7,118.8 L468.5,128.3 L497.3,141.8 L526.1,136.4 L556.8,132.3 L585.6,135.0 L614.4,116.1 L643.2,110.7 L673.9,103.9 L702.7,102.6 L731.5,103.9 L760.3,126.9 L791.0,148.6 L819.8,103.9 L848.6,116.1 L877.4,110.7 L908.2,109.4 L937.0,114.8 L965.8,121.5 L994.6,141.8 L1025.3,129.6 L1054.1,129.6 L1082.9,144.5 L1111.7,137.7 L1142.4,137.7 L1171.2,137.7 L1200.0,137.7 L1200,300 Z"/>
+          <path fill="#241B2E" opacity="0.92" d="M0,300 L0,30.9 L19.2,37.7 L38.4,70.1 L55.7,71.5 L74.9,58.0 L94.1,52.6 L113.3,78.3 L130.6,90.4 L149.8,102.6 L169.0,109.4 L188.2,117.5 L205.4,68.8 L224.6,137.7 L243.8,137.7 L263.0,120.2 L280.3,63.4 L299.5,118.8 L318.7,122.9 L337.9,117.5 L357.1,108.0 L374.4,108.0 L393.6,108.0 L412.8,231.0 L432.0,132.3 L449.3,239.2 L468.5,135.0 L487.7,220.2 L506.9,210.8 L524.2,227.0 L543.4,225.6 L562.6,243.2 L581.8,293.2 L599.0,298.6 L618.2,289.2 L637.4,289.2 L656.6,298.6 L675.8,298.6 L693.1,298.6 L712.3,220.2 L731.5,298.6 L750.7,298.6 L768.0,298.6 L787.2,279.7 L806.4,255.4 L825.6,298.6 L842.9,298.6 L862.1,232.4 L881.3,285.1 L900.5,273.0 L919.7,264.8 L937.0,262.1 L956.2,251.3 L975.4,231.0 L994.6,224.3 L1011.8,178.3 L1031.0,179.7 L1050.2,178.3 L1069.4,182.4 L1086.7,186.4 L1105.9,183.7 L1125.1,178.3 L1144.3,133.7 L1161.6,129.6 L1180.8,149.9 L1200.0,147.2 L1200,300 Z"/>
         </svg>
       </div>
       <div class="proposal-sea" aria-hidden="true"></div>
@@ -1364,12 +1391,13 @@
   </section>
 
   <section class="details-section" id="detailsSection">
-    <!-- for everyone else, "THE FINAL LEVEL / The Wedding" already appears
-         once, inside .proposal-teaser at the tail of the pinned sunset scene
-         -- repeating it here read as two separate Wedding sections back to
-         back. This block only renders under reduced motion, where the
-         teaser is hidden instead (no pinned scene to fade it in from), so
-         it's still shown exactly once either way. -->
+    <!-- "THE FINAL LEVEL / The Wedding" first appears inside .proposal-teaser
+         at the tail of the pinned sunset scene (or, under reduced motion,
+         where the teaser stays hidden, this is its only appearance) -- this
+         sticky bar continues the SAME text with no reveal animation of its
+         own, so it's a continuation rather than a second re-appearance, and
+         stays pinned through Ceremony/Celebration/Travel/FAQ until the
+         section itself ends. -->
     <div class="wedding-intro-reduced">
       <p class="eyebrow center reveal" id="detEyebrow" style="color:var(--gold-light);">The final level</p>
       <h2 class="center reveal" id="detHeading">The Wedding</h2>
@@ -1404,6 +1432,20 @@
       <p class="quest-line" id="detQuestLine">SIDE QUEST IN PROGRESS: THE GREAT VENUE HUNT</p>
     </div>
   </section>
+  <!-- JS-driven catch, not position:sticky -- see initDetailsPinnedHeader. Native
+       sticky here always required a full extra viewport-height of scroll for this
+       bar to travel up from below before catching at top:0 (three attempts, same
+       failure: "vanishes, then a different one appears in the wrong place"). This
+       instead freezes in place the instant .proposal-teaser's heading (scrolling
+       normally post-unpin) reaches the top of the screen, so there's no travel and
+       no gap. Duplicate of #teaserHeading/#detHeading content -- own locale keys
+       (pinnedEyebrow/pinnedHeading/pinnedIntro) since applyLanguage() matches by
+       element id. -->
+  <div class="details-pinned-header" id="detailsPinnedHeader">
+    <p class="eyebrow center" id="pinnedEyebrow" style="color:var(--gold-light);">The final level</p>
+    <h2 class="center" id="pinnedHeading">The Wedding</h2>
+    <p class="details-intro center" id="pinnedIntro">The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.</p>
+  </div>
   <button class="sticky-rsvp" id="stickyRsvp" type="button"><span id="stickyRsvpLabel">RSVP &rarr;</span></button>
 
   <section class="rsvp-section">
@@ -2765,10 +2807,21 @@
     }
 
     var ticking = false;
+    // this listener stays attached for the page's whole lifetime (scrolling
+    // back up into the sunset scene later still needs to work), so without
+    // this guard it was doing a getBoundingClientRect() + ~10 inline style
+    // writes on EVERY scroll event anywhere on the page -- including deep in
+    // Ceremony/Celebration/FAQ/RSVP, nowhere near the sunset scene. progress
+    // is a clamp01() result, so once scrolled past either end it stays
+    // EXACTLY 0 or exactly 1 for as long as you keep scrolling that same
+    // direction; skip the redundant work in that case.
+    var lastProgress = null;
     function update(){
       ticking = false;
       var available = scroll.offsetHeight - window.innerHeight;
       var progress = available > 0 ? clamp01(-scroll.getBoundingClientRect().top / available) : 0;
+      if(progress === lastProgress) return;
+      lastProgress = progress;
 
       // sun reaches/disappears behind the horizon by 0.72 -- travel and
       // fade both resolve by then instead of continuing for the whole scroll
@@ -2805,6 +2858,50 @@
       teaserIntro.style.opacity = stage(progress, 0.84, 0.91);
 
       scene.style.setProperty('--proposal-progress', progress.toFixed(4));
+    }
+    function onScroll(){
+      if(!ticking){ ticking = true; requestAnimationFrame(update); }
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll);
+    update();
+  }
+
+  // catches #teaserHeading (the sunset scene's "THE FINAL LEVEL / The Wedding"
+  // text) the instant it scrolls, under normal page flow, to the top of the
+  // screen -- instead of letting it disappear off-screen, #detailsPinnedHeader
+  // (a fixed-position duplicate) freezes there, holds through Ceremony/
+  // Celebration/Travel/Accommodation/FAQ, then slides away in sync with scroll
+  // once .details-section is ending. Deliberately NOT position:sticky: sticky
+  // requires the element to be the first thing in .details-section's own flow,
+  // which starts exactly where the sunset scene ends -- so it always needed a
+  // full extra viewport-height of scroll to travel up from below before
+  // catching, reading as "vanished, then a different one appeared elsewhere."
+  // This has no travel: teaserHeading's real position IS the catch point.
+  function initDetailsPinnedHeader(){
+    var bar = document.getElementById('detailsPinnedHeader');
+    var teaserHeading = document.getElementById('teaserHeading');
+    var detailsSection = document.getElementById('detailsSection');
+    if(!bar || !teaserHeading || !detailsSection) return;
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var shown = false;
+    var ticking = false;
+    function update(){
+      ticking = false;
+      var shouldShow = teaserHeading.getBoundingClientRect().top <= 0;
+      if(shouldShow !== shown){
+        shown = shouldShow;
+        bar.style.display = shown ? 'flex' : 'none';
+        if(!shown){ bar.style.transform = ''; }
+      }
+      if(shown){
+        // same release point native position:sticky would compute on its own
+        // (that part always worked) -- bar starts sliding up once only its
+        // own height of .details-section remains below the viewport top
+        var releaseTop = detailsSection.getBoundingClientRect().bottom - bar.offsetHeight;
+        bar.style.transform = 'translateY(' + Math.min(0, releaseTop).toFixed(1) + 'px)';
+      }
     }
     function onScroll(){
       if(!ticking){ ticking = true; requestAnimationFrame(update); }
@@ -2878,6 +2975,7 @@
     // progress system (the .proposal-scene stays position:relative in that
     // case -- see the prefers-reduced-motion CSS block).
     initProposalScene();
+    initDetailsPinnedHeader();
     // sticky RSVP button: appears once the first Wedding Details chapter is
     // reached, hides again once the real RSVP form is on screen (Task4 spec)
     var stickyRsvp = document.getElementById('stickyRsvp');

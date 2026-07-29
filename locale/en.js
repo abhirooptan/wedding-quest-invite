@@ -45,6 +45,8 @@ window.LOCALE_EN = {
     detIntro: "The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.",
     teaserEyebrow: 'The final level', teaserHeading: 'The Wedding',
     teaserIntro: "The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.",
+    pinnedEyebrow: 'The final level', pinnedHeading: 'The Wedding',
+    pinnedIntro: "The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.",
     ceremonyTitle: 'Ceremony', ceremonyDesc: 'Venue scouting expedition<br>currently underway', ceremonyTime: 'Date &amp; place to be revealed',
     receptionTitle: 'Celebration', receptionDesc: 'One legendary party<br>details coming soon', receptionTime: 'Watch this space',
     supportTravel: 'Travel', supportTravelNote: "We're putting the finishing touches on this chapter.",
