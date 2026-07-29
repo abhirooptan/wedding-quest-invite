@@ -391,7 +391,7 @@
   .section-inner{max-width:920px; margin:0 auto;}
   .center{text-align:center;}
   .elegant-world h2{font-weight:400; font-size:clamp(2.1rem,5vw,3rem); line-height:1.15; color:var(--olive-deep);}
-  .eyebrow{font-family:var(--label); letter-spacing:0.32em; text-transform:uppercase; font-size:0.72rem; color:var(--gold);}
+  .eyebrow{font-family:var(--label); letter-spacing:0.32em; text-transform:uppercase; font-size:0.8rem; color:var(--gold);}
   .divider{width:44px; height:1px; background:var(--gold); margin:1.4rem auto;}
   .reveal{opacity:0; transform:translateY(30px); transition:opacity 0.9s ease, transform 0.9s ease;}
   .reveal.is-visible{opacity:1; transform:translateY(0);}
@@ -573,11 +573,14 @@
   /* Polaroid popup: frosted-glass overlay -- the site stays visible behind
      it, blurred, rather than a flat dark scrim (Task2 spec "transparent
      background... blurred"). Falls back to a plain translucent scrim on
-     browsers without backdrop-filter support. */
+     browsers without backdrop-filter support. Less blur / slightly darker
+     tint than before (16px->8px, 0.55->0.68 opacity) so the parchment map
+     stays recognisable through it instead of reading as an opaque
+     grey-brown layer that replaces the map entirely (Critical Review #1). */
   .polaroid-deck{
     position:fixed; inset:0; z-index:700; display:flex; align-items:center; justify-content:center;
-    padding:1.5rem; background:rgba(24,21,15,0.55);
-    -webkit-backdrop-filter:blur(16px) saturate(1.1); backdrop-filter:blur(16px) saturate(1.1);
+    padding:1.5rem; background:rgba(31,32,26,0.68);
+    -webkit-backdrop-filter:blur(8px) saturate(0.85); backdrop-filter:blur(8px) saturate(0.85);
     opacity:0; visibility:hidden; transition:opacity 0.3s ease, visibility 0.3s;
   }
   .polaroid-deck.open{opacity:1; visibility:visible;}
@@ -590,13 +593,15 @@
     transform:translateY(16px) scale(0.96); opacity:0; transition:transform 0.35s ease, opacity 0.35s ease;
   }
   .polaroid-deck.open .polaroid-card{transform:translateY(0) scale(1); opacity:1;}
+  /* min 44x44px tap target (Critical Review #1) */
   .polaroid-close{
-    position:absolute; top:0.2rem; right:0.2rem; width:34px; height:34px; border:none;
+    position:absolute; top:0.2rem; right:0.2rem; width:44px; height:44px; border:none;
     background:rgba(0,0,0,0.28); border-radius:50%;
-    cursor:pointer; color:var(--cream); display:flex; align-items:center; justify-content:center; opacity:0.8; z-index:60;
+    cursor:pointer; color:var(--cream); display:flex; align-items:center; justify-content:center; opacity:0.85; z-index:60;
   }
   .polaroid-close:hover{opacity:1; background:rgba(0,0,0,0.42);}
-  .polaroid-close svg{width:18px; height:18px;}
+  .polaroid-close:focus-visible{outline:2px solid var(--gold-light); outline-offset:2px;}
+  .polaroid-close svg{width:20px; height:20px;}
   /* barrel/coverflow carousel: every photo is a Polaroid arranged around an
      implied cylinder -- the active one faces forward, sharp and centred;
      neighbours recede in depth (rotateY + translateZ), scaled down and
@@ -622,27 +627,29 @@
     font-family:var(--label); font-size:0.68rem; text-align:center; padding:1rem; line-height:1.55;
   }
   .carousel-slide .polaroid-photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none; -webkit-user-drag:none;}
+  /* min 44x44px tap target (Critical Review #1) */
   .carousel-arrow{
-    position:absolute; top:50%; transform:translateY(-50%); width:36px; height:36px; border-radius:50%;
+    position:absolute; top:50%; transform:translateY(-50%); width:44px; height:44px; border-radius:50%;
     background:rgba(255,253,247,0.88); border:1px solid var(--olive); color:var(--olive-deep);
     cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:200; transition:opacity 0.2s ease;
   }
   .carousel-arrow:hover:not(:disabled){background:var(--gold-light); border-color:var(--gold);}
   .carousel-arrow:disabled{opacity:0; pointer-events:none;}
-  .carousel-arrow svg{width:16px; height:16px;}
-  .carousel-arrow-prev{left:-4px;} .carousel-arrow-next{right:-4px;}
+  .carousel-arrow:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+  .carousel-arrow svg{width:18px; height:18px;}
+  .carousel-arrow-prev{left:-6px;} .carousel-arrow-next{right:-6px;}
   .carousel-counter{
     position:absolute; bottom:10px; left:50%; transform:translateX(-50%); z-index:200;
-    background:rgba(255,253,247,0.88); border-radius:20px; padding:0.2rem 0.7rem;
-    font-family:var(--label); font-size:0.64rem; letter-spacing:0.06em; color:var(--olive-deep);
+    background:rgba(255,253,247,0.88); border-radius:20px; padding:0.25rem 0.8rem;
+    font-family:var(--label); font-size:0.85rem; letter-spacing:0.06em; color:var(--olive-deep);
   }
   .polaroid-caption{margin-top:1.2rem; text-align:center;}
   .polaroid-caption .p-label{
-    font-family:var(--label); font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-light);
+    font-family:var(--label); font-size:0.86rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-light);
     text-shadow:0 1px 4px rgba(0,0,0,0.5);
   }
   .polaroid-caption .p-memory{
-    margin-top:0.5rem; font-style:italic; font-size:0.98rem; line-height:1.55; color:var(--cream); opacity:0.92;
+    margin-top:0.5rem; font-style:italic; font-size:1.12rem; line-height:1.55; color:var(--cream); opacity:0.92;
     text-shadow:0 1px 4px rgba(0,0,0,0.5);
   }
   @media (prefers-reduced-motion: reduce){
@@ -750,7 +757,7 @@
   .proposal-silhouette svg{width:100%; height:100%; display:block;}
   .proposal-sea{
     position:absolute; left:0; right:0; bottom:0; height:13vh; z-index:2;
-    background:linear-gradient(to bottom, rgba(43,42,55,0.35), #282739);
+    background:linear-gradient(to bottom, rgba(30,28,38,0.6), #282739);
   }
   /* replaces a hard-edged rising rectangle: a feathered wash that slides up
      from fully transparent to solid olive over a soft ~20vh gradient band,
@@ -767,11 +774,14 @@
   }
   /* teaser: a copy of the Wedding heading living inside the pinned scene so
      it can start appearing while the transition is still resolving (progress
-     0.75-0.92) instead of leaving a blank olive interval -- by the time it
-     fades in, the proposal copy has already fully faded out (0.55), so the
-     two headings are never visible together. Once the scroll wrapper's
-     extra height is exhausted the pin releases and the real .details-section
-     heading (identical copy/styling) takes over seamlessly. */
+     0.75-0.92) instead of leaving a blank olive interval -- the main
+     eyebrow/heading/proposal-line fade out well before this (0.58-0.68), and
+     "she said yes"/date (deliberately lingering per the reading-plateau
+     timing, Critical Review #5) finish their own fade by 0.85, so there's
+     only a brief, gentle overlap with the teaser rather than two headings
+     competing head-on. Once the scroll wrapper's extra height is exhausted
+     the pin releases and the real .details-section heading (identical
+     copy/styling) takes over seamlessly. */
   .proposal-teaser{
     position:absolute; inset:0; z-index:6; display:flex; flex-direction:column; align-items:center; justify-content:center;
     padding:0 6vw; text-align:center; pointer-events:none;
@@ -780,9 +790,16 @@
   /* .elegant-world h2's default olive-deep color (meant for ivory sections)
      would be nearly invisible against the risen olive wash behind it */
   .proposal-teaser h2{color:var(--cream);}
+  /* starts invisible (JS fades it in over the first sliver of pinned
+     progress, see initProposalScene) -- while .proposal-scene is still
+     scrolling into view under normal flow (not yet pinned), the sun sitting
+     at a fixed offset within it would otherwise be visibly carried up from
+     lower in the viewport, reading as the sun "rising" before it sets
+     (Critical Review #2). It should only ever be seen already in its final
+     upper-right starting position, moving downward from there. */
   .proposal-sun{
     position:absolute; left:70%; top:18vh; width:clamp(72px,6vw,96px); height:clamp(72px,6vw,96px); z-index:2;
-    border-radius:50%; transform:translate(-50%,-50%); background:#F4DB82;
+    border-radius:50%; transform:translate(-50%,-50%); background:#F4DB82; opacity:0;
   }
   /* a box-shadow blur has a finite radius, so at low opacity its outer edge
      still ends somewhere -- against a gradient backdrop that boundary shows
@@ -791,15 +808,18 @@
      edge to reveal. Negative z-index (safe here since .proposal-sun is
      itself a stacking context via position+z-index) keeps the halo behind
      the solid disc rather than washing it out. */
+  /* softer/wider than before (Critical Review #3.2) -- the strongest stop
+     was bright enough that the halo's own circular shape became visible
+     rather than reading as ambient atmosphere */
   .proposal-sun::before{
     content:''; position:absolute; z-index:-1; left:50%; top:50%; transform:translate(-50%,-50%);
-    width:clamp(260px,22vw,380px); height:clamp(260px,22vw,380px); border-radius:50%; pointer-events:none;
+    width:clamp(300px,26vw,440px); height:clamp(300px,26vw,440px); border-radius:50%; pointer-events:none;
     background:radial-gradient(circle,
-      rgba(250,224,133,0.55) 0%,
-      rgba(247,199,105,0.3) 20%,
-      rgba(226,176,100,0.14) 40%,
-      rgba(215,157,89,0.05) 60%,
-      rgba(215,157,89,0) 80%);
+      rgba(250,224,133,0.4) 0%,
+      rgba(247,199,105,0.22) 22%,
+      rgba(226,176,100,0.1) 45%,
+      rgba(215,157,89,0.04) 68%,
+      rgba(215,157,89,0) 92%);
   }
   /* asymmetric editorial composition on desktop -- the site's one deliberate
      break from centred layouts, signalling this is the emotional climax */
@@ -827,7 +847,7 @@
     .proposal-teaser{display:none;}
     .proposal-scene .p-seq{transition:opacity 0.3s ease;}
     .proposal-scene.play .p-seq{opacity:1;}
-    .proposal-scene.play .proposal-sun{top:60vh; transition:top 0.3s ease;}
+    .proposal-scene.play .proposal-sun{top:60vh; opacity:1; transition:top 0.3s ease;}
     .proposal-scene.play .proposal-wedding-wash{transform:translateY(0); transition:transform 0.3s ease;}
   }
 
@@ -837,33 +857,32 @@
   .details-section{background:linear-gradient(180deg,var(--olive-deep),var(--olive-deepest)); color:var(--cream);}
   .details-section h2{color:var(--cream);}
   .details-intro{max-width:480px; margin:1.1rem auto 0; font-style:italic; opacity:0.75; font-size:1.05rem; text-align:center;}
-  /* motion-enabled guests already saw this heading once, inside
-     .proposal-teaser -- only reduced-motion guests (where the teaser stays
-     hidden, see .proposal-teaser's reduced-motion rule, and #detailsPinnedHeader
-     below also stays off, see initDetailsPinnedHeader) see it here instead.
-     (position:sticky was tried three times for a pinned version of this exact
-     bar -- always requires a full extra viewport-height of scroll for the
-     sticky bar to travel up from below before it catches at top:0, reading as
-     "the heading vanished, then a different one appeared in the wrong place."
-     #detailsPinnedHeader below replaces that approach with a JS-driven catch.) */
-  .wedding-intro-reduced{display:none;}
-  @media (prefers-reduced-motion: reduce){
-    .wedding-intro-reduced{display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 1.5rem 0.5rem; text-align:center;}
+  /* Phase 1 -- the Wedding chapter's own opening beat: full title + intro,
+     given real room (min-height, not just padding) and NOT sticky, so it
+     gets its moment and then scrolls away like anything else once Ceremony
+     begins (Critical Review #7 -- a pinned-too-long hero was "elegant when
+     it first appears" but turned into a large empty middle area). This
+     briefly repeats the sunset scene's .proposal-teaser text, but as a
+     deliberate second, full-stop beat (the teaser is a fading transitional
+     moment; this is the chapter's real establishing shot), not a bug. */
+  .wedding-intro-reduced{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height:clamp(80vh,88vh,95vh); padding:3rem 1.5rem; text-align:center;
   }
-  /* catches the sunset scene's teaser heading the instant it scrolls to the
-     top of the screen (instead of letting it disappear off-screen), holds it
-     pinned across Ceremony/Celebration/Travel/Accommodation/FAQ, then slides
-     away in sync with scroll once the section is ending -- see
-     initDetailsPinnedHeader for the show/hide + slide math. display starts
-     'none' (not just opacity:0) so it never occupies layout or paints before
-     JS decides it should. */
+  /* Phase 2 -- once Ceremony begins, only this quiet eyebrow-only label
+     stays pinned (Critical Review #7: "optionally keep only the small
+     eyebrow ... as a quiet sticky chapter label") instead of the full
+     title+intro block. Catches #detEyebrow (this section's own eyebrow, see
+     Phase 1 above) the instant it scrolls to the top -- JS-driven rather
+     than position:sticky for the same reason as before: sticky here would
+     need a full extra viewport-height of scroll to travel up from below
+     before catching, see initDetailsPinnedHeader. */
   .details-pinned-header{
     display:none; position:fixed; top:0; left:0; right:0; z-index:400;
-    flex-direction:column; align-items:center; justify-content:center;
-    padding:1.6rem 1.5rem 1rem; text-align:center;
-    background:var(--olive-deep); color:var(--cream);
+    align-items:center; justify-content:center; padding:0.85rem 1.5rem;
+    background:rgba(59,74,46,0.92); backdrop-filter:blur(4px); color:var(--cream);
   }
-  .details-pinned-header h2{color:var(--cream);}
+  .details-pinned-header .eyebrow{margin:0; opacity:0.85;}
   @media (prefers-reduced-motion: reduce){ .details-pinned-header{display:none !important;} }
   /* compact side-by-side planning layout for now -- no big empty image
      slots dominating the section (Transition Review §15/§16). Each chapter
@@ -871,9 +890,18 @@
      once a real image resolves (wireImageWithFallbacks adds .has-photo) */
   .details-grid{display:grid; grid-template-columns:1fr; gap:3rem;}
   @media (min-width:760px){
-    .details-grid{grid-template-columns:1fr 1fr; gap:3rem; align-items:start;}
+    /* thin muted-gold vertical divider between Ceremony/Celebration on
+       desktop only (Critical Review #8); plain gap on mobile */
+    .details-grid{grid-template-columns:1fr 1fr; gap:3rem; align-items:start; position:relative;}
+    .details-grid::before{
+      content:''; position:absolute; top:0.3rem; bottom:0.3rem; left:50%;
+      width:1px; background:rgba(196,166,97,0.28);
+    }
   }
-  .detail-chapter{max-width:600px; margin:0 auto; text-align:center;}
+  /* larger/tighter column than before -- Ceremony/Celebration were "too
+     small relative to the viewport" and read as a footer under the Wedding
+     hero rather than the section's primary content (Critical Review #8) */
+  .detail-chapter{max-width:440px; margin:0 auto; text-align:center;}
   .detail-chapter-media{
     display:none; position:relative; overflow:hidden; width:100%; border-radius:2px; margin-bottom:1.5rem; border:1px solid rgba(196,166,97,0.25);
     background:linear-gradient(150deg, rgba(196,166,97,0.14), rgba(196,166,97,0.05));
@@ -882,8 +910,8 @@
   .detail-chapter-media img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
   .detail-media-169{aspect-ratio:16/9;}
   .detail-media-45{aspect-ratio:4/5;}
-  .detail-chapter h3{font-weight:500; font-size:1.5rem; margin-bottom:0.5rem;}
-  .detail-chapter p{opacity:0.75; line-height:1.6;}
+  .detail-chapter h3{font-weight:500; font-size:clamp(1.6rem,2.6vw,2.1rem); margin-bottom:0.6rem;}
+  .detail-chapter p{opacity:0.8; line-height:1.6; font-size:1.2rem;}
   .detail-map-link{
     display:inline-block; margin-top:0.9rem; font-family:var(--label); font-size:0.74rem; letter-spacing:0.06em;
     color:var(--gold-light); text-decoration:none; border-bottom:1px solid rgba(224,202,152,0.4);
@@ -901,11 +929,11 @@
   .detail-divider{width:44px; height:1px; background:rgba(196,166,97,0.4); margin:3.2rem auto;}
   .detail-support-row{display:flex; justify-content:center; gap:3.5rem; flex-wrap:wrap; margin-top:0.4rem;}
   .detail-support-item{text-align:center; font-family:var(--label); font-size:0.9rem; letter-spacing:0.12em; text-transform:uppercase; opacity:0.95;}
-  .detail-support-item small{display:block; margin-top:0.5rem; font-family:var(--serif); font-style:italic; text-transform:none; letter-spacing:0; font-size:0.95rem; opacity:0.7;}
-  .detail-time{font-family:var(--label); letter-spacing:0.12em; font-size:0.82rem; color:var(--gold-light); margin-top:0.8rem; display:block;}
+  .detail-support-item small{display:block; margin-top:0.5rem; font-family:var(--serif); font-style:italic; text-transform:none; letter-spacing:0; font-size:1.05rem; opacity:0.75;}
+  .detail-time{font-family:var(--label); letter-spacing:0.12em; font-size:0.92rem; color:var(--gold-light); margin-top:0.8rem; display:block;}
   /* quieter than the practical info above it, not competing with it
      (Transition Review §17) */
-  .quest-line{font-family:var(--pixel); font-size:0.46rem; color:var(--gold-light); opacity:0.4; text-align:center; margin-top:3rem; line-height:2;}
+  .quest-line{font-family:var(--pixel); font-size:0.46rem; letter-spacing:0.08em; color:var(--gold-light); opacity:0.4; text-align:center; margin-top:3rem; line-height:2;}
 
   /* sticky RSVP: appears once the guest reaches Wedding Details' first chapter,
      hides again once the RSVP section itself is on screen (Task4 "Mobile") */
@@ -919,19 +947,56 @@
   @media (max-width:640px){ .sticky-rsvp{bottom:16px; font-size:0.72rem; padding:0.6rem 1.3rem;} }
   @media (prefers-reduced-motion: reduce){ .sticky-rsvp{transition:opacity 0.2s ease;} }
 
-  /* rsvp */
-  .rsvp-section{background:#F1EEDF;}
+  /* rsvp -- now that the Wedding hero doesn't stay pinned above it (Critical
+     Review #7/#10), the seam is just a flat olive-to-ivory cut; a short fade
+     softens it into a proper "turning the page" hand-off rather than a hard
+     structural line, without a permanent dark divider bar. */
+  .rsvp-section{background:#F1EEDF; position:relative;}
+  .rsvp-section::before{
+    content:''; position:absolute; left:0; right:0; top:0; height:96px; transform:translateY(-99%);
+    background:linear-gradient(to bottom, var(--olive-deepest), transparent);
+    pointer-events:none;
+  }
   .rsvp-section h2{text-align:center;}
-  .trellis-frame{max-width:600px; margin:2.4rem auto 0; border:1px solid rgba(90,107,69,0.3); padding:2.4rem 1.8rem; position:relative; border-radius:2px; background:var(--cream);}
+  .trellis-frame{max-width:700px; margin:2.4rem auto 0; border:1px solid rgba(90,107,69,0.3); padding:3.2rem 3rem; position:relative; border-radius:2px; background:var(--cream);}
+  @media (max-width:640px){.trellis-frame{padding:2.4rem 1.6rem;}}
   .trellis-frame::before, .trellis-frame::after{content:''; position:absolute; width:26px; height:26px; border:1px solid var(--gold);}
   .trellis-frame::before{top:-1px; left:-1px; border-right:none; border-bottom:none;}
   .trellis-frame::after{bottom:-1px; right:-1px; border-left:none; border-top:none;}
-  .rsvp-form{display:flex; flex-direction:column; gap:1.4rem;}
-  .field label{display:block; font-family:var(--label); font-size:0.66rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--olive); margin-bottom:0.5rem;}
-  .field input, .field select, .field textarea{width:100%; border:none; border-bottom:1px solid rgba(44,47,34,0.25); background:transparent; padding:0.75rem 0.2rem; font-family:var(--serif); font-size:1.05rem; color:var(--ink); outline:none;}
+  .rsvp-form{display:flex; flex-direction:column; gap:2rem;}
+  .field label{display:block; font-family:var(--label); font-size:0.85rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--olive); margin-bottom:0.85rem;}
+  .field input, .field select, .field textarea{width:100%; border:none; border-bottom:1px solid rgba(44,47,34,0.25); background:transparent; padding:0.9rem 0.2rem; font-family:var(--serif); font-size:1.05rem; color:var(--ink); outline:none;}
   .field input:focus, .field select:focus, .field textarea:focus{border-bottom-color:var(--gold);}
-  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:1.4rem;}
-  @media (max-width:520px){.field-row{grid-template-columns:1fr;}}
+  /* border-colour change alone is too subtle a focus indicator for
+     keyboard users (Critical Review #14) -- add a real outline back */
+  .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible{
+    outline:2px solid var(--gold); outline-offset:2px;
+  }
+  .attendance-option input:focus-visible ~ span{outline:2px solid var(--gold); outline-offset:3px; border-radius:2px;}
+  /* two visible choices instead of a dropdown for a binary decision
+     (Critical Review #12) -- a select hides the two most important options
+     behind an extra click and native browser chrome */
+  .attendance-choice{border:none; padding:0; margin:0;}
+  .attendance-choice legend{
+    display:block; width:100%; padding:0; font-family:var(--label); font-size:0.85rem;
+    letter-spacing:0.14em; text-transform:uppercase; color:var(--olive); margin-bottom:0.6rem;
+  }
+  /* ".field label" (uppercase, tracked, small) would otherwise win on
+     specificity against ".attendance-option" alone, since these choices
+     are also <label> elements inside a .field -- override explicitly */
+  .field label.attendance-option{
+    display:flex; align-items:center; gap:0.7rem; width:100%; padding:0.85rem 0.9rem;
+    border:1px solid rgba(44,47,34,0.22); border-radius:4px; margin-bottom:0.6rem;
+    cursor:pointer; font-family:var(--serif); font-size:1.02rem; letter-spacing:normal;
+    text-transform:none; color:var(--ink); transition:border-color 0.2s ease, background 0.2s ease;
+  }
+  .attendance-option:last-child{margin-bottom:0;}
+  .attendance-option:has(input:checked), .attendance-option.is-checked{border-color:var(--gold); background:rgba(196,166,97,0.1);}
+  .attendance-option input{width:auto; margin:0; accent-color:var(--olive-deep); flex-shrink:0; padding:0; border:none;}
+  /* name+email side-by-side only on real desktop widths (Critical Review
+     #12); one column below that, same as every other field */
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:0 1.6rem;}
+  @media (max-width:899px){.field-row{grid-template-columns:1fr; gap:2rem;}}
   .rsvp-btn{margin-top:0.6rem; align-self:center; background:var(--olive-deep); color:var(--cream); border:none; padding:1rem 2.4rem; font-family:var(--pixel); font-size:0.6rem; letter-spacing:0.06em; cursor:pointer; border-radius:2px; transition:background 0.3s ease;}
   .rsvp-btn:hover{background:var(--gold); color:var(--ink);}
   .rsvp-btn.declined{background:#6B7280;}
@@ -1368,7 +1433,7 @@
            of an invented shape -->
       <div class="proposal-silhouette" aria-hidden="true">
         <svg viewBox="0 0 1200 300" preserveAspectRatio="none">
-          <path fill="#3B3350" opacity="0.6" d="M0,300 L0,37.7 L28.8,40.4 L57.6,44.5 L88.3,74.2 L117.1,40.4 L145.9,72.8 L174.7,67.4 L205.4,85.0 L234.2,85.0 L263.0,95.8 L291.8,37.7 L322.6,101.2 L351.4,112.1 L380.2,112.1 L409.0,118.8 L439.7,118.8 L468.5,128.3 L497.3,141.8 L526.1,136.4 L556.8,132.3 L585.6,135.0 L614.4,116.1 L643.2,110.7 L673.9,103.9 L702.7,102.6 L731.5,103.9 L760.3,126.9 L791.0,148.6 L819.8,103.9 L848.6,116.1 L877.4,110.7 L908.2,109.4 L937.0,114.8 L965.8,121.5 L994.6,141.8 L1025.3,129.6 L1054.1,129.6 L1082.9,144.5 L1111.7,137.7 L1142.4,137.7 L1171.2,137.7 L1200.0,137.7 L1200,300 Z"/>
+          <path fill="#3B3350" opacity="0.88" d="M0,300 L0,37.7 L28.8,40.4 L57.6,44.5 L88.3,74.2 L117.1,40.4 L145.9,72.8 L174.7,67.4 L205.4,85.0 L234.2,85.0 L263.0,95.8 L291.8,37.7 L322.6,101.2 L351.4,112.1 L380.2,112.1 L409.0,118.8 L439.7,118.8 L468.5,128.3 L497.3,141.8 L526.1,136.4 L556.8,132.3 L585.6,135.0 L614.4,116.1 L643.2,110.7 L673.9,103.9 L702.7,102.6 L731.5,103.9 L760.3,126.9 L791.0,148.6 L819.8,103.9 L848.6,116.1 L877.4,110.7 L908.2,109.4 L937.0,114.8 L965.8,121.5 L994.6,141.8 L1025.3,129.6 L1054.1,129.6 L1082.9,144.5 L1111.7,137.7 L1142.4,137.7 L1171.2,137.7 L1200.0,137.7 L1200,300 Z"/>
           <path fill="#241B2E" opacity="0.92" d="M0,300 L0,30.9 L19.2,37.7 L38.4,70.1 L55.7,71.5 L74.9,58.0 L94.1,52.6 L113.3,78.3 L130.6,90.4 L149.8,102.6 L169.0,109.4 L188.2,117.5 L205.4,68.8 L224.6,137.7 L243.8,137.7 L263.0,120.2 L280.3,63.4 L299.5,118.8 L318.7,122.9 L337.9,117.5 L357.1,108.0 L374.4,108.0 L393.6,108.0 L412.8,231.0 L432.0,132.3 L449.3,239.2 L468.5,135.0 L487.7,220.2 L506.9,210.8 L524.2,227.0 L543.4,225.6 L562.6,243.2 L581.8,293.2 L599.0,298.6 L618.2,289.2 L637.4,289.2 L656.6,298.6 L675.8,298.6 L693.1,298.6 L712.3,220.2 L731.5,298.6 L750.7,298.6 L768.0,298.6 L787.2,279.7 L806.4,255.4 L825.6,298.6 L842.9,298.6 L862.1,232.4 L881.3,285.1 L900.5,273.0 L919.7,264.8 L937.0,262.1 L956.2,251.3 L975.4,231.0 L994.6,224.3 L1011.8,178.3 L1031.0,179.7 L1050.2,178.3 L1069.4,182.4 L1086.7,186.4 L1105.9,183.7 L1125.1,178.3 L1144.3,133.7 L1161.6,129.6 L1180.8,149.9 L1200.0,147.2 L1200,300 Z"/>
         </svg>
       </div>
@@ -1432,47 +1497,53 @@
       <p class="quest-line" id="detQuestLine">SIDE QUEST IN PROGRESS: THE GREAT VENUE HUNT</p>
     </div>
   </section>
-  <!-- JS-driven catch, not position:sticky -- see initDetailsPinnedHeader. Native
-       sticky here always required a full extra viewport-height of scroll for this
-       bar to travel up from below before catching at top:0 (three attempts, same
-       failure: "vanishes, then a different one appears in the wrong place"). This
-       instead freezes in place the instant .proposal-teaser's heading (scrolling
-       normally post-unpin) reaches the top of the screen, so there's no travel and
-       no gap. Duplicate of #teaserHeading/#detHeading content -- own locale keys
-       (pinnedEyebrow/pinnedHeading/pinnedIntro) since applyLanguage() matches by
-       element id. -->
+  <!-- quiet chapter label, JS-driven catch not position:sticky -- see
+       initDetailsPinnedHeader. Native sticky here always required a full
+       extra viewport-height of scroll for a bar to travel up from below
+       before catching at top:0 (three attempts, same failure: "vanishes,
+       then a different one appears in the wrong place"). This instead
+       freezes in place the instant #detEyebrow (this page's own Phase 1
+       heading, scrolling normally) reaches the top of the screen, so
+       there's no travel and no gap. Own locale key (pinnedEyebrow) since
+       applyLanguage() matches by element id. -->
   <div class="details-pinned-header" id="detailsPinnedHeader">
     <p class="eyebrow center" id="pinnedEyebrow" style="color:var(--gold-light);">The final level</p>
-    <h2 class="center" id="pinnedHeading">The Wedding</h2>
-    <p class="details-intro center" id="pinnedIntro">The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.</p>
   </div>
   <button class="sticky-rsvp" id="stickyRsvp" type="button"><span id="stickyRsvpLabel">RSVP &rarr;</span></button>
 
   <section class="rsvp-section">
     <div class="section-inner">
-      <p class="eyebrow center reveal" id="rsvpEyebrow">Formal invitations to follow &mdash; but you can pledge your attendance now</p>
+      <p class="eyebrow center reveal" id="rsvpEyebrow">Formal invitations will follow</p>
       <h2 class="reveal" id="rsvpHeading">Accept the Quest</h2>
+      <p class="details-intro center reveal" id="rsvpIntro">For now, let us know whether you'll join us.</p>
       <div class="trellis-frame reveal">
         <form class="rsvp-form" id="rsvpForm">
           <div class="field" style="position:absolute; left:-9999px;" aria-hidden="true">
             <label for="website">Leave this blank</label>
             <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
           </div>
-          <div class="field">
-            <label for="fullname" id="lblName">Adventurer's Full Name</label>
-            <input type="text" id="fullname" name="name" required>
+          <div class="field-row">
+            <div class="field">
+              <label for="fullname" id="lblName">Adventurer's Full Name</label>
+              <input type="text" id="fullname" name="name" required>
+            </div>
+            <div class="field">
+              <label for="email" id="lblEmail">Email Address</label>
+              <input type="email" id="email" name="email" required>
+            </div>
           </div>
           <div class="field">
-            <label for="email" id="lblEmail">Email Address</label>
-            <input type="email" id="email" name="email" required>
-          </div>
-          <div class="field">
-            <label for="attending" id="lblAttending">Join the party?</label>
-            <select id="attending" name="attending" required>
-              <option id="optSelect" value="" disabled selected>&mdash; Please Select &mdash;</option>
-              <option id="optAccept" value="accept">Quest accepted — I'll be there</option>
-              <option id="optDecline" value="decline">Regretfully declines</option>
-            </select>
+            <fieldset class="attendance-choice">
+              <legend id="lblAttending">Join the party?</legend>
+              <label class="attendance-option">
+                <input type="radio" id="attendingAccept" name="attending" value="accept" required>
+                <span id="optAccept">Quest accepted — I'll be there</span>
+              </label>
+              <label class="attendance-option">
+                <input type="radio" id="attendingDecline" name="attending" value="decline" required>
+                <span id="optDecline">Regretfully, I can't make it</span>
+              </label>
+            </fieldset>
           </div>
           <div id="mealAllergySection">
             <div class="field">
@@ -2824,19 +2895,34 @@
       lastProgress = progress;
 
       // sun reaches/disappears behind the horizon by 0.72 -- travel and
-      // fade both resolve by then instead of continuing for the whole scroll
+      // fade both resolve by then instead of continuing for the whole scroll.
+      // Desktop travel goes deep enough (78vh added to the 18vh start) that
+      // the disc is genuinely behind .proposal-silhouette/.proposal-sea by
+      // the end of its descent -- opacity only trims the last sliver
+      // (0.69-0.72) instead of fading a still-mostly-visible disc into a grey
+      // ghost, which is what a real sunset never does (Critical Review #4).
       var sunStage = ease(stage(progress, 0, 0.72));
       // shorter base position + travel than desktop so it clears the
       // centred text block entirely rather than passing behind it
-      var sunTravel = window.innerWidth <= 860 ? 8 : 62;
+      var sunTravel = window.innerWidth <= 860 ? 8 : 78;
       sun.style.transform = 'translate(-50%,-50%) translateY(' + (sunStage * sunTravel).toFixed(2) + 'vh)';
-      sun.style.opacity = (1 - stage(progress, 0.62, 0.74)).toFixed(3);
+      // quick fade-in right as pinning begins (progress is clamped to 0 for
+      // the whole pre-pin entrance, so the sun stays invisible -- never
+      // "rising" -- until it's already sitting still in its start position
+      var sunIn = stage(progress, 0, 0.04);
+      sun.style.opacity = (sunIn * (1 - stage(progress, 0.69, 0.72))).toFixed(3);
 
-      var eyebrowF = fadeInOut(progress, 0, 0.08, 0.42, 0.55);
-      var headingF = fadeInOut(progress, 0.03, 0.12, 0.42, 0.55);
-      var line1F = fadeInOut(progress, 0.11, 0.20, 0.42, 0.55);
-      var scriptF = fadeInOut(progress, 0.20, 0.30, 0.62, 0.72);
-      var dateF = fadeInOut(progress, 0.28, 0.38, 0.62, 0.72);
+      // wide stable plateau (~0.28-0.58, matching Critical Review #5) so a
+      // guest scrolling at a normal pace can actually read the full
+      // composition instead of it fading before they finish -- eyebrow/
+      // heading/line1 ("main heading/body") fade together at 0.58-0.68,
+      // while script+date linger through 0.68-0.78 before fading into the
+      // sunset-to-wedding transformation (which starts at 0.67, unchanged)
+      var eyebrowF = fadeInOut(progress, 0, 0.10, 0.58, 0.68);
+      var headingF = fadeInOut(progress, 0.03, 0.15, 0.58, 0.68);
+      var line1F = fadeInOut(progress, 0.15, 0.28, 0.58, 0.68);
+      var scriptF = fadeInOut(progress, 0.20, 0.28, 0.78, 0.85);
+      var dateF = fadeInOut(progress, 0.24, 0.28, 0.78, 0.85);
       eyebrow.style.opacity = eyebrowF.opacity; eyebrow.style.transform = 'translateY(' + ((1 - eyebrowF.entrance) * 12).toFixed(1) + 'px)';
       heading.style.opacity = headingF.opacity; heading.style.transform = 'translateY(' + ((1 - headingF.entrance) * 12).toFixed(1) + 'px)';
       line1.style.opacity = line1F.opacity; line1.style.transform = 'translateY(' + ((1 - line1F.entrance) * 12).toFixed(1) + 'px)';
@@ -2845,7 +2931,7 @@
 
       // once the main title's gone, nudge the signature slightly toward
       // centre -- a subtle acknowledgement that it's now the sole focus
-      var signatureProgress = stage(progress, 0.42, 0.62);
+      var signatureProgress = stage(progress, 0.58, 0.78);
       scriptEl.style.transform = 'translateX(' + (signatureProgress * 3).toFixed(2) + 'vw) translateY(' + (signatureProgress * -2).toFixed(2) + 'vh)';
 
       // opacity stays fixed at 1 (set in CSS) -- coverage is entirely a
@@ -2867,29 +2953,31 @@
     update();
   }
 
-  // catches #teaserHeading (the sunset scene's "THE FINAL LEVEL / The Wedding"
-  // text) the instant it scrolls, under normal page flow, to the top of the
-  // screen -- instead of letting it disappear off-screen, #detailsPinnedHeader
-  // (a fixed-position duplicate) freezes there, holds through Ceremony/
-  // Celebration/Travel/Accommodation/FAQ, then slides away in sync with scroll
-  // once .details-section is ending. Deliberately NOT position:sticky: sticky
-  // requires the element to be the first thing in .details-section's own flow,
-  // which starts exactly where the sunset scene ends -- so it always needed a
-  // full extra viewport-height of scroll to travel up from below before
-  // catching, reading as "vanished, then a different one appeared elsewhere."
-  // This has no travel: teaserHeading's real position IS the catch point.
+  // catches #detEyebrow (the "THE FINAL LEVEL" eyebrow from the Phase 1
+  // Wedding-chapter-opening section, .wedding-intro-reduced) the instant it
+  // scrolls, under normal page flow, to the top of the screen -- instead of
+  // letting it disappear off-screen once Ceremony begins, #detailsPinnedHeader
+  // (a small fixed-position quiet label, Critical Review #7) freezes there,
+  // holds through Ceremony/Celebration/Travel/Accommodation/FAQ, then slides
+  // away in sync with scroll once .details-section is ending. Deliberately
+  // NOT position:sticky: sticky requires the element to be the first thing in
+  // .details-section's own flow, which starts exactly where the sunset scene
+  // ends -- so it always needed a full extra viewport-height of scroll to
+  // travel up from below before catching, reading as "vanished, then a
+  // different one appeared elsewhere." This has no travel: detEyebrow's real
+  // position IS the catch point.
   function initDetailsPinnedHeader(){
     var bar = document.getElementById('detailsPinnedHeader');
-    var teaserHeading = document.getElementById('teaserHeading');
+    var phase1Eyebrow = document.getElementById('detEyebrow');
     var detailsSection = document.getElementById('detailsSection');
-    if(!bar || !teaserHeading || !detailsSection) return;
+    if(!bar || !phase1Eyebrow || !detailsSection) return;
     if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     var shown = false;
     var ticking = false;
     function update(){
       ticking = false;
-      var shouldShow = teaserHeading.getBoundingClientRect().top <= 0;
+      var shouldShow = phase1Eyebrow.getBoundingClientRect().top <= 0;
       if(shouldShow !== shown){
         shown = shouldShow;
         bar.style.display = shown ? 'flex' : 'none';
@@ -3131,8 +3219,10 @@
     sndSelect();
   });
 
+  var attendingRadios = document.querySelectorAll('input[name="attending"]');
   function updateAttendingUI(){
-    var val = document.getElementById('attending').value;
+    var checked = document.querySelector('input[name="attending"]:checked');
+    var val = checked ? checked.value : '';
     var accepted = val === 'accept';
     var declined = val === 'decline';
     var strs = UI[currentLang];
@@ -3142,8 +3232,11 @@
     var btn = document.getElementById('rsvpBtnText');
     btn.innerHTML = declined ? strs.rsvpBtnTextDecline : strs.rsvpBtnTextAccept;
     btn.classList.toggle('declined', declined);
+    // :has(input:checked) already highlights the chosen option in supporting
+    // browsers -- this class covers the rest without changing behaviour there
+    attendingRadios.forEach(function(r){ r.closest('.attendance-option').classList.toggle('is-checked', r.checked); });
   }
-  document.getElementById('attending').addEventListener('change', updateAttendingUI);
+  attendingRadios.forEach(function(r){ r.addEventListener('change', updateAttendingUI); });
   updateAttendingUI();
 
   document.getElementById('rsvpForm').addEventListener('submit', function(e){
