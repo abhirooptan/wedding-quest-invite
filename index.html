@@ -841,14 +841,20 @@
     .proposal-sun{left:50%; top:8vh;}
   }
   @media (prefers-reduced-motion: reduce){
-    /* the real .details-section already follows immediately once the scene
-       stops being sticky (min-height:auto above), so the teaser would just
-       be a redundant, simultaneously-visible second heading here */
-    .proposal-teaser{display:none;}
     .proposal-scene .p-seq{transition:opacity 0.3s ease;}
     .proposal-scene.play .p-seq{opacity:1;}
     .proposal-scene.play .proposal-sun{top:60vh; opacity:1; transition:top 0.3s ease;}
     .proposal-scene.play .proposal-wedding-wash{transform:translateY(0); transition:transform 0.3s ease;}
+    /* the teaser IS the Wedding header now (Wedding Header Deduplication
+       spec) and needs its own later crossfade, not the same instant trigger
+       as the proposal text above -- both are absolutely-positioned over the
+       same box, so sharing .proposal-scene.play would fade them in
+       simultaneously, overlapping illegibly. ID selectors here so this wins
+       over the (lower-specificity) .proposal-scene.play .p-seq rule above
+       regardless of source order; see initProposalScene's second
+       IntersectionObserver for the .proposal-teaser.play trigger. */
+    #teaserEyebrow, #teaserHeading, #teaserIntro{opacity:0; transition:opacity 0.4s ease;}
+    .proposal-teaser.play #teaserEyebrow, .proposal-teaser.play #teaserHeading, .proposal-teaser.play #teaserIntro{opacity:1;}
   }
 
   /* details -- editorial chapters, not dashboard cards (Task4): information is
@@ -857,33 +863,6 @@
   .details-section{background:linear-gradient(180deg,var(--olive-deep),var(--olive-deepest)); color:var(--cream);}
   .details-section h2{color:var(--cream);}
   .details-intro{max-width:480px; margin:1.1rem auto 0; font-style:italic; opacity:0.75; font-size:1.05rem; text-align:center;}
-  /* Phase 1 -- the Wedding chapter's own opening beat: full title + intro,
-     given real room (min-height, not just padding) and NOT sticky, so it
-     gets its moment and then scrolls away like anything else once Ceremony
-     begins (Critical Review #7 -- a pinned-too-long hero was "elegant when
-     it first appears" but turned into a large empty middle area). This
-     briefly repeats the sunset scene's .proposal-teaser text, but as a
-     deliberate second, full-stop beat (the teaser is a fading transitional
-     moment; this is the chapter's real establishing shot), not a bug. */
-  .wedding-intro-reduced{
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    min-height:clamp(80vh,88vh,95vh); padding:3rem 1.5rem; text-align:center;
-  }
-  /* Phase 2 -- once Ceremony begins, only this quiet eyebrow-only label
-     stays pinned (Critical Review #7: "optionally keep only the small
-     eyebrow ... as a quiet sticky chapter label") instead of the full
-     title+intro block. Catches #detEyebrow (this section's own eyebrow, see
-     Phase 1 above) the instant it scrolls to the top -- JS-driven rather
-     than position:sticky for the same reason as before: sticky here would
-     need a full extra viewport-height of scroll to travel up from below
-     before catching, see initDetailsPinnedHeader. */
-  .details-pinned-header{
-    display:none; position:fixed; top:0; left:0; right:0; z-index:400;
-    align-items:center; justify-content:center; padding:0.85rem 1.5rem;
-    background:rgba(59,74,46,0.92); backdrop-filter:blur(4px); color:var(--cream);
-  }
-  .details-pinned-header .eyebrow{margin:0; opacity:0.85;}
-  @media (prefers-reduced-motion: reduce){ .details-pinned-header{display:none !important;} }
   /* compact side-by-side planning layout for now -- no big empty image
      slots dominating the section (Transition Review §15/§16). Each chapter
      swaps to its own differentiated photographed composition automatically
@@ -1456,18 +1435,16 @@
   </section>
 
   <section class="details-section" id="detailsSection">
-    <!-- "THE FINAL LEVEL / The Wedding" first appears inside .proposal-teaser
-         at the tail of the pinned sunset scene (or, under reduced motion,
-         where the teaser stays hidden, this is its only appearance) -- this
-         sticky bar continues the SAME text with no reveal animation of its
-         own, so it's a continuation rather than a second re-appearance, and
-         stays pinned through Ceremony/Celebration/Travel/FAQ until the
-         section itself ends. -->
-    <div class="wedding-intro-reduced">
-      <p class="eyebrow center reveal" id="detEyebrow" style="color:var(--gold-light);">The final level</p>
-      <h2 class="center reveal" id="detHeading">The Wedding</h2>
-      <p class="details-intro reveal" id="detIntro">The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.</p>
-    </div>
+    <!-- "THE FINAL LEVEL / The Wedding" appears exactly once, inside
+         .proposal-teaser at the tail of the pinned sunset scene (crossfades
+         in under reduced motion too, see .proposal-scene.play .p-seq) --
+         it is THE Wedding introduction, not a preview of a second one.
+         Ceremony/Celebration below simply follow it in normal document
+         flow once the sunset scene's pin releases and it scrolls away
+         naturally (Wedding Header Deduplication spec). Do not reintroduce
+         a second header/intro here -- three earlier attempts at a pinned
+         or quickly-re-appearing duplicate all read as "the Wedding chapter
+         restarting itself." -->
     <div class="section-inner">
       <div class="details-grid reveal">
         <div class="detail-chapter detail-chapter-ceremony" id="chapterCeremony">
@@ -1497,18 +1474,6 @@
       <p class="quest-line" id="detQuestLine">SIDE QUEST IN PROGRESS: THE GREAT VENUE HUNT</p>
     </div>
   </section>
-  <!-- quiet chapter label, JS-driven catch not position:sticky -- see
-       initDetailsPinnedHeader. Native sticky here always required a full
-       extra viewport-height of scroll for a bar to travel up from below
-       before catching at top:0 (three attempts, same failure: "vanishes,
-       then a different one appears in the wrong place"). This instead
-       freezes in place the instant #detEyebrow (this page's own Phase 1
-       heading, scrolling normally) reaches the top of the screen, so
-       there's no travel and no gap. Own locale key (pinnedEyebrow) since
-       applyLanguage() matches by element id. -->
-  <div class="details-pinned-header" id="detailsPinnedHeader">
-    <p class="eyebrow center" id="pinnedEyebrow" style="color:var(--gold-light);">The final level</p>
-  </div>
   <button class="sticky-rsvp" id="stickyRsvp" type="button"><span id="stickyRsvpLabel">RSVP &rarr;</span></button>
 
   <section class="rsvp-section">
@@ -2862,6 +2827,27 @@
         });
       }, {threshold:0.3});
       propIO.observe(scene);
+      // the teaser is the Wedding header now (Wedding Header Deduplication
+      // spec) and needs its own later trigger -- .play (above) reveals the
+      // proposal text as soon as the scene is 30% visible, and since the
+      // teaser sits absolutely-positioned over that same box, sharing that
+      // same trigger would fade both in at once, overlapping illegibly.
+      // "Sunset scene -> crossfade to Wedding header" means the teaser
+      // should wait until .details-section (i.e. Ceremony/Celebration) is
+      // getting close, not the instant the scene itself appears.
+      var teaser = document.getElementById('proposalTeaser');
+      var detailsSection = document.getElementById('detailsSection');
+      if(teaser && detailsSection){
+        var teaserIO = new IntersectionObserver(function(entries){
+          entries.forEach(function(e){
+            if(e.isIntersecting){
+              teaser.classList.add('play');
+              teaserIO.disconnect();
+            }
+          });
+        }, {threshold:0, rootMargin:'-40% 0px -40% 0px'});
+        teaserIO.observe(detailsSection);
+      }
       return;
     }
 
@@ -2939,57 +2925,23 @@
       var washProgress = stage(progress, 0.67, 0.92);
       wash.style.transform = 'translateY(' + ((1 - washProgress) * 100).toFixed(2) + '%)';
 
-      teaserEyebrow.style.opacity = stage(progress, 0.75, 0.82);
-      teaserHeading.style.opacity = stage(progress, 0.79, 0.86);
-      teaserIntro.style.opacity = stage(progress, 0.84, 0.91);
+      // this teaser IS the Wedding header now, not a preview of a second one
+      // (Wedding Header Deduplication spec) -- checkpoints per its §5:
+      // eyebrow at 0.76, title at 0.80, intro at 0.84, full opacity by 0.88,
+      // then it just holds until the pin releases and it scrolls away
+      // naturally with the rest of the (by-then-unpinned) scene -- no fade
+      // out here, no second entrance anywhere else.
+      var teaserEyebrowF = stage(progress, 0.76, 0.80);
+      var teaserHeadingF = stage(progress, 0.80, 0.84);
+      var teaserIntroF = stage(progress, 0.84, 0.88);
+      teaserEyebrow.style.opacity = teaserEyebrowF;
+      teaserEyebrow.style.transform = 'translateY(' + ((1 - teaserEyebrowF) * 14).toFixed(1) + 'px)';
+      teaserHeading.style.opacity = teaserHeadingF;
+      teaserHeading.style.transform = 'translateY(' + ((1 - teaserHeadingF) * 14).toFixed(1) + 'px)';
+      teaserIntro.style.opacity = teaserIntroF;
+      teaserIntro.style.transform = 'translateY(' + ((1 - teaserIntroF) * 14).toFixed(1) + 'px)';
 
       scene.style.setProperty('--proposal-progress', progress.toFixed(4));
-    }
-    function onScroll(){
-      if(!ticking){ ticking = true; requestAnimationFrame(update); }
-    }
-    window.addEventListener('scroll', onScroll, {passive:true});
-    window.addEventListener('resize', onScroll);
-    update();
-  }
-
-  // catches #detEyebrow (the "THE FINAL LEVEL" eyebrow from the Phase 1
-  // Wedding-chapter-opening section, .wedding-intro-reduced) the instant it
-  // scrolls, under normal page flow, to the top of the screen -- instead of
-  // letting it disappear off-screen once Ceremony begins, #detailsPinnedHeader
-  // (a small fixed-position quiet label, Critical Review #7) freezes there,
-  // holds through Ceremony/Celebration/Travel/Accommodation/FAQ, then slides
-  // away in sync with scroll once .details-section is ending. Deliberately
-  // NOT position:sticky: sticky requires the element to be the first thing in
-  // .details-section's own flow, which starts exactly where the sunset scene
-  // ends -- so it always needed a full extra viewport-height of scroll to
-  // travel up from below before catching, reading as "vanished, then a
-  // different one appeared elsewhere." This has no travel: detEyebrow's real
-  // position IS the catch point.
-  function initDetailsPinnedHeader(){
-    var bar = document.getElementById('detailsPinnedHeader');
-    var phase1Eyebrow = document.getElementById('detEyebrow');
-    var detailsSection = document.getElementById('detailsSection');
-    if(!bar || !phase1Eyebrow || !detailsSection) return;
-    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    var shown = false;
-    var ticking = false;
-    function update(){
-      ticking = false;
-      var shouldShow = phase1Eyebrow.getBoundingClientRect().top <= 0;
-      if(shouldShow !== shown){
-        shown = shouldShow;
-        bar.style.display = shown ? 'flex' : 'none';
-        if(!shown){ bar.style.transform = ''; }
-      }
-      if(shown){
-        // same release point native position:sticky would compute on its own
-        // (that part always worked) -- bar starts sliding up once only its
-        // own height of .details-section remains below the viewport top
-        var releaseTop = detailsSection.getBoundingClientRect().bottom - bar.offsetHeight;
-        bar.style.transform = 'translateY(' + Math.min(0, releaseTop).toFixed(1) + 'px)';
-      }
     }
     function onScroll(){
       if(!ticking){ ticking = true; requestAnimationFrame(update); }
@@ -3063,7 +3015,6 @@
     // progress system (the .proposal-scene stays position:relative in that
     // case -- see the prefers-reduced-motion CSS block).
     initProposalScene();
-    initDetailsPinnedHeader();
     // sticky RSVP button: appears once the first Wedding Details chapter is
     // reached, hides again once the real RSVP form is on screen (Task4 spec)
     var stickyRsvp = document.getElementById('stickyRsvp');
