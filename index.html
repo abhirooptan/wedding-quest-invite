@@ -778,7 +778,13 @@
   .proposal-santorini-vector{
     position:absolute; left:0; right:0; bottom:0; width:100%; z-index:2; pointer-events:none;
     height:clamp(320px,46vh,520px);
-    background:url("assets/images/santorini-foreground.webp") center bottom / cover no-repeat;
+    /* zoomed slightly past "cover" width so background-position-x actually
+       has room to move -- at exact cover width there's zero horizontal
+       slack and shifting position does nothing. Pushed toward the right
+       side of the source image so the architecture (on the image's left)
+       moves mostly out of the text's column instead of its rooflines
+       crossing directly through "She said yes" / the date. */
+    background:url("assets/images/santorini-foreground-v2.webp") 78% bottom / 132% auto no-repeat;
     /* full opacity (not the Plan's suggested 0.9) -- at 0.9, ~10% of the
        sun's brightness bled through wherever it happens to descend over a
        lighter part of the image (the water's own reflection tones), a
@@ -791,7 +797,10 @@
     filter:saturate(0.82) contrast(0.98) brightness(0.94);
   }
   @media (max-width:767px){
-    .proposal-santorini-vector{height:clamp(260px,38vh,400px); background-position:35% bottom;}
+    /* mobile text is centred (see .proposal-content media rule below), so
+       the same "push architecture toward the image's right side" logic
+       applies -- keeps it out from directly behind the centred text block */
+    .proposal-santorini-vector{height:clamp(260px,38vh,400px); background-position:85% bottom;}
   }
   /* the vector shouldn't sit directly behind the proposal text at full
      contrast -- a subtle left-side darkening improves legibility without
