@@ -712,6 +712,16 @@
        roll sits. Letting it bleed upward is what makes the glow feel
        continuous with the map above instead of stopping dead at a boundary. */
     position:sticky; top:0; min-height:100vh; color:var(--cream);
+    /* contains z-index stacking to inside this element -- without this,
+       descendants' z-index values (sun/vector/wash/teaser) were being
+       compared in the SAME global stacking context as .details-section's
+       content (which has no z-index of its own), letting a fragment of
+       the sunset layers paint over the Wedding section in some frames
+       (Regression Fix Plan §4). Not overflow:hidden -- that clips the
+       sun's own glow hard at the scene's top edge during the map hand-off
+       (see below); isolation:isolate fixes the stacking issue without
+       that side effect. */
+    isolation:isolate;
     /* time-of-day story: golden hour (matching the map's own fade) eases
        into a deeper sunset orange as the sun sinks, then dusk purple, then
        olive for the Wedding handoff -- a single continuous darkening, not
@@ -754,37 +764,42 @@
     background:linear-gradient(180deg, rgba(30,20,35,0) 45%, rgba(20,14,18,0.35) 75%, rgba(12,10,10,0.55) 100%);
   }
   /* generated Santorini cliffs/architecture/sea illustration -- grounded
-     foreground and middle-distance scene, muted so the animated CSS sky and
-     animated sun (unchanged, still the focal point) read as the "real"
-     light source rather than competing with the vector's own painted light
-     (Next Version Implementation Plan #8-10). Sits above the sun (z:2) but
-     below everything else that needs to stay legible over it. */
+     foreground and middle-distance scene. Previous pass stacked too many
+     treatments at once (low opacity + heavy desaturation/darkening + a deep
+     mask + parallax) and the result was simply hard to see, not "subtle"
+     (Regression Fix Plan §1) -- cleaner baseline here: mild softening only,
+     no mask (the source asset's own alpha already handles the sky edge),
+     no parallax (removed per §3; the sun is the one thing that moves).
+     Opacity is a function of --proposal-progress and reaches exactly 0
+     well before Wedding Details begins (§4) rather than just relying on
+     normal scroll position to carry it off-screen -- belt-and-braces
+     against any fragment surviving into the next section. Same z-index as
+     the sun (2); DOM order (this element comes after) puts it in front. */
   .proposal-santorini-vector{
-    position:absolute; left:0; right:0; bottom:0; width:100%; z-index:3; pointer-events:none;
+    position:absolute; left:0; right:0; bottom:0; width:100%; z-index:2; pointer-events:none;
     height:clamp(320px,46vh,520px);
     background:url("assets/images/santorini-foreground.webp") center bottom / cover no-repeat;
-    opacity:0.72;
-    filter:saturate(0.62) contrast(0.92) brightness(0.82) sepia(0.08);
-    /* soft top edge so it merges into the sky gradient instead of reading
-       as a visible horizontal cut (Plan #11) -- transparent for the first
-       18%, fully opaque by 38%, same shape (not just relying on the
-       asset's own alpha, which is a hard cliff-line, not a soft fade) */
-    -webkit-mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.55) 18%, #000 38%, #000 100%);
-    mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.55) 18%, #000 38%, #000 100%);
-    /* extremely subtle -- grounded, not another animated object competing
-       with the sun (Plan #12). --proposal-progress is already set every
-       frame by initProposalScene, no new JS needed. */
-    transform:translateY(calc(var(--proposal-progress, 0) * 12px));
+    /* full opacity (not the Plan's suggested 0.9) -- at 0.9, ~10% of the
+       sun's brightness bled through wherever it happens to descend over a
+       lighter part of the image (the water's own reflection tones), a
+       clearly visible pale "ghost" disc that reintroduces exactly the
+       problem Critical Review #4 already fixed once. The filter above
+       (not opacity) is what keeps the vector's colour muted -- full
+       opacity here doesn't make it "muddy" again, it just means the sun
+       is genuinely fully hidden once behind it. */
+    opacity:clamp(0, 1 - ((var(--proposal-progress, 0) - 0.76) * 6), 1);
+    filter:saturate(0.82) contrast(0.98) brightness(0.94);
   }
   @media (max-width:767px){
     .proposal-santorini-vector{height:clamp(260px,38vh,400px); background-position:35% bottom;}
   }
-  @media (prefers-reduced-motion: reduce){
-    .proposal-santorini-vector{transform:none !important; transition:none;}
-  }
-  .proposal-sea{
-    position:absolute; left:0; right:0; bottom:0; height:13vh; z-index:4;
-    background:linear-gradient(to bottom, rgba(30,28,38,0.6), #282739);
+  /* the vector shouldn't sit directly behind the proposal text at full
+     contrast -- a subtle left-side darkening improves legibility without
+     dimming the whole vector (Regression Fix Plan §10). Sits above the
+     vector (z:2) but below the text itself (.proposal-content is z:7). */
+  .proposal-scene::after{
+    content:''; position:absolute; inset:0; z-index:3; pointer-events:none;
+    background:linear-gradient(to right, rgba(44,34,53,0.32) 0%, rgba(44,34,53,0.14) 36%, transparent 62%);
   }
   /* replaces a hard-edged rising rectangle: a feathered wash that slides up
      from fully transparent to solid olive over a soft ~20vh gradient band,
@@ -896,7 +911,12 @@
      details themselves (Next Version Implementation Plan #4) */
   .details-section{
     background:linear-gradient(180deg,var(--olive-deep),var(--olive-deepest)); color:var(--cream);
-    padding-top:clamp(48px,7vh,96px);
+    padding-top:clamp(48px,6vh,80px);
+    /* explicit stacking context, above anything the (isolated) proposal
+       scene could paint, plus the existing opaque gradient background --
+       belt-and-braces against any sunset-layer fragment surviving into
+       this section (Regression Fix Plan §4) */
+    position:relative; z-index:10;
   }
   .details-section h2{color:var(--cream);}
   .details-intro{max-width:480px; margin:1.1rem auto 0; font-style:italic; opacity:0.75; font-size:1.05rem; text-align:center;}
@@ -1448,12 +1468,12 @@
       <!-- generated Santorini cliffs/architecture/sea asset (resources/
            santorini vector sunseet.png, already supplied with a transparent
            sky and no baked-in sun) replaces the old hand-traced low-poly
-           ridge SVG as the main foreground/middle-distance landscape --
-           keeping both at full strength was "too many landscape systems"
-           (Next Version Implementation Plan #13); .proposal-sea below is
-           kept as the one remaining simple dark foreground edge for depth. -->
+           ridge SVG as the main foreground/middle-distance landscape. The
+           separate .proposal-sea strip from the previous pass was removed
+           entirely (Regression Fix Plan §5) -- the vector already contains
+           its own sea, and keeping a second dark strip layered on top was
+           part of what made the scene read as "muddy." -->
       <div class="proposal-santorini-vector" aria-hidden="true"></div>
-      <div class="proposal-sea" aria-hidden="true"></div>
       <div class="proposal-grain" aria-hidden="true"></div>
       <div class="proposal-wedding-wash" id="proposalWeddingWash" aria-hidden="true"></div>
       <div class="proposal-teaser" id="proposalTeaser">
@@ -2921,10 +2941,11 @@
       // sun reaches/disappears behind the horizon by 0.72 -- travel and
       // fade both resolve by then instead of continuing for the whole scroll.
       // Desktop travel goes deep enough (78vh added to the 18vh start) that
-      // the disc is genuinely behind .proposal-silhouette/.proposal-sea by
-      // the end of its descent -- opacity only trims the last sliver
-      // (0.69-0.72) instead of fading a still-mostly-visible disc into a grey
-      // ghost, which is what a real sunset never does (Critical Review #4).
+      // the disc is genuinely behind .proposal-santorini-vector by the end
+      // of its descent (still at full opacity then -- its own fade doesn't
+      // start until 0.76) -- opacity only trims the last sliver (0.69-0.72)
+      // instead of fading a still-mostly-visible disc into a grey ghost,
+      // which is what a real sunset never does (Critical Review #4).
       var sunStage = ease(stage(progress, 0, 0.72));
       // shorter base position + travel than desktop so it clears the
       // centred text block entirely rather than passing behind it
@@ -2966,29 +2987,29 @@
       wash.style.transform = 'translateY(' + ((1 - washProgress) * 100).toFixed(2) + '%)';
 
       // this teaser IS the Wedding header (Wedding Header Deduplication
-      // spec) -- eyebrow/title/intro stagger in individually (0.76/0.80/
-      // 0.84, full opacity by 0.88) but must LEAVE as one intact block, not
-      // as three lines clipping past the viewport edge at three different
-      // scroll amounts (Next Version Implementation Plan #2 -- letting it
-      // "scroll away naturally" read as "title leaves first, intro sentence
-      // remains clipped near the top"). Fixed by a *second*, wrapper-level
-      // opacity/transform (on #proposalTeaser itself) driven by its own
-      // exit-only stage: CSS opacity multiplies down through descendants,
-      // so once this wrapper fade starts every line dims at the exact same
-      // rate regardless of its own already-1 entrance opacity, and by the
-      // time the pin releases and normal scroll resumes the whole header is
-      // already gone -- nothing left to clip mid-scroll. Hold shortened
-      // (~0.88-0.905, down from a full 0.88-1.0) per Plan #3.
-      var teaserEyebrowF = stage(progress, 0.76, 0.80);
-      var teaserHeadingF = stage(progress, 0.80, 0.84);
-      var teaserIntroF = stage(progress, 0.84, 0.88);
+      // spec) -- eyebrow/title/intro stagger in individually but must LEAVE
+      // as one intact block, not as three lines clipping past the viewport
+      // edge at three different scroll amounts (Next Version Implementation
+      // Plan #2). Fixed by a *second*, wrapper-level opacity/transform (on
+      // #proposalTeaser itself) driven by its own exit-only stage: CSS
+      // opacity multiplies down through descendants, so once this wrapper
+      // fade starts every line dims at the exact same rate, and by the time
+      // the pin releases the whole header is already gone -- nothing left
+      // to clip mid-scroll. Timing widened again per Regression Fix Plan §6
+      // -- the previous pass's hold (0.88-0.905) was compressed too far in
+      // the other direction and made the header feel transitional rather
+      // than meaningful: eyebrow/title/intro now enter 0.72-0.84, a full
+      // 0.84-0.90 calm hold, exit 0.90 through the end of the pin.
+      var teaserEyebrowF = stage(progress, 0.72, 0.76);
+      var teaserHeadingF = stage(progress, 0.76, 0.80);
+      var teaserIntroF = stage(progress, 0.80, 0.84);
       teaserEyebrow.style.opacity = teaserEyebrowF;
       teaserEyebrow.style.transform = 'translateY(' + ((1 - teaserEyebrowF) * 14).toFixed(1) + 'px)';
       teaserHeading.style.opacity = teaserHeadingF;
       teaserHeading.style.transform = 'translateY(' + ((1 - teaserHeadingF) * 14).toFixed(1) + 'px)';
       teaserIntro.style.opacity = teaserIntroF;
       teaserIntro.style.transform = 'translateY(' + ((1 - teaserIntroF) * 14).toFixed(1) + 'px)';
-      var headerExitOut = 1 - stage(progress, 0.905, 0.99);
+      var headerExitOut = 1 - stage(progress, 0.90, 0.99);
       teaser.style.opacity = headerExitOut.toFixed(3);
       teaser.style.transform = 'translateY(' + ((1 - headerExitOut) * -22).toFixed(1) + 'px)';
 
