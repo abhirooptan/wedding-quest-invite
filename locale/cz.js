@@ -40,6 +40,8 @@ window.LOCALE_CZ = {
     propScript: 'Řekla ano', propDate: '29. března 2026',
     teaserEyebrow: 'Poslední úroveň', teaserHeading: 'Svatba',
     teaserIntro: 'Poslední kapitola se právě formuje. Data, místa a všechno, co budete potřebovat, se tu brzy objeví.',
+    pinnedEyebrow: 'Poslední úroveň', pinnedHeading: 'Svatba',
+    pinnedIntro: 'Poslední kapitola se právě formuje. Data, místa a všechno, co budete potřebovat, se tu brzy objeví.',
     ceremonyTitle: 'Obřad', ceremonyDesc: 'Průzkum místa konání<br>právě probíhá', ceremonyTime: 'Datum a místo budou brzy odhaleny',
     receptionTitle: 'Oslava', receptionDesc: 'Jedna legendární párty<br>detaily brzy', receptionTime: 'Sledujte tento prostor',
     supportTravel: 'Doprava', supportTravelNote: 'Trasy a informace o příjezdu brzy přidáme.',
