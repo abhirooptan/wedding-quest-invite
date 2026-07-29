@@ -42,6 +42,8 @@ window.LOCALE_SK = {
     detIntro: 'Posledná kapitola sa práve formuje. Dátumy, miesta a všetko, čo budete potrebovať, sa tu čoskoro objavia.',
     teaserEyebrow: 'Posledná úroveň', teaserHeading: 'Svadba',
     teaserIntro: 'Posledná kapitola sa práve formuje. Dátumy, miesta a všetko, čo budete potrebovať, sa tu čoskoro objavia.',
+    pinnedEyebrow: 'Posledná úroveň', pinnedHeading: 'Svadba',
+    pinnedIntro: 'Posledná kapitola sa práve formuje. Dátumy, miesta a všetko, čo budete potrebovať, sa tu čoskoro objavia.',
     ceremonyTitle: 'Obrad', ceremonyDesc: 'Prieskum miesta konania<br>práve prebieha', ceremonyTime: 'Dátum a miesto budú čoskoro odhalené',
     receptionTitle: 'Oslava', receptionDesc: 'Jedna legendárna párty<br>detaily čoskoro', receptionTime: 'Sledujte tento priestor',
     supportTravel: 'Doprava', supportTravelNote: 'Na tejto kapitole ešte pracujeme.',
