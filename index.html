@@ -795,21 +795,33 @@
     background:linear-gradient(to top, var(--olive-deep) 0%, var(--olive-deep) 63%, rgba(59,74,46,0.9) 75%, rgba(59,74,46,0.35) 88%, transparent 100%);
     transform:translateY(100%);
   }
-  /* teaser: a copy of the Wedding heading living inside the pinned scene so
-     it can start appearing while the transition is still resolving (progress
-     0.75-0.92) instead of leaving a blank olive interval -- the main
+  /* teaser: the Wedding header, living inside the pinned scene so it can
+     start appearing while the sunset transition is still resolving (~0.72
+     onward) instead of leaving a blank olive interval -- the main
      eyebrow/heading/proposal-line fade out well before this (0.58-0.68), and
      "she said yes"/date (deliberately lingering per the reading-plateau
      timing, Critical Review #5) finish their own fade by 0.85, so there's
-     only a brief, gentle overlap with the teaser rather than two headings
-     competing head-on. Once the scroll wrapper's extra height is exhausted
-     the pin releases and the real .details-section heading (identical
-     copy/styling) takes over seamlessly. */
+     only a brief, gentle overlap rather than two headings competing head-on.
+     It holds at full opacity for the rest of the pin (no fade-out here) --
+     #persistentWeddingHeader picks it up the instant natural scroll would
+     otherwise clip it, see initPersistentWeddingHeader. */
   .proposal-teaser{
     position:absolute; inset:0; z-index:6; display:flex; flex-direction:column; align-items:center; justify-content:center;
     padding:0 6vw; text-align:center; pointer-events:none;
   }
   .proposal-teaser .p-seq{opacity:0;}
+  /* fixed-position continuation of .proposal-teaser (same text, same look)
+     -- not a second header, see initPersistentWeddingHeader. Flat opaque
+     background so content scrolling up from Ceremony/Celebration
+     disappears cleanly behind it rather than showing through. */
+  .persistent-wedding-header{
+    display:none; position:fixed; top:0; left:0; right:0; z-index:400;
+    flex-direction:column; align-items:center; justify-content:center;
+    padding:1.8rem 1.5rem 1.5rem; text-align:center;
+    background:var(--olive-deep); color:var(--cream); pointer-events:none;
+  }
+  .persistent-wedding-header h2{color:var(--cream);}
+  @media (prefers-reduced-motion: reduce){ .persistent-wedding-header{display:none !important;} }
   /* .elegant-world h2's default olive-deep color (meant for ivory sections)
      would be nearly invisible against the risen olive wash behind it */
   .proposal-teaser h2{color:var(--cream);}
@@ -1476,18 +1488,32 @@
       </div>
     </div>
   </section>
+  <!-- fixed-position continuation of #proposalTeaser, not a second header --
+       see initPersistentWeddingHeader. Catches the instant natural scroll
+       (once the sunset scene unpins) would otherwise start clipping the
+       teaser, holds it fully visible, and releases only once Ceremony is
+       actually reaching the screen -- direct feedback: the header was
+       fading out mid-pin, well before Ceremony arrived, leaving a long
+       bare olive gap between them. -->
+  <div class="persistent-wedding-header" id="persistentWeddingHeader">
+    <p class="eyebrow center" id="pinnedEyebrow" style="color:var(--gold-light);">The final level</p>
+    <h2 class="center" id="pinnedHeading">The Wedding</h2>
+    <p class="details-intro center" id="pinnedIntro">The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.</p>
+  </div>
 
   <section class="details-section" id="detailsSection">
     <!-- "THE FINAL LEVEL / The Wedding" appears exactly once, inside
          .proposal-teaser at the tail of the pinned sunset scene (crossfades
          in under reduced motion too, see .proposal-scene.play .p-seq) --
          it is THE Wedding introduction, not a preview of a second one.
-         Ceremony/Celebration below simply follow it in normal document
-         flow once the sunset scene's pin releases and it scrolls away
-         naturally (Wedding Header Deduplication spec). Do not reintroduce
-         a second header/intro here -- three earlier attempts at a pinned
-         or quickly-re-appearing duplicate all read as "the Wedding chapter
-         restarting itself." -->
+         #persistentWeddingHeader (a fixed-position continuation of that
+         SAME header, see initPersistentWeddingHeader) keeps it visible
+         through the scroll distance between the pin releasing and Ceremony/
+         Celebration actually reaching the screen, instead of it fading out
+         mid-pin and leaving a bare olive gap before them. Do not add a
+         second, separately-animated header/intro here -- three earlier
+         attempts at a pinned or quickly-re-appearing duplicate all read as
+         "the Wedding chapter restarting itself." -->
     <div class="section-inner">
       <div class="details-grid reveal">
         <div class="detail-chapter detail-chapter-ceremony" id="chapterCeremony">
@@ -2972,19 +2998,13 @@
       wash.style.transform = 'translateY(' + ((1 - washProgress) * 100).toFixed(2) + '%)';
 
       // this teaser IS the Wedding header (Wedding Header Deduplication
-      // spec) -- eyebrow/title/intro stagger in individually but must LEAVE
-      // as one intact block, not as three lines clipping past the viewport
-      // edge at three different scroll amounts (Next Version Implementation
-      // Plan #2). Fixed by a *second*, wrapper-level opacity/transform (on
-      // #proposalTeaser itself) driven by its own exit-only stage: CSS
-      // opacity multiplies down through descendants, so once this wrapper
-      // fade starts every line dims at the exact same rate, and by the time
-      // the pin releases the whole header is already gone -- nothing left
-      // to clip mid-scroll. Timing widened again per Regression Fix Plan §6
-      // -- the previous pass's hold (0.88-0.905) was compressed too far in
-      // the other direction and made the header feel transitional rather
-      // than meaningful: eyebrow/title/intro now enter 0.72-0.84, a full
-      // 0.84-0.90 calm hold, exit 0.90 through the end of the pin.
+      // spec) -- eyebrow/title/intro stagger in individually (0.72-0.84),
+      // then hold at full opacity for the rest of the pin. It no longer
+      // fades out in here at all -- see initPersistentWeddingHeader, which
+      // keeps the SAME header visible (as a fixed-position continuation,
+      // not a second appearance) all the way until Ceremony/Celebration are
+      // actually on screen, instead of it vanishing early and leaving a
+      // bare olive gap before them.
       var teaserEyebrowF = stage(progress, 0.72, 0.76);
       var teaserHeadingF = stage(progress, 0.76, 0.80);
       var teaserIntroF = stage(progress, 0.80, 0.84);
@@ -2994,11 +3014,70 @@
       teaserHeading.style.transform = 'translateY(' + ((1 - teaserHeadingF) * 14).toFixed(1) + 'px)';
       teaserIntro.style.opacity = teaserIntroF;
       teaserIntro.style.transform = 'translateY(' + ((1 - teaserIntroF) * 14).toFixed(1) + 'px)';
-      var headerExitOut = 1 - stage(progress, 0.90, 0.99);
-      teaser.style.opacity = headerExitOut.toFixed(3);
-      teaser.style.transform = 'translateY(' + ((1 - headerExitOut) * -22).toFixed(1) + 'px)';
+      // no forced fade-out here any more -- it now holds at full opacity for
+      // the rest of the pin and is picked up by initPersistentWeddingHeader
+      // (below) once natural scroll would otherwise start clipping it,
+      // rather than vanishing early and leaving a bare olive gap before
+      // Ceremony/Celebration appear (direct feedback: "the final level
+      // header shouldn't disappear until the ceremony section appears").
 
       scene.style.setProperty('--proposal-progress', progress.toFixed(4));
+    }
+    function onScroll(){
+      if(!ticking){ ticking = true; requestAnimationFrame(update); }
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll);
+    update();
+  }
+
+  // #persistentWeddingHeader is a fixed-position continuation of
+  // #teaserHeading (same text, same look) -- NOT a second header. Catches
+  // the instant natural scroll (once the sunset scene unpins) would
+  // otherwise start clipping the teaser off the top of the screen, holds it
+  // fully visible, then fades it out smoothly as Ceremony scrolls up into
+  // view, releasing (fully gone) once Ceremony has clearly arrived rather
+  // than the moment it merely appears. Direct feedback: the header used to
+  // fade out mid-pin, well before Ceremony was anywhere near the screen,
+  // leaving a long bare olive gap. Both "should it show" and "how faded" are
+  // recomputed from current scroll geometry every frame (not toggled once
+  // and remembered), so it's automatically correct scrolling in either
+  // direction -- no separate state machine to get out of sync.
+  function initPersistentWeddingHeader(){
+    var bar = document.getElementById('persistentWeddingHeader');
+    var teaserHeading = document.getElementById('teaserHeading');
+    var chapterCeremony = document.getElementById('chapterCeremony');
+    if(!bar || !teaserHeading || !chapterCeremony) return;
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    function clamp01(n){ return Math.min(1, Math.max(0, n)); }
+    var shown = false;
+    var ticking = false;
+    function update(){
+      ticking = false;
+      var teaserTop = teaserHeading.getBoundingClientRect().top;
+      var ceremonyTop = chapterCeremony.getBoundingClientRect().top;
+      // fixed pixel thresholds, not viewport fractions -- by the time the
+      // catch point below is reached, Ceremony's own top is already only
+      // ~600-650px away (the sunset scene's pin-dwell is much shorter than
+      // its own 100vh height, so Ceremony has already scrolled partway up
+      // by the moment the pin actually releases). A viewport-fraction
+      // threshold (e.g. 0.95/0.35) starts fading immediately at catch time
+      // instead of holding at full opacity first -- these smaller fixed
+      // values mean it only starts fading once Ceremony has risen to a
+      // genuinely established, comfortably-readable position.
+      var fadeStart = 460;
+      var fadeEnd = 140;
+      var releaseFactor = clamp01((ceremonyTop - fadeEnd) / (fadeStart - fadeEnd));
+      var shouldShow = teaserTop <= 0 && releaseFactor > 0;
+      if(shouldShow !== shown){
+        shown = shouldShow;
+        bar.style.display = shown ? 'flex' : 'none';
+      }
+      if(shown){
+        bar.style.opacity = releaseFactor.toFixed(3);
+        bar.style.transform = 'translateY(' + ((1 - releaseFactor) * -16).toFixed(1) + 'px)';
+      }
     }
     function onScroll(){
       if(!ticking){ ticking = true; requestAnimationFrame(update); }
@@ -3072,6 +3151,7 @@
     // progress system (the .proposal-scene stays position:relative in that
     // case -- see the prefers-reduced-motion CSS block).
     initProposalScene();
+    initPersistentWeddingHeader();
     // sticky RSVP button: appears once the first Wedding Details chapter is
     // reached, hides again once the real RSVP form is on screen (Task4 spec)
     var stickyRsvp = document.getElementById('stickyRsvp');
