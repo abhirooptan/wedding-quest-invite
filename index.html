@@ -538,7 +538,7 @@
      rest stay dissolved back into their waypoint. Kept deliberately tiny --
      just a glance, not a full preview. */
   .map-mini-stack{
-    display:block; position:absolute; z-index:4; width:50px;
+    display:block; position:absolute; z-index:4; width:58px; /* ~15% bigger than before on desktop/laptop */
     transform:translate(-50%, calc(-100% - 6px)); cursor:pointer; /* static positioning -- never animated */
   }
   @media (max-width:768px){
@@ -655,7 +655,12 @@
   @media (prefers-reduced-motion: reduce){
     .polaroid-deck, .polaroid-card, .carousel-slide{transition-duration:1ms;}
   }
-  .expedition-note{text-align:center; margin-top:2.4rem; font-style:italic; opacity:0.7; font-size:1.05rem;}
+  /* this eyebrow doubles as the section's actual heading (no separate h2
+     here) -- sized up from the shared .eyebrow default so it reads with
+     enough weight for that role, without changing every other eyebrow
+     site-wide */
+  #expedEyebrow{font-size:1.05rem; letter-spacing:0.22em;}
+  .expedition-note{text-align:center; margin-top:2.4rem; font-style:italic; opacity:0.7; font-size:1.3rem;}
 
   /* proposal: santorini sunset -- a pinned cinematic scene (not a static block
      the guest scrolls past). .proposal-scroll provides the extra scroll
