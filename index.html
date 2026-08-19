@@ -755,33 +755,29 @@
     position:absolute; inset:0; z-index:4; pointer-events:none; opacity:0.03; mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   }
-  .proposal-photo-layer{position:absolute; inset:0; z-index:0;}
+  /* PREVIEW: z-index raised above .proposal-sun (2) instead of sitting below
+     it at 0 -- the new personal photo (assets/photos/proposal/sunset.png)
+     has a real alpha-transparent sky, so putting it above the sun lets the
+     sky area stay see-through (sun + gradient show through) while the
+     photo's own opaque sea/land/figures naturally occlude the sun as it
+     descends, the same trick the old traced silhouette used, but with the
+     real photo as the occluding shape instead of a flat silhouette. */
+  .proposal-photo-layer{position:absolute; inset:0; z-index:3;}
   .proposal-photo-layer img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
   /* the darkening gradient is its own layer so it still reads as a moody vignette
      whether or not a real photo has been dropped in underneath it yet */
   .proposal-photo-scrim{
-    position:absolute; inset:0; z-index:1;
+    position:absolute; inset:0; z-index:4;
     background:linear-gradient(180deg, rgba(30,20,35,0) 45%, rgba(20,14,18,0.35) 75%, rgba(12,10,10,0.55) 100%);
   }
-  /* back to a traced SVG silhouette instead of a photographic vector layer
-     (reverted per direct feedback -- the raster vector's architecture kept
-     competing with the proposal text no matter how it was filtered/
-     repositioned, and a flat dark silhouette doesn't have that problem:
-     it's just a shape, not a detailed, eye-catching image sitting behind
-     the words). Traced from resources/santorini vector sunseet2.png this
-     time (alpha-channel skyline scan, cloud band excluded by starting the
-     per-column scan below y=400, then downsampled to 70 points) rather
-     than hand-drawn, so it's still the real reference art's cliffside/
-     village/dome skyline. Two layers for depth, same technique as before:
-     a softer/smoothed distant echo behind a sharper foreground line. */
-  .proposal-silhouette{
-    position:absolute; left:0; right:0; bottom:0; height:clamp(120px,22vh,240px); z-index:3;
-  }
-  .proposal-silhouette svg{width:100%; height:100%; display:block;}
-  .proposal-sea{
-    position:absolute; left:0; right:0; bottom:0; height:13vh; z-index:4;
-    background:linear-gradient(to bottom, rgba(30,28,38,0.6), #282739);
-  }
+  /* PREVIEW: traced SVG silhouette + flat sea gradient retired now that
+     .proposal-photo-layer holds a real personal photo (couple watching the
+     Santorini sunset) with its own baked-in island/sea silhouette -- keeping
+     both would duplicate the landscape (two overlapping horizon lines). SVG
+     markup and elements left in place but hidden, not deleted, so this is
+     trivially reversible while the user is still deciding. */
+  .proposal-silhouette{ display:none; }
+  .proposal-sea{ display:none; }
   /* replaces a hard-edged rising rectangle: a feathered wash that slides up
      from fully transparent to solid olive over a soft ~20vh gradient band,
      so the colour evolves out of the sunset instead of covering it. Taller
@@ -877,6 +873,32 @@
     .proposal-content{left:50%; top:50%; transform:translate(-50%,-50%); max-width:88vw; text-align:center;}
     .proposal-content h2{text-align:center;}
     .proposal-sun{left:50%; top:8vh;}
+    /* PREVIEW: on a narrow/tall viewport, object-fit:cover's default centred
+       crop only ever shows the image's horizontal middle -- the couple sit
+       at roughly x 21-35% of the source photo (left-of-centre), so the
+       default crop cut them out of frame entirely. Full image height is
+       always visible here (width is the overflowing dimension on portrait
+       screens), so only the horizontal anchor needs to move. */
+    .proposal-photo-layer img{object-position:28% center;}
+  }
+  /* PREVIEW, desktop only (mirrors the 860px breakpoint above so there's no
+     gap/overlap between the two rules): nudges the sun right so its descent
+     lines up with the water reflection baked into the new personal photo --
+     measured directly off a rendered screenshot (reflection centred at
+     ~80% of viewport width at a 1440-wide desktop viewport). The map-section
+     hand-off glow (.expeditions-section's radial-gradient, see the comment
+     above it) is baked to match .proposal-sun's x-position for a seamless
+     transition, so it has to move by the same amount or the glow and the
+     sun's actual start point drift apart into a visible mismatch. Mobile
+     keeps the original 70%/50% values untouched (its photo crop/composition
+     is already handled separately, see object-position above). */
+  @media (min-width:861px){
+    .proposal-sun{left:77%;}
+    .expeditions-section{
+      background:
+        radial-gradient(circle 650px at 77% 100%, rgba(247,199,105,0.4), rgba(247,199,105,0.16) 35%, transparent 72%),
+        linear-gradient(180deg, var(--cream) 0%, var(--cream) calc(100% - 14rem), #E8B771 100%);
+    }
   }
   @media (prefers-reduced-motion: reduce){
     .proposal-scene .p-seq{transition:opacity 0.3s ease;}
