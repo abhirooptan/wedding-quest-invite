@@ -3067,9 +3067,10 @@
   // direction -- no separate state machine to get out of sync.
   function initPersistentWeddingHeader(){
     var bar = document.getElementById('persistentWeddingHeader');
-    var teaserHeading = document.getElementById('teaserHeading');
+    var teaser = document.getElementById('proposalTeaser');
+    var teaserEyebrow = document.getElementById('teaserEyebrow');
     var chapterCeremony = document.getElementById('chapterCeremony');
-    if(!bar || !teaserHeading || !chapterCeremony) return;
+    if(!bar || !teaser || !teaserEyebrow || !chapterCeremony) return;
     if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     function clamp01(n){ return Math.min(1, Math.max(0, n)); }
@@ -3077,7 +3078,12 @@
     var ticking = false;
     function update(){
       ticking = false;
-      var teaserTop = teaserHeading.getBoundingClientRect().top;
+      // catch keyed to the EYEBROW (topmost line of the block), not the
+      // heading below it -- keying it to the heading let the eyebrow above
+      // visibly clip against the real viewport edge for a few frames before
+      // the bar caught (bug report: "it clips and then fades and looks
+      // weird"), since the eyebrow's top crosses 0 first.
+      var teaserTop = teaserEyebrow.getBoundingClientRect().top;
       var ceremonyTop = chapterCeremony.getBoundingClientRect().top;
       // fixed pixel thresholds, not viewport fractions -- by the time the
       // catch point below is reached, Ceremony's own top is already only
@@ -3095,6 +3101,18 @@
       if(shouldShow !== shown){
         shown = shouldShow;
         bar.style.display = shown ? 'flex' : 'none';
+        // the other half of the same bug: #proposalTeaser never fades out
+        // (see updateProposalProgress) and .proposal-scene keeps scrolling
+        // normally in-flow once its sticky pin releases, so without this it
+        // kept rendering, at full opacity, directly behind/below the fixed
+        // bar -- since the bar is only as tall as its own content, whatever
+        // of the original teaser fell below the bar's bottom edge showed
+        // through as a second, drifting copy of the same text (the
+        // "ghosting"/double-exposure half of the bug report). Hiding the
+        // original exactly when the fixed copy takes over -- and restoring
+        // it the instant scrolling back up releases the fixed copy --
+        // guarantees only one copy is ever visible, in either direction.
+        teaser.style.visibility = shown ? 'hidden' : '';
       }
       if(shown){
         bar.style.opacity = releaseFactor.toFixed(3);
