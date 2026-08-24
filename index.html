@@ -810,7 +810,14 @@
      descends, the same trick the old traced silhouette used, but with the
      real photo as the occluding shape instead of a flat silhouette. */
   .proposal-photo-layer{position:absolute; inset:0; z-index:3;}
-  .proposal-photo-layer img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  /* sunsetSharpen (defined as an inline <svg><filter> just above this
+     section) recovers edge contrast that object-fit:cover's upscaling
+     softens; saturate(1.06) is a small vividness lift alongside it -- see
+     the comment on the <svg> itself for why the sharpen exists at all. */
+  .proposal-photo-layer img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    filter:url(#sunsetSharpen) saturate(1.06);
+  }
   /* the darkening gradient is its own layer so it still reads as a moody vignette
      whether or not a real photo has been dropped in underneath it yet */
   .proposal-photo-scrim{
@@ -930,20 +937,23 @@
   }
   /* PREVIEW, desktop only (mirrors the 860px breakpoint above so there's no
      gap/overlap between the two rules): nudges the sun right so its descent
-     lines up with the water reflection baked into the new personal photo --
+     lines up with the water reflection baked into the personal photo --
      measured directly off a rendered screenshot (reflection centred at
-     ~80% of viewport width at a 1440-wide desktop viewport). The map-section
-     hand-off glow (.expeditions-section's radial-gradient, see the comment
-     above it) is baked to match .proposal-sun's x-position for a seamless
-     transition, so it has to move by the same amount or the glow and the
-     sun's actual start point drift apart into a visible mismatch. Mobile
-     keeps the original 70%/50% values untouched (its photo crop/composition
-     is already handled separately, see object-position above). */
+     ~78% of viewport width at a 1440-wide desktop viewport; re-measured
+     after the santorini-vector3 photo swap -- that photo's framing isn't
+     just a higher-res crop of the previous one, it shifted the reflection
+     enough to need re-tuning, was 77%). The map-section hand-off glow
+     (.expeditions-section's radial-gradient, see the comment above it) is
+     baked to match .proposal-sun's x-position for a seamless transition,
+     so it has to move by the same amount or the glow and the sun's actual
+     start point drift apart into a visible mismatch. Mobile keeps the
+     original 70%/50% values untouched (its photo crop/composition is
+     already handled separately, see object-position above). */
   @media (min-width:861px){
-    .proposal-sun{left:77%;}
+    .proposal-sun{left:78%;}
     .expeditions-section{
       background:
-        radial-gradient(circle 650px at 77% 100%, rgba(247,199,105,0.4), rgba(247,199,105,0.16) 35%, transparent 72%),
+        radial-gradient(circle 650px at 78% 100%, rgba(247,199,105,0.4), rgba(247,199,105,0.16) 35%, transparent 72%),
         linear-gradient(180deg, var(--cream) 0%, var(--cream) calc(100% - 14rem), #E8B771 100%);
     }
   }
@@ -1519,6 +1529,19 @@
       </div>
     </div>
   </div>
+
+  <!-- unsharp-mask kernel (classic 3x3 sharpen), referenced by
+       .proposal-photo-layer img's filter -- the photo is a full-bleed
+       background stretched via object-fit:cover across the whole scene, so
+       even a high-resolution source still gets scaled well past its native
+       pixels on large/tall windows; this recovers some perceived edge
+       contrast that scaling softens. preserveAlpha keeps the image's real
+       alpha-channel transparency (sky) untouched by the convolution. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="sunsetSharpen">
+      <feConvolveMatrix order="3" preserveAlpha="true" kernelMatrix="0 -1 0  -1 5 -1  0 -1 0"/>
+    </filter>
+  </svg>
 
   <section class="proposal-scroll" id="proposalScroll">
     <div class="proposal-scene" id="proposalScene">
