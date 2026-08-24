@@ -579,23 +579,49 @@
      grey-brown layer that replaces the map entirely (Critical Review #1). */
   .polaroid-deck{
     position:fixed; inset:0; z-index:700; display:flex; align-items:center; justify-content:center;
-    padding:1.5rem; background:rgba(31,32,26,0.68);
+    padding:1.5rem; background:rgba(31,32,26,0.68); overflow:hidden;
     -webkit-backdrop-filter:blur(8px) saturate(0.85); backdrop-filter:blur(8px) saturate(0.85);
     opacity:0; visibility:hidden; transition:opacity 0.3s ease, visibility 0.3s;
+  }
+  /* no scrollbars here by design (Critical Review #2) -- on a short window,
+     plain align-items:center would crop the card symmetrically top+bottom,
+     which risked clipping the close button itself. `safe` keeps normal
+     centering when everything fits and falls back to top-anchored only
+     once content is taller than the viewport, so anything that has to be
+     clipped is the bottom of the caption, never the close button. */
+  @supports (align-items:safe center){
+    .polaroid-deck{ align-items:safe center; }
   }
   .polaroid-deck.open{opacity:1; visibility:visible;}
   /* no card panel of its own -- the barrel of Polaroids floats directly on
      the blurred, darkened backdrop so the photos pop against it instead of
      sitting inside another rectangle */
+  /* Every gap in this stack -- deck-top to close button, close button to
+     counter, counter to photo, photo to caption, caption to card-bottom --
+     is the SAME --deck-gap value, so the whole close/counter/photo/caption
+     column reads as one evenly-spaced column instead of ad-hoc offsets that
+     drift out of sync every time a piece is tweaked. The photo itself was
+     also shrunk (was max-width:520px) specifically to buy back the vertical
+     room needed to make that consistent gap generous rather than cramped. */
   .polaroid-card{
-    background:none; max-width:520px; width:100%; padding:1.9rem 1.5rem 1.7rem;
+    --deck-gap:0.65rem;
+    background:none; max-width:420px; width:100%;
+    padding:calc(var(--deck-gap)*3 + 44px + 25px) 1.5rem var(--deck-gap);
     position:relative;
     transform:translateY(16px) scale(0.96); opacity:0; transition:transform 0.35s ease, opacity 0.35s ease;
   }
   .polaroid-deck.open .polaroid-card{transform:translateY(0) scale(1); opacity:1;}
-  /* min 44x44px tap target (Critical Review #1) */
+  /* min 44x44px tap target (Critical Review #1). Sits above the photo,
+     centred, rather than pinned to the card's own top-right corner -- that
+     corner is also where the fixed .top-controls (language select + mute
+     toggle, z-index:1001) lives, and on mobile the two were landing right
+     on top of each other. Room for it comes from .polaroid-card's own
+     top padding (above) rather than a negative offset poking above the
+     card's box: .polaroid-deck centres its content with overflow:hidden,
+     and a negative top put the button in the region that gets clipped
+     first on a short window, reading as "off-screen" there. */
   .polaroid-close{
-    position:absolute; top:0.2rem; right:0.2rem; width:44px; height:44px; border:none;
+    position:absolute; top:var(--deck-gap); left:50%; transform:translateX(-50%); width:44px; height:44px; border:none;
     background:rgba(0,0,0,0.28); border-radius:50%;
     cursor:pointer; color:var(--cream); display:flex; align-items:center; justify-content:center; opacity:0.85; z-index:60;
   }
@@ -607,7 +633,13 @@
      neighbours recede in depth (rotateY + translateZ), scaled down and
      softly blurred. Navigating rotates the whole barrel rather than sliding
      a flat strip. */
-  .carousel-viewport{position:relative; width:100%; aspect-ratio:5/7; perspective:1100px; touch-action:pan-y;}
+  /* ratio sized to the actual rendered Polaroid (78%-wide, 3:4 photo + its
+     own border padding) plus just enough margin (~--deck-gap on each side)
+     for the drop-shadow and coverflow rotation room -- was 5/7 (1.4), which
+     left ~150px of dead air below the card itself (the counter/caption sat
+     in that gap, reading as disconnected "floating" text far beneath the
+     photo rather than a caption for it). */
+  .carousel-viewport{position:relative; width:100%; aspect-ratio:1/1.134; perspective:1100px; touch-action:pan-y;}
   .carousel-track{position:relative; width:100%; height:100%; transform-style:preserve-3d; cursor:grab;}
   .carousel-track.dragging{cursor:grabbing;}
   .carousel-track.dragging .carousel-slide{transition:none;}
@@ -638,19 +670,34 @@
   .carousel-arrow:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
   .carousel-arrow svg{width:18px; height:18px;}
   .carousel-arrow-prev{left:-6px;} .carousel-arrow-next{right:-6px;}
+  /* lives above the photo now, stacked under the close button (same
+     --deck-gap below it as everywhere else in the column), rather than
+     absolutely positioned inside the viewport -- it used to sit right at
+     the viewport's bottom edge and started overlapping the photo itself
+     once the viewport's dead-air aspect-ratio was trimmed. Positioned off
+     .polaroid-card (not .carousel-viewport) accordingly. */
   .carousel-counter{
-    position:absolute; bottom:10px; left:50%; transform:translateX(-50%); z-index:200;
+    position:absolute; top:calc(var(--deck-gap)*2 + 44px); left:50%; transform:translateX(-50%); z-index:60;
     background:rgba(255,253,247,0.88); border-radius:20px; padding:0.25rem 0.8rem;
     font-family:var(--label); font-size:0.85rem; letter-spacing:0.06em; color:var(--olive-deep);
   }
-  .polaroid-caption{margin-top:1.2rem; text-align:center;}
+  /* plain text (no panel/border/background) -- legibility against the busy
+     map/scene backdrop comes from a stacked text-shadow (tight dark contact
+     shadow + a soft wider glow), not a boxed background. --deck-gap below
+     the photo, same as every other gap in the close/counter/photo/caption
+     column above it. */
+  .polaroid-caption{margin-top:0; padding-top:0.5rem; text-align:center; position:relative;}
+  .polaroid-caption::before{
+    content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:34px; height:2px; background:var(--gold-light); opacity:0.8; border-radius:1px;
+  }
   .polaroid-caption .p-label{
-    font-family:var(--label); font-size:0.86rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-light);
-    text-shadow:0 1px 4px rgba(0,0,0,0.5);
+    font-family:var(--label); font-size:0.92rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-light);
+    text-shadow:0 1px 3px rgba(0,0,0,0.65), 0 2px 12px rgba(0,0,0,0.55);
   }
   .polaroid-caption .p-memory{
-    margin-top:0.5rem; font-style:italic; font-size:1.12rem; line-height:1.55; color:var(--cream); opacity:0.92;
-    text-shadow:0 1px 4px rgba(0,0,0,0.5);
+    margin-top:0.5rem; font-style:italic; font-size:1.14rem; line-height:1.5; color:#FFFDF8;
+    text-shadow:0 1px 3px rgba(0,0,0,0.65), 0 2px 12px rgba(0,0,0,0.55);
   }
   @media (prefers-reduced-motion: reduce){
     .polaroid-deck, .polaroid-card, .carousel-slide{transition-duration:1ms;}
@@ -1456,6 +1503,7 @@
       <button type="button" class="polaroid-close" id="polaroidClose" aria-label="Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
       </button>
+      <span class="carousel-counter" id="carouselCounter"></span>
       <div class="carousel-viewport" id="carouselViewport">
         <div class="carousel-track" id="carouselTrack"></div>
         <button type="button" class="carousel-arrow carousel-arrow-prev" id="carouselPrev" aria-label="Previous photo">
@@ -1464,7 +1512,6 @@
         <button type="button" class="carousel-arrow carousel-arrow-next" id="carouselNext" aria-label="Next photo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
-        <span class="carousel-counter" id="carouselCounter"></span>
       </div>
       <div class="polaroid-caption">
         <p class="p-label" id="polaroidLabel"></p>
@@ -2523,6 +2570,17 @@
     document.getElementById('tapTag').textContent = (chosenSide === 'bride') ? strs.tapTagBride : strs.tapTag;
     updateStoryLanguage(lang);
     renderExpeditionWaypoints(lang);
+    // the polaroid deck's label/caption/counter/placeholder text are all
+    // painted imperatively (not [data-i18n]) when it opens, so a language
+    // switch while it's still open left them frozen in the old language --
+    // refresh them in place, preserving whatever slide is currently active.
+    if(deckState.idx !== null && document.getElementById('polaroidDeck').classList.contains('open')){
+      var openEx = EXPEDITIONS[deckState.idx];
+      document.getElementById('polaroidLabel').textContent = strs[openEx.key];
+      document.getElementById('polaroidDeck').setAttribute('aria-label', strs[openEx.key] + ' memories');
+      renderCarouselSlides();
+      positionSlides(deckState.index, true);
+    }
   }
 
   // handles both the landing page's own EN/SK/CZ row and the entry modal's
