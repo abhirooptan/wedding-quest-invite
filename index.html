@@ -3004,6 +3004,27 @@
     function clamp01(n){ return Math.min(1, Math.max(0, n)); }
     function stage(p, start, end){ return clamp01((p - start) / (end - start)); }
     function ease(t){ return t * t * (3 - 2 * t); } // smoothstep
+    // disc colour lerps alongside its travel/fade (both driven by the same
+    // sunStage below) -- starts the pale yellow it's always been, reaches a
+    // vivid orange-red peak. Colour reaches that peak by sunStage 0.5 (the
+    // disc is only half-descended then, ducking behind the cloud band well
+    // above the horizon) rather than stretching the lerp across the full
+    // 0-1 range: the visible "peak sunset" moment -- sitting between the
+    // cloud and the horizon -- was landing on a still-half-mixed, washed-out
+    // colour, with the fully-saturated end colour only ever reached at
+    // sunStage 1 (progress 0.72), by which point the disc is already mostly
+    // hidden behind the photo layer. Direct feedback: "when the sun is
+    // between the cloud and the horizon it looks very dull -- that should
+    // be the peak of sunset colours, bright orange/reddish".
+    var SUN_COLOR_START = [244, 219, 130]; // #F4DB82
+    var SUN_COLOR_PEAK = [255, 90, 43]; // #FF5A2B -- vivid orange-red
+    function sunColor(sunStage){
+      var t = clamp01(sunStage / 0.5);
+      var r = Math.round(SUN_COLOR_START[0] + (SUN_COLOR_PEAK[0] - SUN_COLOR_START[0]) * t);
+      var g = Math.round(SUN_COLOR_START[1] + (SUN_COLOR_PEAK[1] - SUN_COLOR_START[1]) * t);
+      var b = Math.round(SUN_COLOR_START[2] + (SUN_COLOR_PEAK[2] - SUN_COLOR_START[2]) * t);
+      return 'rgb(' + r + ',' + g + ',' + b + ')';
+    }
     // fades in over [inStart,inEnd], holds, fades out over [outStart,outEnd];
     // also returns the entrance-only fraction so callers can drive a small
     // translateY that doesn't reverse on the way out
@@ -3042,6 +3063,7 @@
       // centred text block entirely rather than passing behind it
       var sunTravel = window.innerWidth <= 860 ? 8 : 78;
       sun.style.transform = 'translate(-50%,-50%) translateY(' + (sunStage * sunTravel).toFixed(2) + 'vh)';
+      sun.style.background = sunColor(sunStage);
       // quick fade-in right as pinning begins (progress is clamped to 0 for
       // the whole pre-pin entrance, so the sun stays invisible -- never
       // "rising" -- until it's already sitting still in its start position
