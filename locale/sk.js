@@ -17,7 +17,7 @@ window.LOCALE_SK = {
     entryPassWrong: 'Toto heslo nesedí. Skontroluj pozvánku alebo napíš na patka.abhi23@gmail.com',
     entryPassError: 'Tvoj prehliadač nevedel heslo overiť. Skús prosím iný prehliadač.',
     entryChangeBtn: 'Použiť iné heslo', entryUnlockedText: '&#10003; POZVÁNKA ODOMKNUTÁ',
-    ceremonyMapLink: 'Otvoriť v mapách &rarr;', venueHeroCaption: '',
+    ceremonyMapLink: 'Otvoriť v mapách &rarr;', receptionMapLink: 'Otvoriť v mapách &rarr;', venueHeroCaption: '',
     rsvpNeedsPass: 'Obnov prosím stránku a najprv zadaj heslo z pozvánky.',
     entryPlayLabel: 'ZAČAŤ DOBRODRUŽSTVO',
     entrySkipLabel: 'Prišiel si len po info o svadbe? Preskočiť dobrodružstvo &rarr;',
