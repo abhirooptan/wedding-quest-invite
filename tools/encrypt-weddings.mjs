@@ -9,6 +9,7 @@
 // in index.html (normalisation, iterations, salt/iv layout).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { webcrypto as crypto } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
 
 const ITERATIONS = 250000;
 const [src, out] = process.argv.slice(2);
@@ -35,7 +36,10 @@ async function keyFor(pw) {
 
 const items = [];
 for (const w of weddings) {
-  const { password, ...payload } = w;
+  const { password, heroSvgFile, ...payload } = w;
+  // venue line-drawing is inlined into the encrypted payload so the
+  // published site doesn't reveal either venue to the other wedding's guests
+  if (heroSvgFile) payload.heroSvg = readFileSync(new URL(heroSvgFile, pathToFileURL(src)), 'utf8');
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await keyFor(password),
     new TextEncoder().encode(JSON.stringify(payload)));

@@ -1026,6 +1026,22 @@
      small relative to the viewport" and read as a footer under the Wedding
      hero rather than the section's primary content (Critical Review #8) */
   .detail-chapter{max-width:440px; margin:0 auto; text-align:center;}
+  /* venue outline (per wedding, see applyWedding) -- thin gold linework on
+     the olive, like an architect's sketch, not a photo */
+  .venue-hero{margin:0 auto 3.2rem; text-align:center;}
+  .venue-hero[hidden]{display:none;}
+  .venue-hero-art{
+    color:var(--gold-light); opacity:0.85; max-width:760px; margin:0 auto;
+    /* soften the drawings' cropped edges (Phoenix is traced from a photo
+       that cuts the building off on the right) */
+    -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 7%, #000 88%, transparent 100%);
+    mask-image:linear-gradient(90deg, transparent 0, #000 7%, #000 88%, transparent 100%);
+  }
+  .venue-hero-art svg{width:100%; height:auto; max-height:52vh; display:block; margin:0 auto;}
+  .venue-hero figcaption{
+    margin-top:1.1rem; font-family:var(--label); letter-spacing:0.32em; text-transform:uppercase;
+    font-size:0.78rem; color:var(--gold);
+  }
   .detail-chapter-media{
     display:none; position:relative; overflow:hidden; width:100%; border-radius:2px; margin-bottom:1.5rem; border:1px solid rgba(196,166,97,0.25);
     background:linear-gradient(150deg, rgba(196,166,97,0.14), rgba(196,166,97,0.05));
@@ -1637,6 +1653,12 @@
          attempts at a pinned or quickly-re-appearing duplicate all read as
          "the Wedding chapter restarting itself." -->
     <div class="section-inner">
+      <!-- venue line drawing: filled from the unlocked wedding's encrypted
+           payload (heroSvg) by applyWedding(); stays hidden otherwise -->
+      <figure class="venue-hero reveal" id="venueHero" hidden>
+        <div class="venue-hero-art" id="venueHeroArt" aria-hidden="true"></div>
+        <figcaption id="venueHeroCaption"></figcaption>
+      </figure>
       <div class="details-grid reveal">
         <div class="detail-chapter detail-chapter-ceremony" id="chapterCeremony">
           <div class="detail-chapter-media detail-media-169"><img id="ceremonyPhotoImg" alt="" style="display:none;"></div>
@@ -2942,6 +2964,10 @@
     var map = document.getElementById('ceremonyMapLink');
     map.href = (w && w.mapUrl) || '#';
     map.style.display = (w && w.mapUrl) ? '' : 'none';
+    // heroSvg is our own markup from the encrypted payload (only decryptable
+    // with a password we issued), so injecting it is safe
+    document.getElementById('venueHeroArt').innerHTML = (w && w.heroSvg) || '';
+    document.getElementById('venueHero').hidden = !(w && w.heroSvg);
     document.getElementById('entryPassForm').hidden = !!w;
     document.getElementById('entryUnlocked').hidden = !w;
     document.getElementById('entryStart').hidden = !w;
@@ -3315,7 +3341,11 @@
       // the bar caught (bug report: "it clips and then fades and looks
       // weird"), since the eyebrow's top crosses 0 first.
       var teaserTop = teaserEyebrow.getBoundingClientRect().top;
-      var ceremonyTop = chapterCeremony.getBoundingClientRect().top;
+      // once a wedding is unlocked the venue drawing sits above Ceremony, so
+      // release against whichever comes first or the bar would cover it
+      var venueHero = document.getElementById('venueHero');
+      var firstContent = (venueHero && !venueHero.hidden) ? venueHero : chapterCeremony;
+      var ceremonyTop = firstContent.getBoundingClientRect().top;
       // fixed pixel thresholds, not viewport fractions -- by the time the
       // catch point below is reached, Ceremony's own top is already only
       // ~600-650px away (the sunset scene's pin-dwell is much shorter than
