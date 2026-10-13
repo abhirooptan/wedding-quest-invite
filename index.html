@@ -1027,6 +1027,9 @@
      small relative to the viewport" and read as a footer under the Wedding
      hero rather than the section's primary content (Critical Review #8) */
   .detail-chapter{max-width:440px; margin:0 auto; text-align:center;}
+  /* a wedding that hides Ceremony (see applyWedding) leaves one centred column */
+  .details-grid.single{grid-template-columns:1fr;}
+  .details-grid.single::before{display:none;}
   /* venue outline (per wedding, see applyWedding) -- thin gold linework on
      the olive, like an architect's sketch, not a photo */
   .venue-hero{margin:0 auto 3.2rem; text-align:center;}
@@ -1072,6 +1075,12 @@
   }
   .detail-divider{width:44px; height:1px; background:rgba(196,166,97,0.4); margin:3.2rem auto;}
   .detail-support-row{display:flex; justify-content:center; gap:3.5rem; flex-wrap:wrap; margin-top:0.4rem;}
+  /* desktop: equal-width columns (however many items a wedding shows), so
+     Travel / Accommodation / Dress code sit evenly instead of each being as
+     wide as its own text */
+  @media (min-width:760px){
+    .detail-support-row{display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0, 260px); justify-content:center; gap:3rem;}
+  }
   .detail-support-item{text-align:center; font-family:var(--label); font-size:0.9rem; letter-spacing:0.12em; text-transform:uppercase; opacity:0.95;}
   .detail-support-item small{display:block; margin-top:0.5rem; font-family:var(--serif); font-style:italic; text-transform:none; letter-spacing:0; font-size:1.05rem; opacity:0.75;}
   .detail-time{font-family:var(--label); letter-spacing:0.12em; font-size:0.92rem; color:var(--gold-light); margin-top:0.8rem; display:block;}
@@ -1177,12 +1186,54 @@
   .footer .sprite-box img{height:140px; width:auto; image-rendering:pixelated; image-rendering:crisp-edges;}
   .footer .sprite-box img#footerPaty{height:126px;} /* ~90% of Abhi's height — same size relationship as the Act 3 reunion */
   .footer .sprite-box img#footerAbhi{transform:scaleX(-1);} /* mirrored so the couple face each other, matching the Act 3 reunion convention */
+  /* warm flickering light over the lantern in Abhi's hand. Position is the
+     flame's spot in assets/abhi/idle_1.png (x 111/123, y 142/224), with x
+     mirrored because the sprite is flipped. Keyframes repeat the
+     translate(-50%,-50%) centring -- a bare scale() would replace it. */
+  .footer-abhi{position:relative; display:block; line-height:0;}
+  .lantern-glow{
+    position:absolute; left:9.8%; top:63.4%; width:44px; height:44px; border-radius:50%;
+    transform:translate(-50%,-50%); pointer-events:none; mix-blend-mode:screen;
+    background:radial-gradient(circle, rgba(255,226,150,0.9) 0%, rgba(255,179,71,0.45) 30%, rgba(255,179,71,0) 68%);
+    animation:lanternFlicker 2.6s steps(1, end) infinite, lanternFlickerSoft 2.6s ease-in-out infinite;
+  }
+  .lantern-glow::before{
+    content:''; position:absolute; left:50%; top:50%; width:140px; height:140px; border-radius:50%;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(255,179,71,0.18) 0%, rgba(255,179,71,0) 65%);
+    animation:lanternHalo 4s ease-in-out infinite;
+  }
+  @keyframes lanternFlickerSoft{
+    0%,100%{transform:translate(-50%,-50%) scale(1);}
+    40%{transform:translate(-50%,-50%) scale(1.12);}
+    70%{transform:translate(-50%,-50%) scale(0.94);}
+  }
+  @keyframes lanternFlicker{
+    0%{opacity:0.9;} 8%{opacity:0.7;} 12%{opacity:1;} 37%{opacity:0.85;} 41%{opacity:0.6;}
+    44%{opacity:0.95;} 63%{opacity:0.8;} 78%{opacity:1;} 83%{opacity:0.72;} 88%{opacity:0.92;}
+  }
+  @keyframes lanternHalo{
+    0%,100%{opacity:0.7; transform:translate(-50%,-50%) scale(0.9);}
+    50%{opacity:1; transform:translate(-50%,-50%) scale(1.08);}
+  }
+  @media (prefers-reduced-motion: reduce){ .lantern-glow, .lantern-glow::before{animation:none;} }
   .footer-heart{position:absolute; top:-8px; left:50%; transform:translate(-50%,0); width:34px; height:30px; color:#C4A661;}
   .footer-deco{position:absolute; bottom:20%; font-size:1.1rem; opacity:0.8; animation:footerTwinkle 2.4s ease-in-out infinite;}
   .footer-deco-l{left:2%;}
   .footer-deco-r{right:2%; animation-delay:1.1s;}
   @keyframes footerTwinkle{0%,100%{opacity:0.35; transform:translateY(0) scale(0.9);} 50%{opacity:0.9; transform:translateY(-6px) scale(1.05);}}
-  @media (prefers-reduced-motion: reduce){ .footer-deco{animation:none;} }
+  /* heartbeat on the inner svg, not .footer-heart itself -- that one already
+     carries the translate(-50%) centring, which a keyframe transform would
+     replace rather than compose with */
+  .footer-heart svg{transform-origin:50% 60%; animation:footerHeartBeat 1.8s ease-in-out infinite;}
+  @keyframes footerHeartBeat{
+    0%,100%{transform:translateY(0) scale(1);}
+    12%{transform:translateY(-2px) scale(1.18);}
+    24%{transform:translateY(0) scale(1);}
+    36%{transform:translateY(-1px) scale(1.1);}
+    52%{transform:translateY(0) scale(1);}
+  }
+  @media (prefers-reduced-motion: reduce){ .footer-deco, .footer-heart svg{animation:none;} }
   .footer-names{font-family:var(--script); font-size:clamp(2.4rem,6vw,3.4rem); color:var(--gold-light);}
   .footer p{margin-top:0.9rem; opacity:0.62; font-size:0.92rem;}
   .footer-tagline{font-style:italic;}
@@ -1663,7 +1714,7 @@
         <div class="venue-hero-art" id="venueHeroArt" aria-hidden="true"></div>
         <figcaption id="venueHeroCaption"></figcaption>
       </figure>
-      <div class="details-grid reveal">
+      <div class="details-grid reveal" id="detailsGrid">
         <div class="detail-chapter detail-chapter-ceremony" id="chapterCeremony">
           <div class="detail-chapter-media detail-media-169"><img id="ceremonyPhotoImg" alt="" style="display:none;"></div>
           <h3 id="ceremonyTitle">Ceremony</h3>
@@ -1677,6 +1728,7 @@
           <h3 id="receptionTitle">Celebration</h3>
           <p id="receptionDesc">One legendary party<br>details coming soon</p>
           <span class="detail-time" id="receptionTime">Watch this space</span>
+          <a class="detail-map-link" id="receptionMapLink" href="#" style="display:none;">Open in Maps &rarr;</a>
         </div>
       </div>
 
@@ -1684,7 +1736,7 @@
 
       <div class="detail-support-row reveal">
         <div class="detail-support-item"><span id="supportTravel">Travel</span><small id="supportTravelNote">Coming soon</small></div>
-        <div class="detail-support-item"><span id="supportStay">Accommodation</span><small id="supportStayNote">Coming soon</small></div>
+        <div class="detail-support-item" id="supportStayItem"><span id="supportStay">Accommodation</span><small id="supportStayNote">Coming soon</small></div>
         <div class="detail-support-item"><span id="supportFaq">FAQ</span><small id="supportFaqNote">Coming soon</small></div>
       </div>
 
@@ -1766,7 +1818,7 @@
       <span class="footer-deco footer-deco-l" aria-hidden="true">&#10024;</span>
       <div class="footer-heart"><svg class="px" viewBox="0 0 40 36" width="100%" height="100%"><use href="#px-heart"/></svg></div>
       <img id="footerPaty" src="assets/paty/idle_1.png" alt="Pat'a Croft">
-      <img id="footerAbhi" src="assets/abhi/idle_1.png" alt="Abhi Jones">
+      <span class="footer-abhi"><img id="footerAbhi" src="assets/abhi/idle_1.png" alt="Abhi Jones"><span class="lantern-glow" aria-hidden="true"></span></span>
       <span class="footer-deco footer-deco-r" aria-hidden="true">&#10024;</span>
     </div>
     <div class="footer-names">Patricia &amp; Abhiroop</div>
@@ -2968,6 +3020,15 @@
     var map = document.getElementById('ceremonyMapLink');
     map.href = (w && w.mapUrl) || '#';
     map.style.display = (w && w.mapUrl) ? '' : 'none';
+    var recMap = document.getElementById('receptionMapLink');
+    recMap.href = (w && w.receptionMapUrl) || '#';
+    recMap.style.display = (w && w.receptionMapUrl) ? '' : 'none';
+    // per-wedding sections to leave out entirely (e.g. no Ceremony chapter)
+    var hide = (w && w.hide) || [];
+    ['chapterCeremony', 'supportStayItem'].forEach(function(id){
+      document.getElementById(id).style.display = hide.indexOf(id) !== -1 ? 'none' : '';
+    });
+    document.getElementById('detailsGrid').classList.toggle('single', hide.indexOf('chapterCeremony') !== -1);
     // heroSvg is our own markup from the encrypted payload (only decryptable
     // with a password we issued), so injecting it is safe
     document.getElementById('venueHeroArt').innerHTML = (w && w.heroSvg) || '';
@@ -3416,7 +3477,8 @@
       // once a wedding is unlocked the venue drawing sits above Ceremony, so
       // release against whichever comes first or the bar would cover it
       var venueHero = document.getElementById('venueHero');
-      var firstContent = (venueHero && !venueHero.hidden) ? venueHero : chapterCeremony;
+      // (the grid, not Ceremony itself -- a wedding may hide Ceremony)
+      var firstContent = (venueHero && !venueHero.hidden) ? venueHero : document.getElementById('detailsGrid');
       var ceremonyTop = firstContent.getBoundingClientRect().top;
       // fixed pixel thresholds, not viewport fractions -- by the time the
       // catch point below is reached, Ceremony's own top is already only
@@ -3534,7 +3596,7 @@
       var showStickyIO = new IntersectionObserver(function(entries){
         entries.forEach(function(e){ if(e.isIntersecting){ stickyRsvp.classList.add('show'); } });
       }, {threshold:0.1});
-      showStickyIO.observe(chapterCeremony);
+      showStickyIO.observe(document.getElementById('detailsGrid')); // not Ceremony: a wedding may hide it
       var hideStickyIO = new IntersectionObserver(function(entries){
         entries.forEach(function(e){ if(e.isIntersecting){ stickyRsvp.classList.remove('show'); } });
       }, {threshold:0.15});
