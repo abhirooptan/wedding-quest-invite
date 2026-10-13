@@ -1033,12 +1033,15 @@
   .venue-hero[hidden]{display:none;}
   .venue-hero-art{
     color:var(--gold-light); opacity:0.85; max-width:760px; margin:0 auto;
-    /* soften the drawings' cropped edges (Phoenix is traced from a photo
-       that cuts the building off on the right) */
+  }
+  /* soften the drawings' cropped edges (Phoenix is traced from a photo that
+     cuts the building off on the right) -- only once fully assembled, since a
+     mask clips to the box and would slice through the flying pieces */
+  .venue-hero-art.assembled{
     -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 7%, #000 88%, transparent 100%);
     mask-image:linear-gradient(90deg, transparent 0, #000 7%, #000 88%, transparent 100%);
   }
-  .venue-hero-art svg{width:100%; height:auto; max-height:52vh; display:block; margin:0 auto;}
+  .venue-hero-art svg{width:100%; height:auto; max-height:52vh; display:block; margin:0 auto; overflow:visible;}
   .venue-hero figcaption{
     margin-top:1.1rem; font-family:var(--label); letter-spacing:0.32em; text-transform:uppercase;
     font-size:0.78rem; color:var(--gold);
@@ -2969,10 +2972,78 @@
     // with a password we issued), so injecting it is safe
     document.getElementById('venueHeroArt').innerHTML = (w && w.heroSvg) || '';
     document.getElementById('venueHero').hidden = !(w && w.heroSvg);
+    initVenueAssembly(); // after un-hiding, so getBBox() can measure the pieces
     document.getElementById('entryPassForm').hidden = !!w;
     document.getElementById('entryUnlocked').hidden = !w;
     document.getElementById('entryStart').hidden = !w;
   }
+
+  // ---------- Venue drawing: pieces fly in and assemble as it scrolls into view ----------
+  // Every top-level element of the SVG (a wall, a roof line, a whole window
+  // <g>) starts scattered + rotated and eases home as scroll progress goes
+  // 0 -> 1. Pieces are staggered bottom-up (ground and walls first, roof and
+  // chimneys last) so it reads like the building being put up. Scroll-driven,
+  // so scrolling back up takes it apart again. Reduced motion: drawn as-is.
+  var venueAsm = null;
+  function clampUnit(n){ return Math.min(1, Math.max(0, n)); }
+  function initVenueAssembly(){
+    venueAsm = null;
+    var caption = document.getElementById('venueHeroCaption');
+    caption.style.opacity = '';
+    document.getElementById('venueHeroArt').classList.add('assembled'); // static/reduced-motion default
+    var svg = document.querySelector('#venueHeroArt svg');
+    if(!svg) return;
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var vb = svg.viewBox.baseVal;
+    var seed = 20270605; // fixed seed: same scatter on every visit
+    function rnd(){ seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+    var pieces = Array.prototype.map.call(svg.children, function(el){
+      var bb;
+      try { bb = el.getBBox(); } catch(err){ bb = {y: vb.y + vb.height / 2, height: 0}; }
+      var height01 = 1 - ((bb.y + bb.height / 2) - vb.y) / vb.height; // 0 = ground, 1 = rooftop
+      var ang = rnd() * Math.PI * 2;
+      var dist = vb.width * (0.18 + rnd() * 0.3);
+      el.style.transformBox = 'fill-box';
+      el.style.transformOrigin = 'center';
+      return {
+        el: el,
+        start: Math.min(0.65, Math.max(0, height01 * 0.55 + rnd() * 0.1)),
+        dx: Math.cos(ang) * dist,
+        dy: Math.sin(ang) * dist * 0.5 - vb.height * 0.25,
+        rot: (rnd() - 0.5) * 140
+      };
+    });
+    venueAsm = {pieces: pieces, last: -1};
+    updateVenueAssembly();
+  }
+  function updateVenueAssembly(){
+    if(!venueAsm) return;
+    var r = document.getElementById('venueHero').getBoundingClientRect();
+    var vh = window.innerHeight;
+    // 0 as the drawing's top enters at the bottom of the screen, 1 (fully
+    // built) once it has risen to ~20% from the top
+    var p = clampUnit((vh - r.top) / (vh * 0.8));
+    if(Math.abs(p - venueAsm.last) < 0.001){ return; }
+    venueAsm.last = p;
+    venueAsm.pieces.forEach(function(pc){
+      var t = clampUnit((p - pc.start) / 0.35);
+      var k = Math.pow(1 - t, 3); // easeOutCubic, as "distance still to travel"
+      pc.el.style.transform = k > 0.0005
+        ? 'translate(' + (pc.dx * k).toFixed(1) + 'px,' + (pc.dy * k).toFixed(1) + 'px) rotate(' + (pc.rot * k).toFixed(1) + 'deg)'
+        : '';
+      pc.el.style.opacity = (1 - 0.85 * k).toFixed(3);
+    });
+    document.getElementById('venueHeroCaption').style.opacity = clampUnit((p - 0.85) / 0.15).toFixed(3);
+    document.getElementById('venueHeroArt').classList.toggle('assembled', p >= 1);
+  }
+  var venueAsmTicking = false;
+  function onVenueAsmScroll(){
+    if(!venueAsm || venueAsmTicking){ return; }
+    venueAsmTicking = true;
+    requestAnimationFrame(function(){ venueAsmTicking = false; updateVenueAssembly(); });
+  }
+  window.addEventListener('scroll', onVenueAsmScroll, {passive: true});
+  window.addEventListener('resize', onVenueAsmScroll);
 
   document.getElementById('entryPassForm').addEventListener('submit', function(e){
     e.preventDefault();
