@@ -16,7 +16,7 @@ window.LOCALE_CZ = {
     entryPassChecking: 'Ověřuji&hellip;',
     entryPassWrong: 'Toto heslo nesedí. Zkontroluj pozvánku nebo napiš na hello@patriciaandabhiroop.com',
     entryPassError: 'Tvůj prohlížeč nedokázal heslo ověřit. Zkus prosím jiný prohlížeč.',
-    entryChangeBtn: 'Použít jiné heslo', entryUnlockedText: '',
+    entryChangeBtn: 'Použít jiné heslo', entryUnlockedText: '&#10003; POZVÁNKA ODEMČENA',
     ceremonyMapLink: 'Otevřít v mapách &rarr;', venueHeroCaption: '',
     rsvpNeedsPass: 'Obnov prosím stránku a nejprve zadej heslo z pozvánky.',
     entryPlayLabel: 'ZAČÍT DOBRODRUŽSTVÍ',

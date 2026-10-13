@@ -74,6 +74,7 @@
   .entry-pass-row button:disabled{opacity:0.6; cursor:wait;}
   .entry-pass-msg{min-height:1.2em; margin-top:0.7rem; font-size:0.88rem; color:#E88C7D;}
   .entry-unlocked-text{font-family:var(--pixel); font-size:0.56rem; color:var(--px-gold); line-height:1.8;}
+  .entry-change-btn{margin-top:0.2rem; font-size:0.78rem; color:rgba(242,239,223,0.42);}
   .entry-start[hidden], .entry-pass[hidden], .entry-unlocked[hidden]{display:none;}
 
   /* ============ LANDING / SIDE SELECT ============ */
@@ -1351,13 +1352,13 @@
       </div>
       <p class="entry-pass-msg" id="entryPassMsg" role="status" aria-live="polite"></p>
     </form>
-    <div class="entry-unlocked" id="entryUnlocked" hidden>
-      <p class="entry-unlocked-text" id="entryUnlockedText"></p>
-      <button type="button" class="entry-skip-btn" id="entryChangeBtn" style="margin-top:0.3rem;">Use a different password</button>
-    </div>
     <div class="entry-start" id="entryStart" hidden>
+      <p class="entry-unlocked-text" id="entryUnlockedText">&#10003; INVITATION UNLOCKED</p>
       <button class="entry-play-btn" id="entryPlayBtn">&#9654; <span id="entryPlayLabel">BEGIN THE ADVENTURE</span></button>
       <button class="entry-skip-btn" id="entrySkipBtn"><span id="entrySkipLabel">Just here for the wedding details? Skip the adventure &rarr;</span></button>
+    </div>
+    <div class="entry-unlocked" id="entryUnlocked" hidden>
+      <button type="button" class="entry-skip-btn entry-change-btn" id="entryChangeBtn">Use a different password</button>
     </div>
   </div>
 </div>

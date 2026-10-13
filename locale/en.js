@@ -16,7 +16,7 @@ window.LOCALE_EN = {
     entryPassChecking: 'Checking&hellip;',
     entryPassWrong: "That password doesn't match. Check your invitation, or write to hello@patriciaandabhiroop.com",
     entryPassError: 'Your browser could not check the password. Please try another browser.',
-    entryChangeBtn: 'Use a different password', entryUnlockedText: '',
+    entryChangeBtn: 'Use a different password', entryUnlockedText: '&#10003; INVITATION UNLOCKED',
     ceremonyMapLink: 'Open in Maps &rarr;', venueHeroCaption: '',
     rsvpNeedsPass: 'Please reload the page and enter your invitation password first.',
     entryPlayLabel: 'BEGIN THE ADVENTURE',
