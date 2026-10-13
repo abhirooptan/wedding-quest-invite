@@ -987,8 +987,8 @@
        over the (lower-specificity) .proposal-scene.play .p-seq rule above
        regardless of source order; see initProposalScene's second
        IntersectionObserver for the .proposal-teaser.play trigger. */
-    #teaserEyebrow, #teaserHeading, #teaserIntro{opacity:0; transition:opacity 0.4s ease;}
-    .proposal-teaser.play #teaserEyebrow, .proposal-teaser.play #teaserHeading, .proposal-teaser.play #teaserIntro{opacity:1;}
+    #teaserEyebrow, #teaserHeading{opacity:0; transition:opacity 0.4s ease;}
+    .proposal-teaser.play #teaserEyebrow, .proposal-teaser.play #teaserHeading{opacity:1;}
   }
 
   /* details -- editorial chapters, not dashboard cards (Task4): information is
@@ -1670,7 +1670,6 @@
       <div class="proposal-teaser" id="proposalTeaser">
         <p class="eyebrow center p-seq" id="teaserEyebrow" style="color:var(--gold-light);">The final level</p>
         <h2 class="center p-seq" id="teaserHeading">The Wedding</h2>
-        <p class="details-intro center p-seq" id="teaserIntro">The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.</p>
       </div>
       <div class="proposal-content">
         <p class="eyebrow p-seq" id="propEyebrow">Santorini &middot; Skaros Rock</p>
@@ -1691,7 +1690,6 @@
   <div class="persistent-wedding-header" id="persistentWeddingHeader">
     <p class="eyebrow center" id="pinnedEyebrow" style="color:var(--gold-light);">The final level</p>
     <h2 class="center" id="pinnedHeading">The Wedding</h2>
-    <p class="details-intro center" id="pinnedIntro">The final chapter is taking shape. Dates, places and everything you'll need will be revealed here.</p>
   </div>
 
   <section class="details-section" id="detailsSection">
@@ -3274,7 +3272,6 @@
     var teaser = document.getElementById('proposalTeaser');
     var teaserEyebrow = document.getElementById('teaserEyebrow');
     var teaserHeading = document.getElementById('teaserHeading');
-    var teaserIntro = document.getElementById('teaserIntro');
 
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if(reduceMotion){
@@ -3419,13 +3416,10 @@
       // bare olive gap before them.
       var teaserEyebrowF = stage(progress, 0.72, 0.76);
       var teaserHeadingF = stage(progress, 0.76, 0.80);
-      var teaserIntroF = stage(progress, 0.80, 0.84);
       teaserEyebrow.style.opacity = teaserEyebrowF;
       teaserEyebrow.style.transform = 'translateY(' + ((1 - teaserEyebrowF) * 14).toFixed(1) + 'px)';
       teaserHeading.style.opacity = teaserHeadingF;
       teaserHeading.style.transform = 'translateY(' + ((1 - teaserHeadingF) * 14).toFixed(1) + 'px)';
-      teaserIntro.style.opacity = teaserIntroF;
-      teaserIntro.style.transform = 'translateY(' + ((1 - teaserIntroF) * 14).toFixed(1) + 'px)';
       // no forced fade-out here any more -- it now holds at full opacity for
       // the rest of the pin and is picked up by initPersistentWeddingHeader
       // (below) once natural scroll would otherwise start clipping it,
