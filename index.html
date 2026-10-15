@@ -1085,10 +1085,9 @@
      the quest line, rather than sharing a column with the dress code */
   .detail-theme{text-align:center; margin:3.4rem auto 0;}
   .detail-theme-label{display:block; font-family:var(--label); font-size:0.78rem; letter-spacing:0.32em; text-transform:uppercase; color:var(--gold);}
-  .detail-theme-name{margin-top:0.5rem; font-family:var(--script); font-size:clamp(2.2rem, 5.5vw, 3.2rem); line-height:1.2; color:var(--gold-light);}
-  /* the script font has no Czech "ě" (květiny) -- a per-glyph fallback looks
-     broken, so Czech gets the whole line in the serif italic instead */
-  html[lang="cs"] .detail-theme-name{font-family:var(--serif); font-style:italic; font-size:clamp(1.7rem, 4.2vw, 2.4rem);}
+  /* serif italic, not the footer's script font: a full phrase in the script
+     was hard to read, and the script has no Czech "ě" anyway */
+  .detail-theme-name{margin-top:0.5rem; font-family:var(--serif); font-style:italic; font-size:clamp(1.7rem, 4.2vw, 2.4rem); line-height:1.25; color:var(--gold-light);}
   .detail-support-item{text-align:center; font-family:var(--label); font-size:0.9rem; letter-spacing:0.12em; text-transform:uppercase; opacity:0.95;}
   .detail-support-item small{display:block; margin-top:0.5rem; font-family:var(--serif); font-style:italic; text-transform:none; letter-spacing:0; font-size:1.05rem; opacity:0.75;}
   .detail-time{font-family:var(--label); letter-spacing:0.12em; font-size:0.92rem; color:var(--gold-light); margin-top:0.8rem; display:block;}
