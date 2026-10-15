@@ -66,6 +66,7 @@ window.LOCALE_SK = {
     supportTravel: 'Doprava', supportTravelNote: 'Trasy a informácie o príchode čoskoro pridáme.',
     supportStay: 'Ubytovanie', supportStayNote: 'Tipy na ubytovanie a rezervácie budú nasledovať.',
     supportFaq: 'Časté otázky', supportFaqNote: 'Odpovede, ktoré budete potrebovať, sa tu čoskoro objavia.',
+    themeLabel: 'Téma', themeName: 'Západy slnka a kvety v pastelových farbách',
     stickyRsvpLabel: 'RSVP &rarr;',
     detQuestLine: 'VEDĽAJŠIA VÝPRAVA PREBIEHA: VEĽKÉ HĽADANIE MIESTA',
     rsvpEyebrow: 'Oficiálne pozvánky prídu neskôr', rsvpHeading: 'Prijmi výzvu',

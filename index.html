@@ -1081,6 +1081,14 @@
   @media (min-width:760px){
     .detail-support-row{display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0, 260px); justify-content:center; gap:3rem;}
   }
+  /* the day's theme gets its own centred moment between the support row and
+     the quest line, rather than sharing a column with the dress code */
+  .detail-theme{text-align:center; margin:3.4rem auto 0;}
+  .detail-theme-label{display:block; font-family:var(--label); font-size:0.78rem; letter-spacing:0.32em; text-transform:uppercase; color:var(--gold);}
+  .detail-theme-name{margin-top:0.5rem; font-family:var(--script); font-size:clamp(2.2rem, 5.5vw, 3.2rem); line-height:1.2; color:var(--gold-light);}
+  /* the script font has no Czech "ě" (květiny) -- a per-glyph fallback looks
+     broken, so Czech gets the whole line in the serif italic instead */
+  html[lang="cs"] .detail-theme-name{font-family:var(--serif); font-style:italic; font-size:clamp(1.7rem, 4.2vw, 2.4rem);}
   .detail-support-item{text-align:center; font-family:var(--label); font-size:0.9rem; letter-spacing:0.12em; text-transform:uppercase; opacity:0.95;}
   .detail-support-item small{display:block; margin-top:0.5rem; font-family:var(--serif); font-style:italic; text-transform:none; letter-spacing:0; font-size:1.05rem; opacity:0.75;}
   .detail-time{font-family:var(--label); letter-spacing:0.12em; font-size:0.92rem; color:var(--gold-light); margin-top:0.8rem; display:block;}
@@ -1736,6 +1744,11 @@
         <div class="detail-support-item"><span id="supportTravel">Travel</span><small id="supportTravelNote">Coming soon</small></div>
         <div class="detail-support-item" id="supportStayItem"><span id="supportStay">Accommodation</span><small id="supportStayNote">Coming soon</small></div>
         <div class="detail-support-item"><span id="supportFaq">FAQ</span><small id="supportFaqNote">Coming soon</small></div>
+      </div>
+
+      <div class="detail-theme reveal">
+        <span class="detail-theme-label" id="themeLabel">The theme</span>
+        <p class="detail-theme-name" id="themeName">Sunsets &amp; Flowers in Pastel</p>
       </div>
 
       <p class="quest-line" id="detQuestLine">SIDE QUEST IN PROGRESS: THE GREAT VENUE HUNT</p>
@@ -2685,6 +2698,7 @@
   function applyLanguage(lang){
     currentLang = lang;
     localStorage.setItem('questLang', lang);
+    document.documentElement.lang = (lang === 'cz') ? 'cs' : lang; // real language code; also drives per-language font fallbacks in CSS
     var strs = UI[lang];
     Object.keys(strs).forEach(function(key){
       var el = document.getElementById(key);
