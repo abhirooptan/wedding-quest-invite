@@ -72,6 +72,7 @@ window.LOCALE_EN = {
     supportTravel: 'Travel', supportTravelNote: "Routes and arrival guidance will be added here.",
     supportStay: 'Accommodation', supportStayNote: "Nearby stays and booking guidance will follow.",
     supportFaq: 'FAQ', supportFaqNote: "The answers guests will need will appear here.",
+    themeLabel: 'The theme', themeName: 'Sunsets &amp; Flowers in Pastel',
     stickyRsvpLabel: 'RSVP &rarr;',
     detQuestLine: 'SIDE QUEST IN PROGRESS: THE GREAT VENUE HUNT',
     rsvpEyebrow: 'Formal invitations will follow', rsvpHeading: 'Accept the Quest',
