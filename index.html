@@ -1088,8 +1088,8 @@
   /* serif italic, not the footer's script font: a full phrase in the script
      was hard to read, and the script has no Czech "ě" anyway */
   .detail-theme-name{margin-top:0.5rem; font-family:var(--serif); font-style:italic; font-size:clamp(1.7rem, 4.2vw, 2.4rem); line-height:1.25; color:var(--gold-light);}
-  .detail-note{max-width:520px; margin:2.2rem auto 0; text-align:center; font-family:var(--serif); font-style:italic; font-size:1.08rem; line-height:1.6; opacity:0.78;}
-  .detail-note:empty{display:none;}
+  .rsvp-guest-note{max-width:500px; margin:1.1rem auto 0; padding-top:1.1rem; border-top:1px solid rgba(196,166,97,0.35); text-align:center; font-family:var(--serif); font-style:italic; font-size:1.05rem; line-height:1.6; color:var(--olive-deep);}
+  .rsvp-guest-note:empty{display:none;}
   .detail-support-item{text-align:center; font-family:var(--label); font-size:0.9rem; letter-spacing:0.12em; text-transform:uppercase; opacity:0.95;}
   .detail-support-item small{display:block; margin-top:0.5rem; font-family:var(--serif); font-style:italic; text-transform:none; letter-spacing:0; font-size:1.05rem; opacity:0.75;}
   .detail-time{font-family:var(--label); letter-spacing:0.12em; font-size:0.92rem; color:var(--gold-light); margin-top:0.8rem; display:block;}
@@ -1752,10 +1752,6 @@
         <p class="detail-theme-name" id="themeName">Sunsets &amp; Flowers in Pastel</p>
       </div>
 
-      <!-- per-wedding note for guests (e.g. adults-only), filled from the
-           unlocked wedding's strings; collapses when empty -->
-      <p class="detail-note" id="guestNote"></p>
-
       <p class="quest-line" id="detQuestLine">SIDE QUEST IN PROGRESS: THE GREAT VENUE HUNT</p>
     </div>
   </section>
@@ -1766,6 +1762,9 @@
       <p class="eyebrow center reveal" id="rsvpEyebrow">Formal invitations will follow</p>
       <h2 class="reveal" id="rsvpHeading">Accept the Quest</h2>
       <p class="details-intro center reveal" id="rsvpIntro">For now, let us know whether you'll join us.</p>
+      <!-- per-wedding note shown where guests decide who's coming (e.g.
+           adults-only), from the unlocked wedding's strings; collapses when empty -->
+      <p class="rsvp-guest-note" id="guestNote"></p>
       <div class="trellis-frame reveal">
         <form class="rsvp-form" id="rsvpForm">
           <div class="field" style="position:absolute; left:-9999px;" aria-hidden="true">
@@ -3046,6 +3045,7 @@
       document.getElementById(id).style.display = hide.indexOf(id) !== -1 ? 'none' : '';
     });
     document.getElementById('detailsGrid').classList.toggle('single', hide.indexOf('chapterCeremony') !== -1);
+    setKidsMealAllowed(hide.indexOf('optMealKids') === -1);
     // heroSvg is our own markup from the encrypted payload (only decryptable
     // with a password we issued), so injecting it is safe
     document.getElementById('venueHeroArt').innerHTML = (w && w.heroSvg) || '';
@@ -3730,6 +3730,25 @@
   // ---- additional guests (name / meal / allergy only, no email or attending) ----
   var guestsContainer = document.getElementById('guestsContainer');
 
+  // An adults-only wedding (payload hide: ["optMealKids"]) drops the Kids Meal
+  // choice. The <option> is removed/re-added rather than hidden, since iOS
+  // Safari ignores display:none / [hidden] on options.
+  var kidsMealAllowed = true;
+  function setKidsMealAllowed(allowed){
+    kidsMealAllowed = allowed;
+    document.querySelectorAll('#meal, .guest-meal').forEach(function(sel){
+      var opt = sel.querySelector('option[value="kids"]');
+      if(!allowed && opt){ opt.remove(); }
+      if(allowed && !opt){
+        var o = document.createElement('option');
+        o.value = 'kids';
+        if(sel.id === 'meal'){ o.id = 'optMealKids'; }
+        o.innerHTML = UI[currentLang].optMealKids;
+        sel.appendChild(o);
+      }
+    });
+  }
+
   function createGuestBlock(){
     var strs = UI[currentLang];
     var wrap = document.createElement('div');
@@ -3741,7 +3760,7 @@
         '<select class="guest-meal">' +
           '<option value="veg">' + strs.optMealVeg + '</option>' +
           '<option value="nonveg">' + strs.optMealNonVeg + '</option>' +
-          '<option value="kids">' + strs.optMealKids + '</option>' +
+          (kidsMealAllowed ? '<option value="kids">' + strs.optMealKids + '</option>' : '') +
         '</select></div>' +
       '<div class="field"><label data-i18n="lblGuestNote">' + strs.lblGuestNote + '</label>' +
         '<input type="text" class="guest-allergy"></div>' +
