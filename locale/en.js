@@ -73,6 +73,7 @@ window.LOCALE_EN = {
     supportStay: 'Accommodation', supportStayNote: "Nearby stays and booking guidance will follow.",
     supportFaq: 'FAQ', supportFaqNote: "The answers guests will need will appear here.",
     themeLabel: 'The theme', themeName: 'Sunsets &amp; Flowers in Pastel',
+    guestNote: '', // per-wedding (see private weddings.json); empty hides #guestNote
     stickyRsvpLabel: 'RSVP &rarr;',
     detQuestLine: 'SIDE QUEST IN PROGRESS: THE GREAT VENUE HUNT',
     rsvpEyebrow: 'Formal invitations will follow', rsvpHeading: 'Accept the Quest',
