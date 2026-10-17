@@ -67,6 +67,7 @@ window.LOCALE_CZ = {
     supportStay: 'Ubytování', supportStayNote: 'Tipy na ubytování a rezervace budou následovat.',
     supportFaq: 'Časté dotazy', supportFaqNote: 'Odpovědi, které budete potřebovat, se tu brzy objeví.',
     themeLabel: 'Téma', themeName: 'Západy slunce a květiny v pastelových barvách',
+    guestNote: '',
     stickyRsvpLabel: 'RSVP &rarr;',
     detQuestLine: 'VEDLEJŠÍ ÚKOL PROBÍHÁ: VELKÉ HLEDÁNÍ MÍSTA',
     rsvpEyebrow: 'Oficiální pozvánky přijdou později', rsvpHeading: 'Přijmi výzvu',
