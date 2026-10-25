@@ -1183,7 +1183,7 @@
   .guest-entry.no-meal{grid-template-columns:1fr 1fr auto;} /* fixed-menu wedding: meal column hidden */
   @media (max-width:640px){.guest-entry, .guest-entry.no-meal{grid-template-columns:1fr;}}
   .meal-note{margin:0 0 1.6rem; font-family:var(--serif); font-style:italic; font-size:1.08rem; line-height:1.6; color:var(--olive-deep);}
-  .meal-note[hidden]{display:none;}
+  .meal-note[hidden], .meal-note:empty{display:none;} /* :empty = never a blank gap if the note string is missing */
   .guest-remove{background:transparent; border:1px solid var(--olive-deep); color:var(--olive-deep); padding:0.6rem 0.9rem; border-radius:2px; cursor:pointer; font-family:var(--label); font-size:0.7rem; white-space:nowrap; height:fit-content;}
   .guest-remove:hover{background:var(--olive-deep); color:var(--cream);}
   .add-guest-btn{align-self:flex-start; background:transparent; border:1px dashed var(--gold); color:var(--olive-deep); padding:0.7rem 1.2rem; border-radius:2px; cursor:pointer; font-family:var(--label); font-size:0.8rem; letter-spacing:0.04em; margin-bottom:0.4rem;}
@@ -1847,10 +1847,10 @@
 </div>
 
 <!-- Dialogue/copy for each language lives in its own file under locale/ -->
-<script src="locale/en.js"></script>
-<script src="locale/sk.js"></script>
-<script src="locale/cz.js"></script>
-<script src="locale/weddings.enc.js"></script>
+<script src="locale/en.js?v=b11d4f411d"></script>
+<script src="locale/sk.js?v=15343f97a9"></script>
+<script src="locale/cz.js?v=704ff900b6"></script>
+<script src="locale/weddings.enc.js?v=e49cc4212d"></script>
 <script>
   // ============ ON-SCREEN DEBUG PANEL ============
   // Only active with ?debug=1 in the URL -- normal guests never see this.
