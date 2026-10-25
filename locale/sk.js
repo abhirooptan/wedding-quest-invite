@@ -76,7 +76,7 @@ window.LOCALE_SK = {
     lblEmail: 'E-mailová adresa<span class="req-mark" aria-hidden="true">*</span>',
     lblAttending: 'Pridáš sa k výprave?<span class="req-mark" aria-hidden="true">*</span>',
     optAccept: 'Výzva prijatá — budem tam', optDecline: 'S ľútosťou, nemôžem prísť',
-    lblMeal: 'Vyber si zásoby',
+    lblMeal: 'Výber menu', mealNote: '',
     optMealVeg: 'Vegetariánske', optMealNonVeg: 'Nevegetariánske', optMealKids: 'Detské jedlo',
     lblAllergy: 'Alergie / diétne poznámky',
     lblGuestsSection: 'Prídeš s niekým ďalším?', addGuestBtn: '&#43; Pridať hosťa',
