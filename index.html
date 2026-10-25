@@ -1133,6 +1133,8 @@
   .field label{display:block; font-family:var(--label); font-size:0.85rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--olive); margin-bottom:0.85rem;}
   .field input, .field select, .field textarea{width:100%; border:none; border-bottom:1px solid rgba(44,47,34,0.25); background:transparent; padding:0.9rem 0.2rem; font-family:var(--serif); font-size:1.05rem; color:var(--ink); outline:none;}
   .field input:focus, .field select:focus, .field textarea:focus{border-bottom-color:var(--gold);}
+  /* a wedding with one fixed menu (see setFixedMeal): read as plain text, not a greyed-out control */
+  .field select:disabled{opacity:1; color:var(--ink); cursor:default; -webkit-appearance:none; appearance:none; border-bottom-style:dashed;}
   /* border-colour change alone is too subtle a focus indicator for
      keyboard users (Critical Review #14) -- add a real outline back */
   .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible{
@@ -3046,6 +3048,7 @@
     });
     document.getElementById('detailsGrid').classList.toggle('single', hide.indexOf('chapterCeremony') !== -1);
     setKidsMealAllowed(hide.indexOf('optMealKids') === -1);
+    setFixedMeal((w && w.fixedMeal) || null);
     // heroSvg is our own markup from the encrypted payload (only decryptable
     // with a password we issued), so injecting it is safe
     document.getElementById('venueHeroArt').innerHTML = (w && w.heroSvg) || '';
@@ -3734,6 +3737,19 @@
   // choice. The <option> is removed/re-added rather than hidden, since iOS
   // Safari ignores display:none / [hidden] on options.
   var kidsMealAllowed = true;
+  // A wedding with a single menu (payload fixedMeal: "veg") presets every meal
+  // select to it and locks it. Disabled selects still report .value, which is
+  // what the submit handler reads, so the RSVP still records the meal.
+  var fixedMeal = null;
+  function lockMealSelect(sel){
+    if(fixedMeal){ sel.value = fixedMeal; }
+    sel.disabled = !!fixedMeal;
+  }
+  function setFixedMeal(meal){
+    fixedMeal = meal;
+    document.querySelectorAll('#meal, .guest-meal').forEach(lockMealSelect);
+  }
+
   function setKidsMealAllowed(allowed){
     kidsMealAllowed = allowed;
     document.querySelectorAll('#meal, .guest-meal').forEach(function(sel){
@@ -3766,6 +3782,7 @@
         '<input type="text" class="guest-allergy"></div>' +
       '<button type="button" class="guest-remove" data-i18n="removeGuestBtn">' + strs.removeGuestBtn + '</button>';
     wrap.querySelector('.guest-remove').addEventListener('click', function(){ wrap.remove(); });
+    lockMealSelect(wrap.querySelector('.guest-meal'));
     guestsContainer.appendChild(wrap);
   }
 
