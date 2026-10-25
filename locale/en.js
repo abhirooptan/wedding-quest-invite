@@ -82,7 +82,7 @@ window.LOCALE_EN = {
     lblEmail: 'Email Address<span class="req-mark" aria-hidden="true">*</span>',
     lblAttending: 'Join the party?<span class="req-mark" aria-hidden="true">*</span>',
     optAccept: "Quest accepted — I'll be there", optDecline: "Regretfully, I can't make it",
-    lblMeal: 'Choose Your Rations',
+    lblMeal: 'Your menu choice', mealNote: '', // mealNote: per-wedding (fixed-menu wedding only)
     optMealVeg: 'Vegetarian', optMealNonVeg: 'Non-Vegetarian', optMealKids: 'Kids Meal',
     lblAllergy: 'Allergy / Dietary Notes',
     lblGuestsSection: 'Bringing anyone else?', addGuestBtn: '&#43; Add Guest',
