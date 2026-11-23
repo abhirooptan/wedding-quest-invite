@@ -820,7 +820,7 @@
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   }
   /* PREVIEW: z-index raised above .proposal-sun (2) instead of sitting below
-     it at 0 -- the new personal photo (assets/photos/proposal/sunset.png)
+     it at 0 -- the new personal photo (assets/photos/proposal/sunset.webp)
      has a real alpha-transparent sky, so putting it above the sun lets the
      sky area stay see-through (sun + gradient show through) while the
      photo's own opaque sea/land/figures naturally occlude the sun as it
@@ -1661,7 +1661,7 @@
       <div class="expeditions-map-scroll">
         <div class="expeditions-map-wrap">
           <div class="expeditions-map" id="expeditionsMap">
-            <img src="assets/images/expeditions-map.png" alt="Illustrated map of Patricia and Abhiroop's shared expeditions, from Ireland and London through mainland Europe to Malta, Santorini and India" id="expeditionsMapImg">
+            <img data-cdn-src="assets/images/expeditions-map.webp" alt="Illustrated map of Patricia and Abhiroop's shared expeditions, from Ireland and London through mainland Europe to Malta, Santorini and India" id="expeditionsMapImg">
             <div class="map-waypoints" id="mapWaypoints"></div>
             <div class="map-hover-preview" id="mapHoverPreview" aria-hidden="true">
               <p class="mhp-label" id="mhpLabel"></p>
@@ -2014,6 +2014,38 @@
     if(soundOn){ beep(660,0.09,'square',0.1); }
   });
 
+  // ============ HEAVY FILES FROM jsDelivr ============
+  // Photos, the map, music and the 3D venue files load from jsDelivr (a free
+  // CDN that mirrors this public repo) instead of GitHub Pages, which rate-
+  // limits busy sites. Every use falls back to the GitHub Pages copy if the
+  // CDN copy fails, e.g. a file added in the last few hours that jsDelivr's
+  // @main cache hasn't picked up yet. Local testing skips the CDN.
+  var CDN_BASE = /\.github\.io$/.test(location.hostname) ? 'https://cdn.jsdelivr.net/gh/abhirooptan/wedding-quest-invite@main/' : '';
+  function cdn(path){ return CDN_BASE ? CDN_BASE + path : path; }
+  function cdnFetch(path){
+    if(!CDN_BASE){ return fetch(path); }
+    return fetch(CDN_BASE + path).then(function(r){ if(!r.ok){ throw new Error('HTTP ' + r.status); } return r; })
+      .catch(function(e){ console.error('[cdn] falling back for', path, e); return fetch(path); });
+  }
+  function cdnAudio(path){
+    var audio = new Audio(cdn(path));
+    audio.addEventListener('error', function(){
+      if(audio.getAttribute('src') === path){ return; }
+      console.error('[cdn] audio falling back for', path);
+      audio.src = path;
+      if(audio._wantPlay){ audio.play().catch(function(){}); }
+    });
+    return audio;
+  }
+  // <img> fallback: error events don't bubble, but they do reach a capturing listener
+  document.addEventListener('error', function(e){
+    var el = e.target;
+    if(CDN_BASE && el && el.tagName === 'IMG' && el.src.indexOf(CDN_BASE) === 0 && !el.hasAttribute('data-cdn-probe')){
+      el.src = el.src.slice(CDN_BASE.length);
+    }
+  }, true);
+  document.querySelectorAll('img[data-cdn-src]').forEach(function(img){ img.src = cdn(img.getAttribute('data-cdn-src')); });
+
   // fades an <audio> element in from 0 to targetVol over `ms`, starting playback immediately
   function fadeInAudioElement(audio, targetVol, ms){
     // fade quality (the gradual volume ramp below) is best-effort only -- iOS
@@ -2022,6 +2054,7 @@
     // instead of volume/muted specifically because of this, and that part does
     // work correctly on iOS regardless of whether the fade itself animates.
     audio.volume = 0;
+    audio._wantPlay = true; // lets cdnAudio() resume on its fallback copy
     audio.play().catch(function(e){ console.error('[audio] fadeInAudioElement play() rejected for', audio.src, ':', e); });
     var steps = 24, i = 0, stepMs = ms/steps;
     var timer = setInterval(function(){
@@ -2044,7 +2077,7 @@
     if(musicDone) return;
     if(bgMusic && bgMusic.dataset.side === side){ return; } // already playing this side's track
     stopMusicNow();
-    var audio = new Audio(MUSIC_TRACKS[side]);
+    var audio = cdnAudio(MUSIC_TRACKS[side]);
     audio.dataset.side = side;
     audio.loop = true;
     fadeInAudioElement(audio, soundOn ? 0.55 : 0, 1200); // fades in as the lobby track fades out
@@ -2117,7 +2150,7 @@
       console.error('[audio] lobby decode-context construction failed:', e);
       return;
     }
-    lobbyDecodePromise = fetch('assets/audio/lobby.mp3')
+    lobbyDecodePromise = cdnFetch('assets/audio/lobby.mp3')
       .then(function(r){ console.log('[audio] lobby fetch ok, status', r.status); return r.arrayBuffer(); })
       .then(function(buf){ console.log('[audio] lobby arrayBuffer bytes:', buf.byteLength); return decodeCtx.decodeAudioData(buf); })
       .then(function(audioBuffer){
@@ -2156,7 +2189,7 @@
     if(lobbyStarted || lobbyDone) return;
     lobbyStarted = true;
     if(!USE_WEBAUDIO_LOBBY){
-      var audio = new Audio('assets/audio/lobby.mp3');
+      var audio = cdnAudio('assets/audio/lobby.mp3');
       audio.addEventListener('timeupdate', function(){
         if(audio.currentTime >= LOBBY_LOOP.end){ audio.currentTime = LOBBY_LOOP.start; }
       });
@@ -2234,7 +2267,7 @@
   function unlockEndMusic(){
     if(endMusicUnlocked) return;
     endMusicUnlocked = true;
-    var audio = new Audio('assets/audio/the_end.mp3');
+    var audio = cdnAudio('assets/audio/the_end.mp3');
     audio.loop = true;
     // Deliberately NOT muted here, and NOT waiting for the play() promise before
     // pausing. A muted/silenced play may not register as a real, gesture-
@@ -2268,7 +2301,7 @@
           endMusicStarted = true;
           stopMusicNow(); // defensive -- should already be stopped by the time RSVP is reached
           console.log('[audio] RSVP reached, endMusicUnlocked was:', endMusicUnlocked, 'reusing existing element:', !!endMusic);
-          if(!endMusic){ endMusic = new Audio('assets/audio/the_end.mp3'); endMusic.loop = true; } // unlock somehow never ran -- best effort, may be silent on iOS
+          if(!endMusic){ endMusic = cdnAudio('assets/audio/the_end.mp3'); endMusic.loop = true; } // unlock somehow never ran -- best effort, may be silent on iOS
           fadeInAudioElement(endMusic, soundOn ? 0.55 : 0, 1200);
           setTimeout(function(){ console.log('[audio] endMusic after fadeIn: paused =', endMusic.paused, 'volume =', endMusic.volume); }, 1300);
           io.disconnect(); // one-shot: once started, it stays on regardless of further scrolling
@@ -2322,14 +2355,14 @@
   var currentLang = localStorage.getItem('questLang') || 'en';
 
   // ============ EXPEDITIONS: ILLUSTRATED WAYPOINT MAP ============
-  // Percentage coordinates over assets/images/expeditions-map.png, per
+  // Percentage coordinates over assets/images/expeditions-map.webp, per
   // Expeditions_Map_Implementation_Spec.md. Location names/routes are baked
   // into the artwork itself -- these buttons are the accessible interactive
   // layer on top of it, not a decorative background.
   // `photoBase` is the filename base under assets/photos/expeditions/:
-  // Malta1.jpg, Malta2.jpg ... Malta{MAX_DECK_PHOTOS}.jpg (gaps allowed, all
-  // optional) become that destination's fanned photo deck, resolved lazily
-  // on first open. See assets/photos/README.md.
+  // Malta1.jpg, Malta2.jpg ... (gaps allowed, all optional) become that
+  // destination's fanned photo deck, listed in EXPEDITION_PHOTO_FILES by
+  // tools/optimize-images.py. See assets/photos/README.md.
   // coordinates re-measured against the latest map artwork (evenly
   // re-distributed markers, still vertical/portrait) via colour-thresholded
   // marker detection, verified by drawing them back onto the image. Watch
@@ -2351,43 +2384,18 @@
     {id:'india', photoBase:'India', key:'destIndia', x:71.2, y:82.0},
     {id:'santorini', photoBase:'Santorini', key:'destSantorini', x:51.0, y:89.0}
   ];
-  // raised from 5 -- real photo counts per destination now range from 0 (a
-  // few still placeholder) up to 24 (Ireland), so the cap needs to cover the
-  // largest rather than the originally-designed "up to 5"
-  var MAX_DECK_PHOTOS = 24;
   var expeditionPhotoCache = {};
-  // probes {PhotoBase}{n}.{jpg,jpeg,png} for n=1..MAX_DECK_PHOTOS in parallel
-  // (e.g. Malta1.jpg, Malta2.jpg...) and caches whichever ones actually
-  // resolve -- lets a destination go from zero photos to a full fanned deck
-  // just by dropping numbered files in, no code changes, gaps allowed. Tries
-  // the lowercase filename too since GitHub Pages hosting is case-sensitive
-  // and it's an easy typo to make.
+  // Filenames per destination (lowercased photoBase), in number order.
+  // Rewritten by tools/optimize-images.py -- run it after adding photos.
+  var EXPEDITION_PHOTO_FILES = {"adriaticsea":["AdriaticSea1.jpg","AdriaticSea2.jpg"],"belgium":["Belgium1.jpg","Belgium2.jpg","Belgium3.jpg","Belgium4.jpg"],"czechrepublic":["CzechRepublic1.jpg","CzechRepublic2.jpg","CzechRepublic3.jpg","CzechRepublic4.jpg","CzechRepublic5.jpg","CzechRepublic6.jpg","CzechRepublic7.jpg","CzechRepublic8.jpg","CzechRepublic9.jpg","CzechRepublic10.jpg","CzechRepublic11.jpg"],"india":["India1.jpg","India3.jpg","India4.jpg","India5.jpg","India6.jpg","India7.jpg","India8.jpg","India9.jpg"],"ireland":["Ireland1.jpg","Ireland2.jpg","Ireland3.jpg","Ireland4.jpg","Ireland5.jpg","Ireland6.jpg","Ireland7.jpg","Ireland8.jpg","Ireland9.jpg","Ireland10.jpg","Ireland11.jpg","Ireland12.jpg","Ireland13.jpg","Ireland14.jpg","Ireland15.jpg","Ireland16.jpg","Ireland17.jpg","Ireland18.jpg","Ireland19.jpg","Ireland20.jpg","Ireland21.jpg","Ireland22.jpg","Ireland23.jpg","Ireland24.jpg"],"london":["London1.jpg","London2.jpg","London3.jpg","London4.jpg","London5.jpg","London6.jpg","London7.jpg","London8.jpg"],"mallorca":["Mallorca1.jpg","Mallorca2.jpg","Mallorca3.jpg","Mallorca4.jpg","Mallorca5.jpg"],"malta":["Malta1.jpg","Malta2.jpg","Malta3.jpg"],"newyork":["NewYork1.jpg","NewYork2.jpg","NewYork3.jpg","NewYork4.jpg","NewYork5.jpg","NewYork6.jpg","NewYork7.jpg","NewYork8.jpg","NewYork9.jpg","NewYork10.jpg","NewYork11.jpg"],"poland":["Poland1.jpg","Poland2.jpg","Poland3.jpg","Poland4.jpg"],"portugal":["Portugal1.jpg","Portugal2.jpg","Portugal3.jpg","Portugal4.jpg","Portugal5.jpg","Portugal6.jpg","Portugal7.jpg"],"santorini":["Santorini1.jpg","Santorini2.jpg","Santorini3.jpg","Santorini4.jpg","Santorini5.jpg"],"slovakia":["Slovakia1.jpg","Slovakia2.jpg","Slovakia3.jpg","Slovakia4.jpg","Slovakia5.jpg","Slovakia6.jpg","Slovakia7.jpg","Slovakia8.jpg","Slovakia9.jpg","Slovakia10.jpg","Slovakia11.jpg","Slovakia12.jpg","Slovakia13.jpg","Slovakia14.jpg","Slovakia15.jpg","Slovakia16.jpg","Slovakia17.jpg"],"spain":["Spain1.jpg","Spain2.jpg","Spain3.jpg","Spain4.jpg","Spain5.jpg","Spain6.jpg","Spain7.jpg"]}; // generated by tools/optimize-images.py
   function resolveExpeditionPhotos(ex, cb){
-    if(expeditionPhotoCache[ex.id]){ cb(expeditionPhotoCache[ex.id]); return; }
-    var found = new Array(MAX_DECK_PHOTOS);
-    var pending = MAX_DECK_PHOTOS;
-    function finish(){
-      var list = found.filter(function(u){ return !!u; });
-      expeditionPhotoCache[ex.id] = list;
-      cb(list);
+    if(!expeditionPhotoCache[ex.id]){
+      expeditionPhotoCache[ex.id] = (EXPEDITION_PHOTO_FILES[ex.photoBase.toLowerCase()] || []).map(function(name){ return 'assets/photos/expeditions/' + name; });
     }
-    for(var n = 1; n <= MAX_DECK_PHOTOS; n++){
-      (function(n){
-        var bases = ['assets/photos/expeditions/' + ex.photoBase + n, 'assets/photos/expeditions/' + ex.photoBase.toLowerCase() + n];
-        var exts = ['.jpg','.jpeg','.png'];
-        var bi = 0, ei = 0;
-        var probe = new Image();
-        function tryNext(){
-          if(bi >= bases.length){ pending--; if(pending === 0){ finish(); } return; }
-          if(ei >= exts.length){ bi++; ei = 0; tryNext(); return; }
-          probe.onload = (function(url){ return function(){ found[n-1] = url; pending--; if(pending === 0){ finish(); } }; })(bases[bi] + exts[ei]);
-          probe.onerror = function(){ ei++; tryNext(); };
-          probe.src = bases[bi] + exts[ei];
-        }
-        tryNext();
-      })(n);
-    }
+    cb(expeditionPhotoCache[ex.id]);
   }
+  // small copy for the photo piles on the map (made by tools/optimize-images.py)
+  function expeditionThumb(path){ return path.replace('/expeditions/', '/expeditions/thumbs/'); }
   // tries each candidate URL in order (covers .jpg/.jpeg/.png without asking
   // the user to rename anything); falls back to the placeholder note if none
   // of them exist yet -- this is what lets photo uploads "just work" with no
@@ -2395,8 +2403,12 @@
   // chapterEl (optional) gets .has-photo toggled on load -- swaps a Wedding
   // Details chapter from its compact "planning" layout to its full
   // photographed composition automatically, no code change needed later
-  function wireImageWithFallbacks(img, note, basePath, chapterEl){
-    var candidates = [basePath + '.jpg', basePath + '.jpeg', basePath + '.png'];
+  function wireImageWithFallbacks(img, note, basePath, chapterEl, exts){
+    // exts given: a file known to exist (CDN copy, then the GitHub copy).
+    // Otherwise the photo may not exist yet: try each type on the CDN only,
+    // so a guest's visit doesn't send a string of misses to GitHub.
+    var candidates = exts ? [cdn(basePath + exts[0]), basePath + exts[0]] : ['.jpg','.jpeg','.png'].map(function(ext){ return cdn(basePath + ext); });
+    if(!exts){ img.setAttribute('data-cdn-probe', ''); }
     var i = 0;
     img.onload = function(){ img.style.display = ''; if(note) note.style.display = 'none'; if(chapterEl) chapterEl.classList.add('has-photo'); };
     img.onerror = function(){
@@ -2449,10 +2461,9 @@
     });
     observeMiniStacks();
     observeFinaleGlow();
-    // photo resolution now probes up to MAX_DECK_PHOTOS (24) slots per
-    // destination instead of 5, so doing this eagerly for all 14 on every
-    // page load/language switch would fire an excessive burst of requests
-    // whether or not the guest ever scrolls to this section. Deferred to
+    // the piles load a few thumbnails for each of the 14 destinations, so
+    // doing this eagerly on every page load/language switch would download
+    // them whether or not the guest ever scrolls to this section. Deferred to
     // the map's own IntersectionObserver in initObservers() -- except when
     // the map has ALREADY been scrolled past once (e.g. this re-render was
     // triggered by a language switch after that point), in which case
@@ -2526,7 +2537,7 @@
       if(displayPhotos.length){
         var img = document.createElement('img');
         img.loading = 'lazy'; img.decoding = 'async';
-        img.src = displayPhotos[i]; img.alt = '';
+        img.src = cdn(expeditionThumb(displayPhotos[i])); img.alt = '';
         photoWrap.appendChild(img);
       } else if(i === n - 1){
         photoWrap.style.display = 'flex'; photoWrap.style.alignItems = 'center'; photoWrap.style.justifyContent = 'center';
@@ -2623,7 +2634,7 @@
         // rest of the barrel can load as bandwidth allows
         img.loading = i === 0 ? 'eager' : 'lazy';
         img.decoding = 'async';
-        img.src = photos[i]; img.alt = '';
+        img.src = cdn(photos[i]); img.alt = '';
         photoWrap.appendChild(img);
       } else {
         photoWrap.textContent = strs.expedComingSoonLong;
@@ -3130,7 +3141,7 @@
   function loadVenue3d(v){
     if(venue3dCache && venue3dCache.src === v.src){ return Promise.resolve(venue3dCache.html); }
     return Promise.all([
-      fetch(v.src).then(function(r){ if(!r.ok){ throw new Error('HTTP ' + r.status); } return r.arrayBuffer(); }),
+      cdnFetch(v.src).then(function(r){ if(!r.ok){ throw new Error('HTTP ' + r.status); } return r.arrayBuffer(); }),
       crypto.subtle.importKey('raw', b64ToBytes(v.key), 'AES-GCM', false, ['decrypt'])
     ]).then(function(res){
       return crypto.subtle.decrypt({name:'AES-GCM', iv:b64ToBytes(v.iv)}, res[1], res[0]);
@@ -3996,7 +4007,7 @@
   // the silhouette/gradient (proposal) or the abstract olive texture
   // (ceremony/celebration) already sitting behind the <img>, not a text label
   // describing a missing asset (Transition Review §2.4/§8.2)
-  wireImageWithFallbacks(document.getElementById('proposalPhotoImg'), null, 'assets/photos/proposal/sunset');
+  wireImageWithFallbacks(document.getElementById('proposalPhotoImg'), null, 'assets/photos/proposal/sunset', null, ['.webp']);
   wireImageWithFallbacks(document.getElementById('ceremonyPhotoImg'), null, 'assets/photos/wedding/ceremony', document.getElementById('chapterCeremony'));
   wireImageWithFallbacks(document.getElementById('receptionPhotoImg'), null, 'assets/photos/wedding/celebration', document.getElementById('chapterCelebration'));
 

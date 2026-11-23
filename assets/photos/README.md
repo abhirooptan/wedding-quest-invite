@@ -1,9 +1,14 @@
 # Photos & captions — how to add them
 
-Drop your photo files straight into the folders below, using the **exact
-filenames** listed (the site is already wired to look for these — as soon as
-a file with the right name shows up, it replaces the placeholder
-automatically, no code changes needed). `.jpg`, `.jpeg`, and `.png` all work.
+Drop your photo files into the folders below, using the **exact
+filenames** listed, then run this from the repo root:
+
+    python tools/optimize-images.py
+
+It shrinks the photos, makes the small copies used on the map
+(`expeditions/thumbs/`), and writes the photo list into `index.html`. The
+page only shows photos on that list, so skip this step and new photos stay
+hidden.
 
 For captions: type them into `CAPTIONS.md` in this same folder (plain
 English is fine), then just tell me they're ready and I'll drop them into
@@ -24,8 +29,8 @@ all work — but **the file actually has to be one of those formats**. A
 couple of the real uploads turned out to be HEIC (iPhone's format) saved
 with a `.jpg` name, which looks fine in Finder/Explorer but won't display in
 a browser — I converted those, but worth knowing if you add more later.
-Lowercase filenames (`malta1.jpg`) also work as a fallback, but the
-capitalized form below is the intended one. No fixed limit on how many
+Lowercase filenames (`malta1.jpg`) also work, but the capitalized form
+below is the intended one. No fixed limit on how many
 photos per destination (Ireland currently has 24) — the carousel handles
 any number.
 
@@ -56,7 +61,7 @@ soon" until you add them.
 
 | Filename | Used for |
 |---|---|
-| `sunset.jpg` | The wide engagement/proposal photo in "The Sunset That Changed Everything" |
+| `sunset.webp` | The wide engagement/proposal photo in "The Sunset That Changed Everything" |
 
 Wide/landscape orientation works best here — it sits under the sunset
 gradient in the lower third of that section.
