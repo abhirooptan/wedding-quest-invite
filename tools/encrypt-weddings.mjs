@@ -7,8 +7,9 @@
 // The browser derives one key from what the guest typed and tries every item;
 // only the matching one authenticates. Keep this in sync with unlockWedding()
 // in index.html (normalisation, iterations, salt/iv layout).
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, unlinkSync, mkdirSync } from 'node:fs';
 import { webcrypto as crypto } from 'node:crypto';
+import { gzipSync } from 'node:zlib';
 import { pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 import { existsSync } from 'node:fs';
@@ -37,12 +38,42 @@ async function keyFor(pw) {
     base, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
 }
 
+// 3D venue views (Pocket City pages, ~250 KB each) are too big to inline in
+// weddings.enc.js, which every guest downloads with BOTH weddings in it. Each
+// one is gzipped, padded to a common size (so file sizes don't tell the venues
+// apart) and AES-GCM encrypted under its own random key into assets/v/<random>.bin.
+// Only the wedding's own encrypted payload holds that file name and key, so a
+// guest's page can find and open just their venue -- and only after unlocking.
+const venueDir = join(dirname(out), '..', 'assets', 'v');
+mkdirSync(venueDir, { recursive: true });
+for (const f of readdirSync(venueDir)) if (f.endsWith('.bin')) unlinkSync(join(venueDir, f)); // fresh names every run
+const pocketGz = new Map();
+for (const w of weddings) if (w.pocketFile)
+  pocketGz.set(w.id, gzipSync(readFileSync(new URL(w.pocketFile, pathToFileURL(src))), { level: 9 }));
+const padTo = Math.ceil((Math.max(0, ...[...pocketGz.values()].map(b => b.length)) + 4) / 4096) * 4096;
+async function encryptVenue(gz) {
+  const plain = new Uint8Array(padTo);                // [4-byte length][gzip][zero padding]
+  new DataView(plain.buffer).setUint32(0, gz.length);
+  plain.set(gz, 4);
+  const raw = crypto.getRandomValues(new Uint8Array(32)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt']);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plain));
+  const name = Buffer.from(crypto.getRandomValues(new Uint8Array(8))).toString('hex') + '.bin';
+  writeFileSync(join(venueDir, name), ct);
+  return { src: 'assets/v/' + name, key: b64(raw), iv: b64(iv), size: ct.length };
+}
+
 const items = [];
 for (const w of weddings) {
-  const { password, heroSvgFile, ...payload } = w;
+  const { password, heroSvgFile, pocketFile, ...payload } = w;
   // venue line-drawing is inlined into the encrypted payload so the
   // published site doesn't reveal either venue to the other wedding's guests
   if (heroSvgFile) payload.heroSvg = readFileSync(new URL(heroSvgFile, pathToFileURL(src)), 'utf8');
+  if (pocketFile) {
+    const { size, ...ref } = await encryptVenue(pocketGz.get(w.id));
+    payload.venue3d = ref;
+    console.log(`  ${w.id}: 3D view ${pocketGz.get(w.id).length} B gzipped -> ${ref.src} (${size} B)`);
+  }
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await keyFor(password),
     new TextEncoder().encode(JSON.stringify(payload)));

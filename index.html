@@ -1037,7 +1037,7 @@
   .venue-hero-art{
     color:var(--gold-light); opacity:0.85; max-width:760px; margin:0 auto;
   }
-  /* soften the drawings' cropped edges (Phoenix is traced from a photo that
+  /* soften the drawings' cropped edges (one is traced from a photo that
      cuts the building off on the right) -- only once fully assembled, since a
      mask clips to the box and would slice through the flying pieces */
   .venue-hero-art.assembled{
@@ -1049,6 +1049,45 @@
     margin-top:1.1rem; font-family:var(--label); letter-spacing:0.32em; text-transform:uppercase;
     font-size:0.78rem; color:var(--gold);
   }
+  /* 3D venue view (Pocket City page from the unlocked wedding's payload, see
+     openVenue3d). Full-screen on purpose: an embedded 3D view eats every drag,
+     so on a phone the page couldn't scroll past it. */
+  .venue-3d-btn{
+    margin-top:1.4rem; padding:0.85rem 1.6rem; min-height:44px; cursor:pointer;
+    font-family:var(--label); letter-spacing:0.22em; text-transform:uppercase; font-size:0.78rem;
+    color:var(--gold-light); background:transparent; border:1px solid var(--gold); border-radius:2px;
+  }
+  .venue-3d-btn:hover, .venue-3d-btn:focus-visible{background:rgba(196,166,97,0.16);}
+  .venue-3d-btn[hidden]{display:none;}
+  .venue3d{
+    position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; max-width:none; max-height:none;
+    margin:0; padding:0; border:0; background:var(--olive-deepest); color:var(--cream);
+  }
+  .venue3d[open]{display:flex; flex-direction:column;}
+  .venue3d::backdrop{background:var(--olive-deepest);}
+  .venue3d-bar{
+    flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    padding:0.4rem 0.6rem 0.4rem 1rem; padding-top:max(0.4rem, env(safe-area-inset-top));
+    font-family:var(--label); letter-spacing:0.28em; text-transform:uppercase; font-size:0.74rem; color:var(--gold-light);
+  }
+  .venue3d-close{
+    min-height:44px; min-width:44px; padding:0 0.9rem; cursor:pointer;
+    font:inherit; letter-spacing:0.18em; color:var(--cream); background:transparent;
+    border:1px solid var(--gold); border-radius:2px;
+  }
+  .venue3d-close:hover, .venue3d-close:focus-visible{background:rgba(196,166,97,0.2);}
+  .venue3d-stage{position:relative; flex:1 1 auto; min-height:0;}
+  .venue3d-stage iframe{position:absolute; inset:0; width:100%; height:100%; border:0; background:#f7f2e7;}
+  .venue3d-msg{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:2rem;
+    text-align:center; font-family:var(--label); letter-spacing:0.2em; font-size:0.8rem; color:var(--gold-light);
+    background:var(--olive-deepest); z-index:1;
+  }
+  .venue3d-msg[hidden]{display:none;}
+  html.venue3d-open, html.venue3d-open body{overflow:hidden;}
+  /* the invitation behind the full-screen view keeps its own animations
+     (stars, sprites, pulses): stop painting it so the 3D view gets the GPU */
+  html.venue3d-open body > :not(#venue3d){visibility:hidden;}
   .detail-chapter-media{
     display:none; position:relative; overflow:hidden; width:100%; border-radius:2px; margin-bottom:1.5rem; border:1px solid rgba(196,166,97,0.25);
     background:linear-gradient(150deg, rgba(196,166,97,0.14), rgba(196,166,97,0.05));
@@ -1428,6 +1467,21 @@
   </div>
 </div>
 
+<!-- Full-screen 3D venue view, opened by #venue3dBtn (see openVenue3d). Kept at
+     body level: a modal dialog inside a hidden section would not render. The
+     page runs in a sandbox without allow-same-origin -- an opaque origin, so it
+     can't read the saved password in our localStorage. -->
+<dialog class="venue3d" id="venue3d" aria-labelledby="venue3dTitle">
+  <div class="venue3d-bar">
+    <span id="venue3dTitle">The venue in 3D</span>
+    <button type="button" class="venue3d-close" id="venue3dCloseBtn"><span id="venue3dClose">Close</span> &#10005;</button>
+  </div>
+  <div class="venue3d-stage">
+    <p class="venue3d-msg" id="venue3dMsg" role="status"></p>
+    <iframe id="venue3dFrame" title="" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer"></iframe>
+  </div>
+</dialog>
+
 <!-- ============ LANDING ============ -->
 <div class="landing" id="landing">
   <div class="landing-stars" id="landingStars"></div>
@@ -1722,6 +1776,7 @@
       <figure class="venue-hero reveal" id="venueHero" hidden>
         <div class="venue-hero-art" id="venueHeroArt" aria-hidden="true"></div>
         <figcaption id="venueHeroCaption"></figcaption>
+        <button type="button" class="venue-3d-btn" id="venue3dBtn" hidden>Explore the venue in 3D</button>
       </figure>
       <div class="details-grid reveal" id="detailsGrid">
         <div class="detail-chapter detail-chapter-ceremony" id="chapterCeremony">
@@ -1847,10 +1902,10 @@
 </div>
 
 <!-- Dialogue/copy for each language lives in its own file under locale/ -->
-<script src="locale/en.js?v=b11d4f411d"></script>
-<script src="locale/sk.js?v=15343f97a9"></script>
-<script src="locale/cz.js?v=704ff900b6"></script>
-<script src="locale/weddings.enc.js?v=3d97e47ee9"></script>
+<script src="locale/en.js?v=b0cb9cfc48"></script>
+<script src="locale/sk.js?v=c28d40ac72"></script>
+<script src="locale/cz.js?v=421aed92ed"></script>
+<script src="locale/weddings.enc.js?v=7705f0d7f3"></script>
 <script>
   // ============ ON-SCREEN DEBUG PANEL ============
   // Only active with ?debug=1 in the URL -- normal guests never see this.
@@ -3055,10 +3110,67 @@
     document.getElementById('venueHeroArt').innerHTML = (w && w.heroSvg) || '';
     document.getElementById('venueHero').hidden = !(w && w.heroSvg);
     initVenueAssembly(); // after un-hiding, so getBBox() can measure the pieces
+    venue3dCache = null;
+    document.getElementById('venue3dBtn').hidden = !(VENUE3D_OK && w && w.venue3d);
     document.getElementById('entryPassForm').hidden = !!w;
     document.getElementById('entryUnlocked').hidden = !w;
     document.getElementById('entryStart').hidden = !w;
   }
+
+  // ---------- 3D venue view ----------
+  // The unlocked payload's venue3d = {src, key, iv}: an AES-GCM encrypted,
+  // gzipped Pocket City page under a random name (tools/encrypt-weddings.mjs).
+  // Fetched only on tap, so nothing about the venue loads before the password,
+  // and a guest never fetches the other wedding's file. Browsers that can't
+  // run the 3D page (no OffscreenCanvas / DecompressionStream, e.g. iOS < 16.4)
+  // never see the button.
+  var VENUE3D_OK = !!(window.crypto && crypto.subtle && window.DecompressionStream &&
+    window.OffscreenCanvas && window.Worker && window.HTMLDialogElement && window.Response);
+  var venue3dCache = null;
+  function loadVenue3d(v){
+    if(venue3dCache && venue3dCache.src === v.src){ return Promise.resolve(venue3dCache.html); }
+    return Promise.all([
+      fetch(v.src).then(function(r){ if(!r.ok){ throw new Error('HTTP ' + r.status); } return r.arrayBuffer(); }),
+      crypto.subtle.importKey('raw', b64ToBytes(v.key), 'AES-GCM', false, ['decrypt'])
+    ]).then(function(res){
+      return crypto.subtle.decrypt({name:'AES-GCM', iv:b64ToBytes(v.iv)}, res[1], res[0]);
+    }).then(function(plain){
+      var gz = new Uint8Array(plain, 4, new DataView(plain).getUint32(0)); // [length][gzip][padding]
+      return new Response(new Blob([gz]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+    }).then(function(html){
+      venue3dCache = {src: v.src, html: html};
+      return html;
+    });
+  }
+  function openVenue3d(){
+    var v = activeWedding && activeWedding.venue3d;
+    if(!v){ return; }
+    var dlg = document.getElementById('venue3d'), frame = document.getElementById('venue3dFrame'), msg = document.getElementById('venue3dMsg');
+    var strs = UI[currentLang];
+    frame.title = strs.venue3dTitle;
+    msg.innerHTML = strs.venue3dLoading;
+    msg.hidden = false;
+    dlg.showModal();
+    document.documentElement.classList.add('venue3d-open');
+    loadVenue3d(v).then(function(html){
+      if(!dlg.open){ return; }
+      frame.onload = function(){ msg.hidden = true; };
+      frame.srcdoc = html;
+    }, function(err){
+      console.error(err);
+      msg.innerHTML = UI[currentLang].venue3dError;
+    });
+  }
+  document.getElementById('venue3dBtn').addEventListener('click', openVenue3d);
+  document.getElementById('venue3dCloseBtn').addEventListener('click', function(){ document.getElementById('venue3d').close(); });
+  document.getElementById('venue3d').addEventListener('close', function(){
+    var frame = document.getElementById('venue3dFrame');
+    frame.onload = null;
+    frame.removeAttribute('srcdoc'); // unload the page: stops its drawing threads
+    frame.src = 'about:blank';
+    document.documentElement.classList.remove('venue3d-open');
+    document.getElementById('venue3dBtn').focus();
+  });
 
   // ---------- Venue drawing: pieces fly in and assemble as it scrolls into view ----------
   // Every top-level element of the SVG (a wall, a roof line, a whole window

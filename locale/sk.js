@@ -18,6 +18,8 @@ window.LOCALE_SK = {
     entryPassError: 'Tvoj prehliadač nevedel heslo overiť. Skús prosím iný prehliadač.',
     entryChangeBtn: 'Použiť iné heslo', entryUnlockedText: '&#10003; POZVÁNKA ODOMKNUTÁ',
     ceremonyMapLink: 'Otvoriť v mapách &rarr;', receptionMapLink: 'Otvoriť v mapách &rarr;', venueHeroCaption: '',
+    venue3dBtn: 'Preskúmaj miesto v 3D', venue3dTitle: 'Miesto v 3D', venue3dClose: 'Zavrieť',
+    venue3dLoading: 'Načítavam miesto&hellip;', venue3dError: 'Pohľad v 3D sa nepodarilo načítať. Skús to prosím znova.',
     rsvpNeedsPass: 'Obnov prosím stránku a najprv zadaj heslo z pozvánky.',
     entryPlayLabel: 'ZAČAŤ DOBRODRUŽSTVO',
     entrySkipLabel: 'Prišiel si len po info o svadbe? Preskočiť dobrodružstvo &rarr;',

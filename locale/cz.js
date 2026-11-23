@@ -18,6 +18,8 @@ window.LOCALE_CZ = {
     entryPassError: 'Tvůj prohlížeč nedokázal heslo ověřit. Zkus prosím jiný prohlížeč.',
     entryChangeBtn: 'Použít jiné heslo', entryUnlockedText: '&#10003; POZVÁNKA ODEMČENA',
     ceremonyMapLink: 'Otevřít v mapách &rarr;', receptionMapLink: 'Otevřít v mapách &rarr;', venueHeroCaption: '',
+    venue3dBtn: 'Prozkoumej místo ve 3D', venue3dTitle: 'Místo ve 3D', venue3dClose: 'Zavřít',
+    venue3dLoading: 'Načítám místo&hellip;', venue3dError: 'Pohled ve 3D se nepodařilo načíst. Zkus to prosím znovu.',
     rsvpNeedsPass: 'Obnov prosím stránku a nejprve zadej heslo z pozvánky.',
     entryPlayLabel: 'ZAČÍT DOBRODRUŽSTVÍ',
     entrySkipLabel: 'Přišel jsi jen kvůli info o svatbě? Přeskočit dobrodružství &rarr;',

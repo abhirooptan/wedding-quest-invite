@@ -18,6 +18,8 @@ window.LOCALE_EN = {
     entryPassError: 'Your browser could not check the password. Please try another browser.',
     entryChangeBtn: 'Use a different password', entryUnlockedText: '&#10003; INVITATION UNLOCKED',
     ceremonyMapLink: 'Open in Maps &rarr;', receptionMapLink: 'Open in Maps &rarr;', venueHeroCaption: '',
+    venue3dBtn: 'Explore the venue in 3D', venue3dTitle: 'The venue in 3D', venue3dClose: 'Close',
+    venue3dLoading: 'Loading the venue&hellip;', venue3dError: 'The 3D view could not load. Please try again.',
     rsvpNeedsPass: 'Please reload the page and enter your invitation password first.',
     entryPlayLabel: 'BEGIN THE ADVENTURE',
     entrySkipLabel: 'Just here for the wedding details? Skip the adventure &rarr;',
