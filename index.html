@@ -2040,7 +2040,7 @@
   // <img> fallback: error events don't bubble, but they do reach a capturing listener
   document.addEventListener('error', function(e){
     var el = e.target;
-    if(CDN_BASE && el && el.tagName === 'IMG' && el.src.indexOf(CDN_BASE) === 0){
+    if(CDN_BASE && el && el.tagName === 'IMG' && el.src.indexOf(CDN_BASE) === 0 && !el.hasAttribute('data-cdn-probe')){
       el.src = el.src.slice(CDN_BASE.length);
     }
   }, true);
@@ -2404,7 +2404,11 @@
   // Details chapter from its compact "planning" layout to its full
   // photographed composition automatically, no code change needed later
   function wireImageWithFallbacks(img, note, basePath, chapterEl, exts){
-    var candidates = (exts || ['.jpg','.jpeg','.png']).map(function(ext){ return cdn(basePath + ext); });
+    // exts given: a file known to exist (CDN copy, then the GitHub copy).
+    // Otherwise the photo may not exist yet: try each type on the CDN only,
+    // so a guest's visit doesn't send a string of misses to GitHub.
+    var candidates = exts ? [cdn(basePath + exts[0]), basePath + exts[0]] : ['.jpg','.jpeg','.png'].map(function(ext){ return cdn(basePath + ext); });
+    if(!exts){ img.setAttribute('data-cdn-probe', ''); }
     var i = 0;
     img.onload = function(){ img.style.display = ''; if(note) note.style.display = 'none'; if(chapterEl) chapterEl.classList.add('has-photo'); };
     img.onerror = function(){
