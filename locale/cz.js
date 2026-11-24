@@ -79,7 +79,7 @@ window.LOCALE_CZ = {
     lblAttending: 'Přidáš se k výpravě?<span class="req-mark" aria-hidden="true">*</span>',
     optAccept: 'Výzva přijata — budu tam', optDecline: 'S lítostí, nemohu přijít',
     lblMeal: 'Výběr menu', mealNote: '',
-    optMealVeg: 'Vegetariánské', optMealNonVeg: 'Nevegetariánské', optMealKids: 'Dětské jídlo',
+    optMealVeg: 'Vegetariánské', optMealNonVeg: 'Klasické (s masem)', optMealKids: 'Dětské jídlo',
     lblAllergy: 'Alergie / dietní poznámky',
     lblGuestsSection: 'Přijdeš s někým dalším?', addGuestBtn: '&#43; Přidat hosta',
     lblGuestName: 'Jméno hosta', lblGuestMeal: 'Jídlo', lblGuestNote: 'Alergie / dietní poznámky',
