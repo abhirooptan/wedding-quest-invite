@@ -85,7 +85,7 @@ window.LOCALE_EN = {
     lblAttending: 'Join the party?<span class="req-mark" aria-hidden="true">*</span>',
     optAccept: "Quest accepted — I'll be there", optDecline: "Regretfully, I can't make it",
     lblMeal: 'Your menu choice', mealNote: '', // mealNote: per-wedding (fixed-menu wedding only)
-    optMealVeg: 'Vegetarian', optMealNonVeg: 'Non-Vegetarian', optMealKids: 'Kids Meal',
+    optMealVeg: 'Vegetarian', optMealNonVeg: 'Classic (with meat)', optMealKids: 'Kids Meal',
     lblAllergy: 'Allergy / Dietary Notes',
     lblGuestsSection: 'Bringing anyone else?', addGuestBtn: '&#43; Add Guest',
     lblGuestName: 'Guest Name', lblGuestMeal: 'Meal', lblGuestNote: 'Allergy / Dietary Notes',

@@ -1857,7 +1857,7 @@
               <label for="meal" id="lblMeal">Your menu choice</label>
               <select id="meal" name="meal">
                 <option id="optMealVeg" value="veg">Vegetarian</option>
-                <option id="optMealNonVeg" value="nonveg">Non-Vegetarian</option>
+                <option id="optMealNonVeg" value="nonveg">Classic (with meat)</option>
                 <option id="optMealKids" value="kids">Kids Meal</option>
               </select>
             </div>
@@ -1902,10 +1902,10 @@
 </div>
 
 <!-- Dialogue/copy for each language lives in its own file under locale/ -->
-<script src="locale/en.js?v=b0cb9cfc48"></script>
-<script src="locale/sk.js?v=c28d40ac72"></script>
-<script src="locale/cz.js?v=421aed92ed"></script>
-<script src="locale/weddings.enc.js?v=7705f0d7f3"></script>
+<script src="locale/en.js?v=5b9cbeb76d"></script>
+<script src="locale/sk.js?v=8af749b834"></script>
+<script src="locale/cz.js?v=a0b82db6de"></script>
+<script src="locale/weddings.enc.js?v=3d959dbbc9"></script>
 <script>
   // ============ ON-SCREEN DEBUG PANEL ============
   // Only active with ?debug=1 in the URL -- normal guests never see this.
@@ -3166,7 +3166,7 @@
     loadVenue3d(v).then(function(html){
       if(!dlg.open){ return; }
       frame.onload = function(){ msg.hidden = true; };
-      frame.srcdoc = html;
+      frame.srcdoc = html.replace('<html', '<html data-ui-lang="' + currentLang + '"'); // the page inside reads it (walk.js)
     }, function(err){
       console.error(err);
       msg.innerHTML = UI[currentLang].venue3dError;
