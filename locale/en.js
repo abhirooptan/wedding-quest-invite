@@ -63,12 +63,8 @@ window.LOCALE_EN = {
     propScript: 'She said yes', propDate: '29 March 2026',
     // det* (.wedding-intro-reduced) and teaser* (.proposal-teaser) are the
     // the one and only Wedding header (Wedding Header Deduplication spec) --
-    // see .proposal-teaser / initProposalScene. pinnedEyebrow/pinnedHeading
-    // are the SAME text again for #persistentWeddingHeader (a
-    // fixed-position continuation of the same header, not a second one) --
-    // own keys since applyLanguage() matches by element id.
+    // see .proposal-teaser / initProposalScene.
     teaserEyebrow: 'The final level', teaserHeading: 'The Wedding',
-    pinnedEyebrow: 'The final level', pinnedHeading: 'The Wedding',
     ceremonyTitle: 'Ceremony', ceremonyDesc: 'Venue scouting expedition<br>currently underway', ceremonyTime: 'Date &amp; place to be revealed',
     receptionTitle: 'Celebration', receptionDesc: 'One legendary party<br>details coming soon', receptionTime: 'Watch this space',
     supportTravel: 'Travel', supportTravelNote: "Routes and arrival guidance will be added here.",

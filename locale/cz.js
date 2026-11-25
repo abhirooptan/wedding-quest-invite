@@ -62,7 +62,6 @@ window.LOCALE_CZ = {
     propLine1: 'Když slunce zapadlo do Egejského moře, jedno dobrodružství se stalo naším navždy.',
     propScript: 'Řekla ano', propDate: '29. března 2026',
     teaserEyebrow: 'Poslední úroveň', teaserHeading: 'Svatba',
-    pinnedEyebrow: 'Poslední úroveň', pinnedHeading: 'Svatba',
     ceremonyTitle: 'Obřad', ceremonyDesc: 'Průzkum místa konání<br>právě probíhá', ceremonyTime: 'Datum a místo budou brzy odhaleny',
     receptionTitle: 'Oslava', receptionDesc: 'Jedna legendární párty<br>detaily brzy', receptionTime: 'Sledujte tento prostor',
     supportTravel: 'Doprava', supportTravelNote: 'Trasy a informace o příjezdu brzy přidáme.',
