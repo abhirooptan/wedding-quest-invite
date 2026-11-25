@@ -744,7 +744,9 @@
      "The Wedding" in its middle) pinned while .details-section, pulled up by
      the same amount, slides in over the scene's empty olive lower part. So the
      venue arrives right under the title and both then scroll away together. */
-  .elegant-world{--wedding-overlap:36vh;}
+  /* the title block is centred in the scene, so this puts the venue section a
+     fixed distance below it on every screen height */
+  .elegant-world{--wedding-overlap:calc(50vh - 4.2rem);}
   .proposal-scroll{min-height:calc(148vh + var(--wedding-overlap)); position:relative; z-index:1;}
   /* .expeditions-section and .proposal-scene are two separately-rendered
      elements, each fading to/from the same #E8B771 -- in theory that meets
@@ -885,6 +887,16 @@
   /* .elegant-world h2's default olive-deep color (meant for ivory sections)
      would be nearly invisible against the risen olive wash behind it */
   .proposal-teaser h2{color:var(--cream);}
+  .proposal-teaser .eyebrow{margin-bottom:0.5rem;}
+  /* hairline rule with a small diamond: ties the title to the venue drawing.
+     Part of the heading, so it fades in with it */
+  .proposal-teaser h2::after{
+    content:''; display:block; width:min(210px,52vw); height:9px; margin:0.95rem auto 0;
+    background:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'><path d='M4.5 .7 8.3 4.5 4.5 8.3 .7 4.5Z' fill='none' stroke='%23E6CF94'/></svg>") 50% 50%/9px 9px no-repeat,
+      linear-gradient(90deg,transparent,var(--gold-light)) 0 50%/calc(50% - 12px) 1px no-repeat,
+      linear-gradient(90deg,var(--gold-light),transparent) 100% 50%/calc(50% - 12px) 1px no-repeat;
+  }
   /* starts invisible (JS fades it in over the first sliver of pinned
      progress, see initProposalScene) -- while .proposal-scene is still
      scrolling into view under normal flow (not yet pinned), the sun sitting
@@ -993,7 +1005,7 @@
      details themselves (Next Version Implementation Plan #4) */
   .elegant-world .details-section{
     background:linear-gradient(180deg,var(--olive-deep),var(--olive-deepest)); color:var(--cream);
-    padding-top:clamp(40px,5vh,64px);
+    padding-top:1.1rem;
     margin-top:calc(-1 * var(--wedding-overlap)); /* see .proposal-scroll */
     /* explicit stacking context, above anything the (isolated) proposal
        scene could paint, plus the existing opaque gradient background --
@@ -3193,7 +3205,8 @@
         el: el,
         start: Math.min(0.65, Math.max(0, height01 * 0.55 + rnd() * 0.1)),
         dx: Math.cos(ang) * dist,
-        dy: Math.sin(ang) * dist * 0.5 - vb.height * 0.25,
+        // never above the drawing's own top: the title sits right over it
+        dy: Math.max(Math.sin(ang) * dist * 0.5 - vb.height * 0.25, vb.y - (bb.y + bb.height / 2)),
         rot: (rnd() - 0.5) * 140
       };
     });
@@ -3205,8 +3218,9 @@
     var r = document.getElementById('venueHero').getBoundingClientRect();
     var vh = window.innerHeight;
     // 0 as the drawing's top enters at the bottom of the screen, 1 (fully
-    // built) once it has risen to ~20% from the top
-    var p = clampUnit((vh - r.top) / (vh * 0.8));
+    // built) once it has risen to ~42% from the top, while the title above it
+    // is still comfortably in view
+    var p = clampUnit((vh - r.top) / (vh * 0.58));
     if(Math.abs(p - venueAsm.last) < 0.001){ return; }
     venueAsm.last = p;
     venueAsm.pieces.forEach(function(pc){
@@ -3217,7 +3231,7 @@
         : '';
       pc.el.style.opacity = (1 - 0.85 * k).toFixed(3);
     });
-    document.getElementById('venueHeroCaption').style.opacity = clampUnit((p - 0.85) / 0.15).toFixed(3);
+    document.getElementById('venueHeroCaption').style.opacity = clampUnit((p - 0.75) / 0.2).toFixed(3);
     document.getElementById('venueHeroArt').classList.toggle('assembled', p >= 1);
   }
   var venueAsmTicking = false;
